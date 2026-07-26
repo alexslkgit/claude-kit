@@ -71,8 +71,12 @@ redoing costs more than picking the right tier once. Never ask the user which mo
 **Verification is a reaction, not a routine step.** Re-run on a higher tier when a result
 looks wrong — not after every cheap run.
 
-**Learn.** When a tier turns out too weak or needlessly strong for a class of task, write
-that conclusion to auto-memory and use it next time.
+**Learn, in the right place.** Auto-memory (`~/.claude/projects/<repo>/memory/`) is scoped to
+one repository on one machine, so it is for local detail only. A conclusion that should hold
+everywhere — a tier that is too weak or needlessly strong for a class of task, a rule the user
+restates — goes into the `## Learned` section at the bottom of this file, then gets pushed with
+the `kit-update` skill. That is the only slot that loads on every session, in every project, on
+every machine.
 
 ## Sources are per project — establish them once
 
@@ -118,3 +122,15 @@ in this conversation, it is lost at `/clear`.
 - Never send messages to real people autonomously. Prepare the draft, the user sends it.
 - Never commit, push, rewrite history, touch secrets or run release scripts without an
   explicit instruction.
+
+## Learned
+
+Cross-machine conclusions. Append here — briefly, one bullet each — and push. Do not let a
+durable correction live only in a conversation; it dies at the next `/clear`.
+
+- Model tiers: no conclusions recorded yet. Record the first one the moment a tier turns out
+  wrong for a class of task, including which class and which tier was right.
+- Corporate machines (work Macs): Jira is Server/Data Center, no MCP exists, and security
+  policy rules out tokens. The browser is the answer there; do not propose integrations.
+- A bare `tools:` list in an agent means no MCP tools at all — grant `mcp__<server>__*`
+  explicitly when a subagent needs a source of record.
