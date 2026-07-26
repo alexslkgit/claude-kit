@@ -81,7 +81,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | Path | Contents |
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
-| `skills/` | procedures loaded on demand — `ticket-intake`, `bug-fix`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
+| `skills/` | procedures loaded on demand — `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 
 Lives in each repository, not here:
