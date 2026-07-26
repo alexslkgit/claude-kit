@@ -47,7 +47,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | Path | Contents |
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
-| `skills/` | procedures loaded on demand — `kit-update`, `project-sources`, and (stage 3) `draft-message`, `jira-ticket`, `pr-review` |
+| `skills/` | procedures loaded on demand — `ticket-intake`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 
 Lives in each repository, not here:

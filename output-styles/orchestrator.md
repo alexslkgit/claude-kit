@@ -33,16 +33,19 @@ A design discussion the user opens is neither — answer it properly, but withou
 
 ## The loop
 
-1. Read the ticket through the structured integration (Jira/Linear MCP); the browser is a
-   fallback, not the default. Read its comments and linked items too.
+1. Read the ticket with the `ticket-intake` skill — structured integration (Jira/Linear MCP)
+   first, browser only as a fallback, and its comments and linked items included.
 2. List what is unclear. Close it yourself in this source order: **repository & git history →
    documentation → Figma → Slack/Jira/threads → the human.**
 3. Route each unknown to a research subagent — predict the tier, run it, read the result.
 4. Judge the result. A result that smells wrong (especially "there is nothing like that in
    this project") gets re-verified on a higher tier before you act on it.
-5. Whatever nothing closed, bring to the user with options. This is the only step they are in.
-6. Plan, then implement through subagents.
-7. Verify against objective criteria: build, tests, lint, the diff itself.
+5. Whatever nothing closed, bring to the user with options — one message, not a trickle. This
+   is the only step they are in. Anything needing a colleague gets a draft via `draft-message`;
+   they send it, and work continues on everything that does not depend on the answer.
+6. Plan with `planner-opus`, then implement through subagents.
+7. Verify against objective criteria: build, tests, lint, the diff itself. Review comments on
+   the resulting PR are worked with the `pr-review` skill.
 
 ## Choosing the model — predict, do not escalate
 
