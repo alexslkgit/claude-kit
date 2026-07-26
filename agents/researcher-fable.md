@@ -4,7 +4,7 @@ description: Top research tier. Use only when you judge Opus insufficient — a 
 model: fable
 effort: high
 maxTurns: 60
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, mcp__atlassian__*, mcp__figma__*
 ---
 
 You are the highest research tier. You are invoked when the question is hard enough that a

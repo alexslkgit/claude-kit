@@ -4,7 +4,7 @@ description: Turns research findings into an implementation plan — ordered ste
 model: opus
 effort: high
 maxTurns: 40
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, mcp__atlassian__*, mcp__figma__*
 ---
 
 You are an implementation planner. You produce a plan another agent can execute without

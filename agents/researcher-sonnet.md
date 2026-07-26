@@ -4,7 +4,7 @@ description: Default research tier. Standard codebase investigation — how a fe
 model: sonnet
 effort: medium
 maxTurns: 40
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, mcp__atlassian__*, mcp__figma__*
 ---
 
 You are a codebase research agent. You investigate one question thoroughly and return

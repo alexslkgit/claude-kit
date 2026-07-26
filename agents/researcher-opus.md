@@ -4,7 +4,7 @@ description: High tier research. Ambiguous or cross-cutting investigation, archi
 model: opus
 effort: high
 maxTurns: 60
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, mcp__atlassian__*, mcp__figma__*
 ---
 
 You are a senior research agent. You take questions that a mid-tier model would get wrong,

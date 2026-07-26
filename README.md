@@ -32,6 +32,33 @@ is actually used (skills load on demand, agents only when invoked).
 **Never edit `~/.claude/agents`, `~/.claude/skills` or `~/.claude/output-styles` directly** —
 the next install overwrites them and the change never reaches the other machines.
 
+## Integrations
+
+`install.sh` calls `setup-mcp.sh`, which registers two user-scoped MCP servers (all projects
+on the machine) and is idempotent:
+
+| Server | Endpoint | Notes |
+|---|---|---|
+| `atlassian` | `https://mcp.atlassian.com/v1/mcp/authv2` | Streamable HTTP. The `/v1/sse` endpoint is deprecated (cutoff 2026-06-30) — never use `--transport sse`. Requires an Atlassian **Cloud** site. |
+| `figma` | `https://mcp.figma.com/mcp` | Remote, no desktop app needed; Figma de-recommends the local `127.0.0.1:3845` server. |
+
+Both use in-browser OAuth, which is the one step a human must do: restart Claude Code, run
+`/mcp`, pick the server, Authenticate. `claude mcp login <name>` does the same from a shell.
+A non-interactive run (`claude -p`) cannot complete OAuth — sign in from a real session first.
+
+**The browser is deliberately not an MCP server.** Claude Code's built-in Chrome integration
+(`claude --chrome`, or `/chrome` → "Enabled by default") is the only option that reuses an
+already-logged-in browser session, which is the entire point when the source is a Teams or
+Slack web UI with no API. Opening a remote-debugging port for Chrome DevTools MCP or Playwright
+MCP instead forces a blank profile — Chrome refuses the flag on your default one — so you would
+be logging in again every time. Enabling Chrome by default costs context on every session, so
+prefer `claude --chrome` per task.
+
+User-scoped MCP servers are inherited by subagents automatically. An agent's `mcpServers:`
+frontmatter **grants** extra servers rather than restricting; to take them away use `tools:`
+(allowlist) or `disallowedTools:`. Note that the read-only research agents here list plain
+tools, which already means no MCP access — grant it explicitly if a researcher needs Jira.
+
 ## Starting a new project
 
 1. Copy `templates/CLAUDE.md` to the repo root and fill it in; commit it.

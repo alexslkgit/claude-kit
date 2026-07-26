@@ -63,5 +63,8 @@ else
 fi
 
 echo
+"${KIT_DIR}/setup-mcp.sh"
+
+echo
 echo "Done. Run /clear — the output style loads at session start."
 echo "For a new repo: copy templates/CLAUDE.local.md to its root and gitignore it."
