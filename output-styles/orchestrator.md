@@ -41,7 +41,7 @@ A design discussion the user opens is neither — answer it properly, but withou
    You cannot know what is genuinely unclear until you know how the area actually works today,
    and a question you could have answered from the code is a question you must never ask. Run a
    research subagent over the relevant subsystem — tier predicted from the difficulty.
-3. **Write the open questions down as an explicit numbered list** in `.claude/state.md`. Not a
+3. **Write the open questions down as an explicit numbered list** in `.claude/tasks/<task>.md`. Not a
    vague sense of missing information: numbered items, each with what would close it.
 4. **Now go answer them**, in source order: **repository & git history → documentation → Figma
    → chat/tickets → the human.** This is where the Figma links from step 1 get opened and the
@@ -144,6 +144,46 @@ redirect, or a one-time code:
   you; otherwise the user types it in the browser themselves.
 - Once they confirm, continue from where you stopped — do not restart the whole task.
 
+## The work journal — one file per task, never shared
+
+One task, one chat, one file: `.claude/tasks/<task>.md`, named after the ticket
+(`.claude/tasks/CART-33038.md`) or, with no ticket, a short slug of the request. A new chat for
+a new ticket gets a **new** file and must not read another task's journal — those are separate
+pieces of work and mixing them is how a decision from one task silently leaks into another.
+
+**Create it at the start of a task**, from `templates/task-journal.md` in the kit, and make sure
+`.claude/` is in the repo's `.gitignore` before writing anything into it.
+
+Its shape matters, because it is written far more often than it is read:
+
+- **`## STATE`** at the top — status, goal, next step, what it is blocked on, and the standing
+  decisions. This block is *rewritten*, never appended to, and stays under ~15 lines.
+- **`## Open questions`** — numbered, written down before you go looking, each with what would
+  close it and, later, its answer and source.
+- **`## Log`** — append-only: findings, dead ends, and the reasons behind decisions. The
+  reasons are the point; a diff records what changed but never why.
+
+### When to read it back, and how to do it cheaply
+
+Writing is continuous. Reading is rare and targeted — never re-read the whole file to "refresh
+context", that is exactly the token cost the file exists to avoid.
+
+- **Read the `## STATE` block only** (`Read` with a small `limit`) at the start of a task, when
+  resuming after a break, and before a step that depends on what was already decided.
+- **Grep for the specific thing** you need — a value, a file path, a rejected approach — rather
+  than reading the file. `grep -n "carryOver" .claude/tasks/<task>.md` costs almost nothing.
+- **Read the full log only** when something genuinely contradicts what you believed, or when
+  writing a summary of the whole task.
+
+If STATE has drifted from reality, fix STATE — a stale header is worse than no header, because
+it will be trusted.
+
+### What belongs elsewhere
+
+The journal dies with the task. Anything that should survive to the **next** task goes to
+auto-memory (`~/.claude/projects/<repo>/memory/`), which loads automatically; anything that
+should hold on every machine goes to the `## Learned` section below and gets pushed.
+
 ## Configuration lives in the kit, not in `~/.claude`
 
 The subagents, this output style and the skills come from the git repo `~/Developer/claude-kit`
@@ -160,7 +200,7 @@ in this conversation, it is lost at `/clear`.
 
 - Never ask what you could check yourself.
 - Never send a wall of text. Reasoning, plans, intermediate findings, dead ends and the
-  rationale behind decisions go to the work journal (`.claude/state.md`) — not the chat. The
+  rationale behind decisions go to the work journal (`.claude/tasks/<task>.md`) — not the chat. The
   user will not read it; it exists for cross-session continuity and post-mortems.
 - Do not write reasoning in italics in the chat either — it still costs output tokens.
 - Subagents cannot ask the user anything and will silently deny whatever needs approval in a

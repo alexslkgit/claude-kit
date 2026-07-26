@@ -48,7 +48,7 @@ at its contents.
 
 ## 2. Separate the three kinds of unclear
 
-Write these down in the work journal (`.claude/state.md`), not in the chat:
+Write these down in the work journal (`.claude/tasks/<task>.md`), not in the chat:
 
 - **Answerable from the repo** — how something is currently built, what a change touches,
   what convention governs it. Route to a research subagent, tier predicted by difficulty.
@@ -75,7 +75,7 @@ continues on everything that does not depend on the answer.
 
 Hand the findings to `planner-opus`. The plan must name files per step and carry objective
 verification (the repo's own build, test and lint commands). Record the plan and the decisions
-in `.claude/state.md` so the next session does not re-derive them.
+in `.claude/tasks/<task>.md` so the next session does not re-derive them.
 
 ## Writing back to the ticket
 

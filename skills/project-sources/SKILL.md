@@ -20,7 +20,7 @@ to interrupt the user — but only once per project, and only for what you canno
 
 1. **Look before asking.** Check `CLAUDE.local.md` for a `## Sources` block, then the repo:
    README, docs folder, CI config, `.env.example`, git remotes, existing links in code
-   comments and in `.claude/state.md`. Many sources are already written down somewhere.
+   comments and in `.claude/tasks/<task>.md`. Many sources are already written down somewhere.
 2. **Ask for the gap in one message, with options**, listing everything missing at once —
    not one question per source. Example:
    "По этому проекту не записано: где переписка (Slack / Teams / ни то ни другое) и файл
@@ -30,7 +30,7 @@ to interrupt the user — but only once per project, and only for what you canno
    `CLAUDE.local.md` is in the repo's `.gitignore` — these links are internal.
 4. **Record explicit absences too** (`Chat: none`). An absence stops the question from
    coming back, which is the whole point.
-5. Note in `.claude/state.md` that sources were established.
+5. Note in `.claude/tasks/<task>.md` that sources were established.
 
 ## Template
 

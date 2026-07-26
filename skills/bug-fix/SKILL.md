@@ -35,7 +35,7 @@ reason why only a human can watch it happen.
 1. **Extract the exact repro conditions** from the ticket: branch, build, environment, account,
    feature flags, config, device or simulator, locale, data state. Missing conditions are the
    usual reason a bug "cannot be reproduced" — find them, do not assume defaults.
-2. **Write the steps down as a numbered list** in `.claude/state.md`, ending with the expected
+2. **Write the steps down as a numbered list** in `.claude/tasks/<task>.md`, ending with the expected
    result and the actual result, stated separately and concretely. "It's broken" is not an
    actual result; "the ring shows 0 instead of 4 after logging the second habit" is.
 3. **Reproduce it by the cheapest honest route**, in this order:

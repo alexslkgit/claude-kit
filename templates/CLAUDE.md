@@ -38,7 +38,7 @@ prevents the expensive mistakes.>
   can verify yourself.
 - When a human decision is genuinely required, present concrete options, not an open question.
 - Put reasoning, plans, dead ends and decision rationale in the work journal at
-  `.claude/state.md` (gitignored) — not in commit messages or code comments.
+  `.claude/tasks/<task>.md` (gitignored) — not in commit messages or code comments.
 - Do not commit to the main branch, touch secrets, or run release scripts without an
   explicit instruction.
 

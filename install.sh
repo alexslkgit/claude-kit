@@ -6,7 +6,7 @@
 #
 # Agents and skills installed at user level apply to EVERY project on this machine.
 # Nothing here is project-specific; per-repo files (CLAUDE.md, CLAUDE.local.md,
-# .claude/state.md) stay in their repos.
+# .claude/tasks/<task>.md) stay in their repos.
 
 set -euo pipefail
 

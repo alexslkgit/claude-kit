@@ -15,7 +15,7 @@ Copy this file to a repo root as `CLAUDE.local.md` and add `CLAUDE.local.md` to 
 
 - Two message types only: a **status** (three sentences max) or a **blocking question**
   (only when a human is physically required, always with concrete options).
-- No walls of text, no italic self-notes in chat. Reasoning goes to `.claude/state.md`.
+- No walls of text, no italic self-notes in chat. Reasoning goes to `.claude/tasks/<task>.md`.
 - The user is in the loop at exactly one step: deciding the unknowns nothing else could
   close. Everything before and after runs without them.
 

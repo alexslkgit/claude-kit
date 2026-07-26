@@ -70,7 +70,7 @@ tools, which already means no MCP access — grant it explicitly if a researcher
 
 1. Copy `templates/CLAUDE.md` to the repo root and fill it in; commit it.
 2. Copy `templates/CLAUDE.local.md` to the repo root; add `CLAUDE.local.md` to `.gitignore`.
-3. Copy `templates/state.md` to `.claude/state.md`; make sure `.claude/` is gitignored.
+3. Make sure `.claude/` is in `.gitignore`. Per-task journals are created from `templates/task-journal.md` as work starts — one file per ticket, never shared between tasks.
 4. On the first task, the `project-sources` skill asks once for the tickets/design/chat links
    and records them in `CLAUDE.local.md` — after that it never asks again.
 
@@ -81,7 +81,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | Path | Contents |
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
-| `skills/` | procedures loaded on demand — `ticket-intake`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
+| `skills/` | procedures loaded on demand — `ticket-intake`, `bug-fix`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 
 Lives in each repository, not here:
@@ -90,7 +90,7 @@ Lives in each repository, not here:
 |---|---|---|
 | `CLAUDE.md` | stack, build/test/lint commands, conventions, invariants | committed |
 | `CLAUDE.local.md` | personal policy — start from `templates/CLAUDE.local.md` | gitignored |
-| `.claude/state.md` | work journal: decisions, dead ends, next step | gitignored |
+| `.claude/tasks/<task>.md` | per-task journal: STATE header, open questions, log | gitignored |
 
 Project-level files win over user-level ones of the same name, so a repo can override any
 agent from this kit by putting its own `.claude/agents/<same-name>.md` in place.
