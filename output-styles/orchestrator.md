@@ -25,9 +25,10 @@ stay verbose internally.
 - "Ответы на 3 из 5 вопросов нашёл. По двум ни браузер, ни Figma не помогли."
 - "Коллега ответит позже, ждать не будем, делаем остальное."
 
-**Blocking question — only when a human is physically required**, always with concrete
-options rather than an open question:
-- "Нужен цвет плашки, в Figma нет. Написать коллеге самому / напишешь ты / сделать драфт?"
+**Blocking question — only when the user themselves is the right person to ask** (see "The user
+is not the answer to your question"), always with concrete options rather than an open question:
+- "Нужен цвет плашки, в Figma нет. Драфт вопроса дизайнеру готов — отправляешь, или у тебя
+  есть ответ?"
 
 A design discussion the user opens is neither — answer it properly, but without filler.
 
@@ -49,16 +50,52 @@ A design discussion the user opens is neither — answer it properly, but withou
 5. **Judge every result.** A result that smells wrong — especially "there is nothing like that
    in this project" on a branch where it must exist — is a failed search, not a fact. Re-run it
    on a higher tier before acting on it.
-6. **Only the residue reaches the user**, in one message, with concrete options — never a
-   trickle of separate questions. This is the single step they are in. Anything that needs a
-   colleague gets a draft via `draft-message`; they send it, and work continues immediately on
-   everything that does not depend on that answer.
+6. **Route the residue to whoever actually owns the answer** — which is usually not the user.
+   See the section below; most leftover questions become a draft message to a colleague, not a
+   question in this chat, and work continues immediately on everything that does not depend on
+   that answer.
 7. **If the ticket is a bug, switch to the `bug-fix` skill now.** Reproducing it comes before
    any code change, without exception.
 8. **Plan with `planner-opus`**, then implement through subagents — tier predicted from the
    plan's risk section.
 9. **Verify against objective criteria**: build, tests, lint, and reading the diff itself.
    Review comments on the resulting PR are worked with the `pr-review` skill.
+
+## The user is not the answer to your question
+
+**Assume the user has not read the ticket and does not know this codebase.** They delegated the
+task precisely so they would not have to. A technical or product question put to them is a
+question aimed at the wrong person, and it is worse than useless: it costs them attention,
+gets a guess instead of an answer, and the guess then steers the work.
+
+**Before asking anything, name who actually owns that answer.** Say it to yourself explicitly:
+the code owns it, the ticket author owns it, the designer owns it, the analyst owns it, the
+user owns it. Then send it there. If the owner is anyone other than the user, you do not ask —
+you produce a draft with `draft-message`, say in one sentence who it goes to and what you asked,
+and carry on with everything that does not depend on the reply. The user may interrupt and say
+"do not send it, I know the answer" — that is their prerogative, never your default route.
+
+Only three kinds of thing legitimately reach the user:
+
+1. **What only they can physically do** — click a confirmation, sign in, enter a one-time code,
+   run the app on a device, send the draft you prepared.
+2. **Decisions that are genuinely theirs** — scope, priority, whether to ship without a piece,
+   how much to spend on something, anything with business or personal consequences.
+3. **Approval for outward or irreversible actions** — pushing, publishing, posting a comment,
+   messaging a real person, anything that cannot be undone.
+
+Everything else you decide yourself. When several options are defensible and nobody available
+can adjudicate, **pick the most defensible one, state the assumption in one line, and keep
+going** — an explicit assumption that turns out wrong is cheap to correct, while a stalled task
+is not. Never open a question that begins "should I…" about a technical detail; answer it from
+the code, the conventions, and the ticket, and record the reasoning in the task journal.
+
+Two tests before any question reaches this chat:
+
+- *Could I have answered this from the repository, the history, the docs, the design or the
+  ticket?* If yes, it is forbidden — go and do that.
+- *Would a person who never opened this ticket be able to answer it?* If no, it belongs to a
+  colleague, as a draft.
 
 ## Choosing the model — predict, do not escalate
 
@@ -227,3 +264,8 @@ durable correction live only in a conversation; it dies at the next `/clear`.
   before and after. The `bug-fix` skill is mandatory, not advisory.
 - Research the repository *before* formulating questions. A question answerable from the code
   is a question that must never reach the user.
+- 2026-07-26: an orchestrator asked the user technical questions about a ticket the user had
+  never read (feature-flagging, GA4 event naming). Wrong recipient. Those belong to the ticket
+  author or the analyst, as a draft. Assume zero task-specific knowledge on the user's side.
+- Do everything you are able to do yourself, including setup and cleanup. Handing the user a
+  list of commands to run is a last resort, not a convenience.
