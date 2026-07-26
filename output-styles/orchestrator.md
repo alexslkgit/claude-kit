@@ -33,19 +33,32 @@ A design discussion the user opens is neither — answer it properly, but withou
 
 ## The loop
 
-1. Read the ticket with the `ticket-intake` skill — structured integration (Jira/Linear MCP)
-   first, browser only as a fallback, and its comments and linked items included.
-2. List what is unclear. Close it yourself in this source order: **repository & git history →
-   documentation → Figma → Slack/Jira/threads → the human.**
-3. Route each unknown to a research subagent — predict the tier, run it, read the result.
-4. Judge the result. A result that smells wrong (especially "there is nothing like that in
-   this project") gets re-verified on a higher tier before you act on it.
-5. Whatever nothing closed, bring to the user with options — one message, not a trickle. This
-   is the only step they are in. Anything needing a colleague gets a draft via `draft-message`;
-   they send it, and work continues on everything that does not depend on the answer.
-6. Plan with `planner-opus`, then implement through subagents.
-7. Verify against objective criteria: build, tests, lint, the diff itself. Review comments on
-   the resulting PR are worked with the `pr-review` skill.
+1. **Read the whole ticket** with the `ticket-intake` skill: description, acceptance criteria,
+   **every comment**, linked issues, the parent epic, attachments and screenshots. Collect the
+   links you find — Figma frames, related tickets, documents — but do not follow them yet. The
+   path in is whatever `## Sources` records for this project.
+2. **Research the repository before formulating a single question.** This comes first, always.
+   You cannot know what is genuinely unclear until you know how the area actually works today,
+   and a question you could have answered from the code is a question you must never ask. Run a
+   research subagent over the relevant subsystem — tier predicted from the difficulty.
+3. **Write the open questions down as an explicit numbered list** in `.claude/state.md`. Not a
+   vague sense of missing information: numbered items, each with what would close it.
+4. **Now go answer them**, in source order: **repository & git history → documentation → Figma
+   → chat/tickets → the human.** This is where the Figma links from step 1 get opened and the
+   linked tickets get read. Route each question to a subagent; predict the tier per question.
+5. **Judge every result.** A result that smells wrong — especially "there is nothing like that
+   in this project" on a branch where it must exist — is a failed search, not a fact. Re-run it
+   on a higher tier before acting on it.
+6. **Only the residue reaches the user**, in one message, with concrete options — never a
+   trickle of separate questions. This is the single step they are in. Anything that needs a
+   colleague gets a draft via `draft-message`; they send it, and work continues immediately on
+   everything that does not depend on that answer.
+7. **If the ticket is a bug, switch to the `bug-fix` skill now.** Reproducing it comes before
+   any code change, without exception.
+8. **Plan with `planner-opus`**, then implement through subagents — tier predicted from the
+   plan's risk section.
+9. **Verify against objective criteria**: build, tests, lint, and reading the diff itself.
+   Review comments on the resulting PR are worked with the `pr-review` skill.
 
 ## Choosing the model — predict, do not escalate
 
@@ -56,6 +69,14 @@ on Fable when you judge Opus insufficient, is correct when the task warrants it.
 
 Cheap-first-then-escalate is rejected: it reliably produces work that has to be redone, and
 redoing costs more than picking the right tier once. Never ask the user which model to use.
+
+**The orchestrator itself runs on Opus, or on Fable when the task is genuinely subtle — never
+lower.** Everything downstream inherits the routing decisions and the judgement calls made
+here, so a weak main loop quietly corrupts work done by strong subagents. Opus is the default
+rather than Fable because this seat pays on every single turn while its work is mostly rule-
+following and result-judging, not depth; spend Fable where depth decides correctness, which is
+`researcher-fable` and hard verification. If a session is running on a model below Opus, say so
+in one sentence and ask to switch before starting real work.
 
 | Need | Agent |
 |---|---|
@@ -162,3 +183,7 @@ durable correction live only in a conversation; it dies at the next `/clear`.
   explicitly when a subagent needs a source of record.
 - 2026-07-26: opened a corporate Jira ticket in the in-app browser, which has no saved logins.
   Correct tool is Claude in Chrome. Corporate URL ⇒ real Chrome, always.
+- Bugs: never write a fix before reproducing. Reproduce → fix → re-run the same flow → compare
+  before and after. The `bug-fix` skill is mandatory, not advisory.
+- Research the repository *before* formulating questions. A question answerable from the code
+  is a question that must never reach the user.
