@@ -34,8 +34,15 @@ the next install overwrites them and the change never reaches the other machines
 
 ## Integrations
 
-`install.sh` calls `setup-mcp.sh`, which registers two user-scoped MCP servers (all projects
-on the machine) and is idempotent:
+Integrations are **per machine**, so `install.sh` does not touch them — a registered server
+that was never authenticated nags at every session start. Run `setup-mcp.sh` only where the
+machine actually has the thing, naming what it has (idempotent, `--remove` undoes it):
+
+```bash
+./setup-mcp.sh jira figma      # or just `jira`, or just `figma`
+```
+
+Registered user-scoped, so all projects on that machine see them:
 
 | Server | Endpoint | Notes |
 |---|---|---|

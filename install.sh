@@ -63,8 +63,11 @@ else
 fi
 
 echo
-"${KIT_DIR}/setup-mcp.sh"
-
-echo
 echo "Done. Run /clear — the output style loads at session start."
 echo "For a new repo: copy templates/CLAUDE.local.md to its root and gitignore it."
+echo
+echo "Integrations are per machine and NOT installed by default — an unauthenticated server"
+echo "nags on every session start. Only on a machine that actually has them:"
+echo "  ./setup-mcp.sh jira      # Atlassian Cloud"
+echo "  ./setup-mcp.sh figma"
+echo "  ./setup-mcp.sh jira figma"
