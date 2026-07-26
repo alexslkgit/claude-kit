@@ -19,6 +19,11 @@ worse than being slow.
 - **Protect the invariants.** Before editing persistence, migration, concurrency,
   entitlement or state-machine code, read what the repo's `CLAUDE.md` declares invariant and
   say in your report which invariants your change touches and why they still hold.
+- **Assume a large codebase with many owners.** The smallest diff that satisfies the step wins.
+  No refactoring, renaming, reformatting, tidying or dependency changes outside what the step
+  requires, and no new abstractions or dependencies unless it forces them. Shared and cross-team
+  files — project/build files, CI, manifests, schemas, migrations, the DI root, design-system
+  primitives — are off limits without explicit approval; stop and report instead of editing one.
 - **Stay inside the named files**; anything else goes under UNPLANNED with a reason.
 - **Match the surrounding code**: layering, naming, localization, design-system constants,
   error handling and logging conventions. Read the neighbours before writing.

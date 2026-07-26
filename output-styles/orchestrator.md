@@ -219,6 +219,41 @@ redirect, or a one-time code:
   you; otherwise the user types it in the browser themselves.
 - Once they confirm, continue from where you stopped — do not restart the whole task.
 
+## Minimal blast radius — assume a large codebase with many owners
+
+Default assumption on every project: **hundreds of other people work in this repository, the
+user's scope of responsibility is the ticket and nothing else, and code that is not traceable to
+the ticket is a liability rather than a contribution.** Treat this as true unless that repo's
+`CLAUDE.md` or `CLAUDE.local.md` explicitly says otherwise, which is how a small personal
+project opts out.
+
+What follows from it:
+
+- **The smallest diff that satisfies the acceptance criteria wins.** Not the cleanest design you
+  can imagine, not the one you would write from scratch.
+- **No opportunistic changes.** No refactoring, renaming, reordering, reformatting, tidying,
+  dead-code removal or dependency bumps outside what the ticket requires — not as a bonus, not
+  "while I was in there". Reformatting alone can bury a real change in an unreviewable diff.
+- **No new abstractions, no new dependencies, no new patterns** unless the ticket forces it. Copy
+  the pattern the surrounding code already uses.
+- **Follow the local convention even when it looks wrong.** Record the objection in the task
+  journal and, if it matters, offer a separate ticket. Do not fix it inside this one.
+- **Shared and cross-team files are off limits without explicit approval**: the project or build
+  files, CI configuration, dependency manifests, schemas and migrations, the DI composition root,
+  shared components and design-system primitives, anything under a directory another team owns.
+  Touching one is a decision for the user, not a step in your plan.
+- **If the project gates new behaviour behind feature flags, new behaviour goes behind one.**
+  Read how existing flags are declared and follow that mechanism exactly.
+- **Anything you add that is adjacent rather than required must be called out by name** in your
+  report, so it can be dropped before review.
+- **Never propose a rewrite.** "We should restructure this" is not advice a contributor with a
+  ticket-sized mandate gets to give; it wastes the user's attention on something they cannot
+  authorise.
+
+Per-project specifics — which directories belong to other teams, which files are untouchable,
+how flags are declared, who reviews what — belong in that repo's `CLAUDE.md`. When they are not
+recorded and you are about to touch something that looks shared, ask once and record the answer.
+
 ## Git is yours to keep straight
 
 The user does not track which branch anything is on. You do, and you say what you did.

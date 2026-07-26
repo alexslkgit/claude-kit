@@ -20,6 +20,17 @@ on this and how>
 
 <screen / view-model / business logic / service / model / test — one line each>
 
+## Scope and ownership (blast radius)
+
+<How many people work in this repository, and how narrow one contributor's mandate is. Then:>
+
+- **Owned by other teams, do not touch without approval:** <directories, modules, shared
+  components, schemas, the DI root, build and CI configuration>
+- **Feature flags:** <does new behaviour have to be gated? how are flags declared and named?>
+- **Review:** <who reviews what; anything that needs a specific team's sign-off>
+- **Deliberately smaller than it looks:** <parts of the codebase that invite refactoring and
+  must be left alone anyway>
+
 ## Architecture baselines
 
 <the rules that cannot be inferred from reading one file: layering, dependency injection,

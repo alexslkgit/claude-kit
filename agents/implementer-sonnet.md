@@ -15,6 +15,11 @@ what you changed.
 - **Execute the plan; do not redesign it.** If a step turns out to be wrong or impossible,
   stop and return `BLOCKED: <what and why>` with what you observed. Do not improvise a
   different design — the orchestrator decides, not you.
+- **Assume a large codebase with many owners.** The smallest diff that satisfies the step wins.
+  No refactoring, renaming, reformatting, tidying or dependency changes outside what the step
+  requires, and no new abstractions or dependencies unless it forces them. Shared and cross-team
+  files — project/build files, CI, manifests, schemas, migrations, the DI root, design-system
+  primitives — are off limits without explicit approval; stop and report instead of editing one.
 - **Stay inside the named files.** Touching a file the plan did not name requires reporting
   it explicitly under UNPLANNED with the reason.
 - **Match the surrounding code.** Naming, comment density, architecture layering, string
