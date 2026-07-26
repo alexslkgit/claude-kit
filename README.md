@@ -32,6 +32,22 @@ is actually used (skills load on demand, agents only when invoked).
 **Never edit `~/.claude/agents`, `~/.claude/skills` or `~/.claude/output-styles` directly** —
 the next install overwrites them and the change never reaches the other machines.
 
+## Using the skills outside Claude Code (Cowork)
+
+This repo is also a plugin marketplace, because `install.sh` only reaches Claude Code on a Mac.
+Where the skills are needed elsewhere — Cowork, for instance — add it as a marketplace and
+install the plugin:
+
+```
+/plugin marketplace add alexslkgit/claude-kit
+/plugin install orchestrator-kit@claude-kit
+```
+
+The plugin carries the **agents and skills** only. A plugin cannot ship an output style, so the
+orchestrator persona (Russian to the user, three-sentence replies, the model routing table) is
+Claude Code only. On the Macs, use `install.sh` and **not** the plugin — running both would
+install the same skills twice.
+
 ## Integrations
 
 Integrations are **per machine**, so `install.sh` does not touch them — a registered server

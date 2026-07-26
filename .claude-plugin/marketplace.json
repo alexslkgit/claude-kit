@@ -1,0 +1,11 @@
+{
+  "name": "claude-kit",
+  "owner": { "name": "Oleksandr Slobodianiuk" },
+  "plugins": [
+    {
+      "name": "orchestrator-kit",
+      "source": "./",
+      "description": "Orchestrator subagents and skills. Note: the output style is NOT shipped here — plugins cannot carry one. On a Mac running Claude Code, use install.sh instead of this plugin; use the plugin where install.sh cannot run, such as Cowork."
+    }
+  ]
+}

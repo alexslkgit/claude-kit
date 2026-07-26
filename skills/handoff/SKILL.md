@@ -34,8 +34,8 @@ half-remembered one, and will act on both.
 
 ## What the prompt must contain
 
-Every section below, in this order, omitting only what truly does not apply. Sections 1, 2 and
-10 are the ones people forget, and each of them costs a whole confused exchange.
+Every section below, in this order, omitting only what truly does not apply. Sections 1, 2, 10
+and 11 are the ones that get forgotten, and each costs a whole confused exchange.
 
 1. **Role and continuity.** Who the successor is and what job it continues. State the working
    arrangement explicitly — for example: "You are the orchestrator. You write prompts that the
@@ -59,18 +59,28 @@ Every section below, in this order, omitting only what truly does not apply. Sec
    commit, doc URL). Mark anything uncertain as uncertain; a guess promoted to a fact by the
    handoff is worse than an open question.
 9. **Open questions**, numbered, each with what would close it and who or what can close it.
-10. **Work in flight.** Anything that was set running elsewhere and has not come back yet: a
+10. **The trail of people and sources.** Everyone who was asked something and what came of it,
+    in order, because a chain of referrals is impossible to reconstruct and expensive to
+    repeat. For each: who was asked (by name and channel), what exactly they were asked, what
+    they answered, and what that changed — including "they redirected us to someone else",
+    which is the most common outcome and the one that vanishes in a summary. Mark each thread
+    as answered, redirected, or still waiting. Do the same for non-human sources: which Figma
+    frames, documents and tickets were actually opened and what each one settled or failed to
+    settle, with links. The successor must be able to see the whole path from the original
+    question to where it stands now, so it neither re-asks a colleague who already answered nor
+    forgets the one who never did.
+11. **Work in flight.** Anything that was set running elsewhere and has not come back yet: a
     prompt the user already pasted into Claude Code, a message awaiting a colleague's reply, a
     build or CI job. For each one state what was asked, what a good answer looks like, that the
     user will paste the result into the new chat, and how to judge it when it arrives. Instruct
     the successor to ask for it by name early rather than proceeding as if nothing is pending.
-11. **Standing corrections about style and behaviour** the user made during this conversation —
+12. **Standing corrections about style and behaviour** the user made during this conversation —
     banned phrasings, formatting they dislike, tools they rejected and why. These live only in
     the conversation and die with it unless carried over.
-12. **The immediate next action**, in one line, plus an explicit instruction not to restart the
+13. **The immediate next action**, in one line, plus an explicit instruction not to restart the
     task, not to re-plan what is already planned, and not to ask the user anything the briefing
     already answers.
-13. **Pointers**: the task journal path, key files, ticket and design URLs, the repository and
+14. **Pointers**: the task journal path, key files, ticket and design URLs, the repository and
     branch.
 
 ## Form
