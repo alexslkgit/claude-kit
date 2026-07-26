@@ -6,7 +6,7 @@ shared by every project on that machine.
 ## Install on a new machine — one command, once ever
 
 ```bash
-git clone https://github.com/skylabmain-dot/claude-kit.git ~/Developer/claude-kit && cd ~/Developer/claude-kit && ./install.sh
+git clone https://github.com/alexslkgit/claude-kit.git ~/Developer/claude-kit && cd ~/Developer/claude-kit && ./install.sh
 ```
 
 Then `/clear` and select the **Orchestrator** output style — styles load at session start.
