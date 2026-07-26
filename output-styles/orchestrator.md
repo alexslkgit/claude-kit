@@ -1,5 +1,5 @@
 ---
-name: Orchestrator
+name: orchestrator
 description: Terse orchestrator persona — Russian to the user, three-sentence replies, all reasoning to a file, subagent tier chosen by prediction.
 keep-coding-instructions: true
 ---

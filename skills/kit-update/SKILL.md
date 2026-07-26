@@ -1,7 +1,7 @@
 ---
 name: kit-update
-description: Sync the orchestrator kit (subagents, output style, skills, templates) on this machine. Use whenever the user asks in any wording to pull, refresh, sync or update the kit / agents / skills / config — for example "обнови кит", "подтяни настройки", "sync the kit". Also use after editing any kit file on this machine, to install the edit locally and offer to push it.
-allowed-tools: Bash, Read, Edit
+description: Sync the orchestrator kit (subagents, output style, skills, templates) between machines. Use whenever the user asks in ANY wording to update, pull, refresh, sync, save or push the kit / config / settings / agents / skills — including "обнови кит", "подтяни настройки", "сохрани конфиг", "сохрани настройки", "запушь кит", "sync the kit", "save this rule everywhere". Also use proactively after you edit any kit file, and whenever the user gives a durable correction about how you work (message style, model tier choices, a rule they restate) — that correction belongs in a kit file, not in this conversation.
+allowed-tools: Bash, Read, Edit, Write
 ---
 
 # Sync the orchestrator kit
@@ -37,6 +37,12 @@ cd ~/Developer/claude-kit && ./install.sh && git status --short
 
 Install locally first so the change is live here, then show the diff and ask whether to
 commit and push it to the other machines. Commit message: one line, English, imperative.
+
+Pulling needs no credentials (the repo is public), but **pushing does**. On a machine that
+has never pushed, `git push` fails on authentication: install `gh` if missing
+(`brew install gh`), then run `gh auth login --web` — it prints a one-time code, so report
+that code to the user and let them enter it in the browser. Never ask for, type, or print a
+password or token yourself.
 
 ## Conflicts
 

@@ -9,7 +9,12 @@ shared by every project on that machine.
 git clone https://github.com/alexslkgit/claude-kit.git ~/Developer/claude-kit && cd ~/Developer/claude-kit && ./install.sh
 ```
 
-Then `/clear` and select the **Orchestrator** output style — styles load at session start.
+Then `/clear`. That is all — `install.sh` also selects the output style for you by merging
+`"outputStyle": "orchestrator"` into `~/.claude/settings.json` (your other settings are kept,
+and a `.bak` is written). Styles are read once at session start, hence the `/clear`.
+
+Nothing to pick by hand: `/output-style` was removed in recent versions and `/config` is a
+manual step, so the installer writes the same key those wrote.
 
 ## Update everywhere — no commands after that
 
