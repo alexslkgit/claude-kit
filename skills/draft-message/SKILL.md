@@ -36,6 +36,16 @@ writing a memo.
 - **Ask, do not summarise your own work.** They do not need to know what you already checked
   unless it changes their answer.
 
+## Always run it through `humanizer`
+
+Before showing any draft, pass it through the `humanizer` skill — every message, every language,
+no exceptions. It catches the generated-text signatures that survive a careful first draft:
+inflated phrasing, vague attribution, negative parallelism, rule-of-three rhythm, em dash
+overuse, promotional adjectives, filler openings. If that skill is not installed on this machine,
+apply its rules yourself from the list below and say that it was unavailable.
+
+The list below is the minimum, not a substitute for that pass.
+
 ## AI tells — banned outright
 
 These are what give away a generated message. Every one of them is a hard no:
@@ -64,8 +74,8 @@ goes to and where. Nothing else — no explanation of your choices unless asked.
 
 ## Recording corrections
 
-When the user corrects the style — "не ставь длинные тире", "короче", "не начинай с
-приветствия" — that correction belongs **in this file**, under Style rules or AI tells, and
+When the user corrects the style — no em dashes, shorter, do not open with a greeting — that
+correction belongs **in this file**, under Style rules or AI tells, and
 then committed and pushed via the `kit-update` skill. A correction that lives only in the
 conversation dies at the next `/clear` and never reaches the user's other machines. Add it in
 the user's own words where they are clearer than a paraphrase.

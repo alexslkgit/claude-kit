@@ -23,8 +23,9 @@ to interrupt the user — but only once per project, and only for what you canno
    comments and in `.claude/tasks/<task>.md`. Many sources are already written down somewhere.
 2. **Ask for the gap in one message, with options**, listing everything missing at once —
    not one question per source. Example:
-   "По этому проекту не записано: где переписка (Slack / Teams / ни то ни другое) и файл
-   Figma. Скинь ссылки, или скажи «нет такого» — запишу, больше спрашивать не буду."
+   ask it in the user's language, shaped like: "Not recorded for this project: where the team
+   chat is (Slack / Teams / neither) and the Figma file. Send the links, or say there is none —
+   I will write it down and stop asking."
 3. **Write the answer into `CLAUDE.local.md`** under `## Sources`, in English, using the
    template below. If the file or the block does not exist, create it. Ensure
    `CLAUDE.local.md` is in the repo's `.gitignore` — these links are internal.
