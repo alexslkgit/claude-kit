@@ -49,8 +49,16 @@ to interrupt the user — but only once per project, and only for what you canno
 ## Using them afterwards
 
 Follow the source order — repository & git history → documentation → Figma → chat/tickets →
-the human. Prefer the structured integration over the browser: an MCP for Jira/Linear or
-Figma is stable, a scraped web UI is not. Reach for the browser only where no MCP exists,
-Teams being the usual case.
+the human.
+
+**Do not assume an MCP is available or worth chasing.** It is preferable where it exists and is
+reachable, but two things rule it out often: self-hosted Jira Server/Data Center has no
+Atlassian MCP at all (only `*.atlassian.net` Cloud does), and corporate security policy
+routinely blocks issuing API tokens or approving OAuth apps. In that case the browser is the
+primary path, not a fallback — the built-in Chrome integration reuses the session the user is
+already signed into. Record which it is in the `Access` line and stop revisiting it.
+
+When a workspace has several accounts (a client Slack and an employer Slack, say), record both
+and which is which, because posting or reading in the wrong one is a real mistake.
 
 Never send a message into any of these systems autonomously. Draft it, the user sends it.
