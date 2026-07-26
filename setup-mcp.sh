@@ -20,7 +20,10 @@
 # Endpoints verified 2026-07-26:
 #  - jira  -> https://mcp.atlassian.com/v1/mcp/authv2 over Streamable HTTP. The old /v1/sse
 #    endpoint is deprecated (cutoff 2026-06-30, already passed) — never use `--transport sse`.
-#    Requires an Atlassian *Cloud* site; Server and Data Center are not supported.
+#    Requires an Atlassian *Cloud* site (`*.atlassian.net`). Jira Server and Data Center are
+#    NOT supported: on a self-hosted host such as trackspace.lhsystems.com the OAuth login
+#    simply cannot succeed, so do not register `jira` there — read those tickets in the
+#    browser instead. Verified 2026-07-26 against Atlassian's own prerequisites table.
 #  - figma -> https://mcp.figma.com/mcp, remote. Figma now de-recommends its local
 #    127.0.0.1:3845 desktop server, so the desktop app does not need to be running.
 #
