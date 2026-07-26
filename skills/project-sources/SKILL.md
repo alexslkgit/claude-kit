@@ -37,6 +37,7 @@ to interrupt the user — but only once per project, and only for what you canno
 ```markdown
 ## Sources
 
+- Base branch: <develop | main> <+ note if it is recreated every release cycle>
 - Tickets: <Jira project key + base URL | Linear team | none>
 - Design: <Figma file URL(s), and which one is current | none>
 - Chat: <Slack workspace | Teams | none> — relevant channels: <#a, #b>

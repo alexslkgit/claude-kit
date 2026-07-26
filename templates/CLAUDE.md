@@ -53,6 +53,8 @@ prevents the expensive mistakes.>
 ## Git
 
 - **Base branch:** <develop | main — the one task branches are cut from and rebased onto>
+  <If this project recreates its base every release cycle, say so here — it must then be
+  re-verified against the remote before branching, not trusted from this file.>
 - **Branch naming:** <e.g. feature/<TICKET-KEY>, bugfix/<TICKET-KEY>>
 - <anything unusual: protected branches, required prefixes, worktrees in use>
 

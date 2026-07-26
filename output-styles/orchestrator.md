@@ -218,10 +218,25 @@ several jobs and hands over the wrong branch regularly. If the current branch's 
 commits belong to a different ticket, say so in one line and propose the correction rather than
 working on it.
 
-**Starting new work.** If you are on the project's base branch (`develop` or `main` — it differs
-per project and is recorded in that repo's `CLAUDE.md`), fetch and fast-forward it first, then
-create the task branch, named from the ticket key. If you are on some other branch, do not
+**Starting new work.** If you are on the project's base branch, fetch and fast-forward it first,
+then create the task branch, named from the ticket key. If you are on some other branch, do not
 branch off it silently: say what it is and how it relates to base, then proceed.
+
+**The base branch is recorded, but verified — not trusted forever.** It lives in that repo's
+`CLAUDE.md` (or `CLAUDE.local.md`). Ask for it once, when it is not recorded, and write it down
+so the question never repeats. But on some projects the base is recreated every release cycle,
+so before branching or rebasing, spend one cheap check on it:
+
+- Does the recorded branch still exist on the remote? `git ls-remote --heads origin <base>`.
+- Has it moved recently? A base whose last commit is weeks old while other branches are busy is
+  a stale record, not a quiet period.
+- Was it recreated under the same name? The tell is a force-push: your local copy and
+  `origin/<base>` share no recent common ancestor.
+
+If any of those trips, do not guess and do not carry on with the old base. Show the candidates —
+`git branch -r --sort=-committerdate | head` — and ask in one message which is base now, then
+update the record. That is a decision only the user can make, and it costs them one word every
+couple of months instead of one word every task.
 
 **The checkout may be shared.** Another session or the user's own work in progress can live in
 the same working tree. Never discard uncommitted changes, never `git checkout -- .`, never
