@@ -1,0 +1,79 @@
+# claude-kit
+
+Portable orchestrator configuration for Claude Code. One repo, installed once per machine,
+shared by every project on that machine.
+
+## Install on a new machine — one command, once ever
+
+```bash
+git clone https://github.com/skylabmain-dot/claude-kit.git ~/Developer/claude-kit && cd ~/Developer/claude-kit && ./install.sh
+```
+
+Then `/clear` and select the **Orchestrator** output style — styles load at session start.
+
+## Update everywhere — no commands after that
+
+Edit on any machine, commit, push. On the others, just say it in the chat — "обнови кит",
+"подтяни настройки", "sync the kit" — and the `kit-update` skill runs the pull and the
+install. The command below is only the manual equivalent:
+
+```bash
+cd ~/Developer/claude-kit && git pull --ff-only && ./install.sh
+```
+
+Zero token cost — it is a file sync, not context. Nothing loads into a conversation until it
+is actually used (skills load on demand, agents only when invoked).
+
+**Never edit `~/.claude/agents`, `~/.claude/skills` or `~/.claude/output-styles` directly** —
+the next install overwrites them and the change never reaches the other machines.
+
+## Starting a new project
+
+1. Copy `templates/CLAUDE.md` to the repo root and fill it in; commit it.
+2. Copy `templates/CLAUDE.local.md` to the repo root; add `CLAUDE.local.md` to `.gitignore`.
+3. Copy `templates/state.md` to `.claude/state.md`; make sure `.claude/` is gitignored.
+4. On the first task, the `project-sources` skill asks once for the tickets/design/chat links
+   and records them in `CLAUDE.local.md` — after that it never asks again.
+
+## What is machine-wide vs per-repo
+
+Installed to `~/.claude/` by `install.sh`, applies to **every project on this machine**:
+
+| Path | Contents |
+|---|---|
+| `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
+| `skills/` | procedures loaded on demand — `kit-update`, `project-sources`, and (stage 3) `draft-message`, `jira-ticket`, `pr-review` |
+| `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
+
+Lives in each repository, not here:
+
+| Path | Contents | Git |
+|---|---|---|
+| `CLAUDE.md` | stack, build/test/lint commands, conventions, invariants | committed |
+| `CLAUDE.local.md` | personal policy — start from `templates/CLAUDE.local.md` | gitignored |
+| `.claude/state.md` | work journal: decisions, dead ends, next step | gitignored |
+
+Project-level files win over user-level ones of the same name, so a repo can override any
+agent from this kit by putting its own `.claude/agents/<same-name>.md` in place.
+
+## Model routing
+
+The tier is fixed inside each agent's file — the parent cannot choose it at call time, so
+each role exists at several tiers and **choosing the agent is choosing the model**. The
+routing table lives in `output-styles/orchestrator.md`.
+
+Policy: predict the minimum tier that will do the job *well*, before the run. Cheap-first-
+then-escalate is deliberately rejected. Re-running on a higher tier is a reaction to a
+suspicious result, not a routine step.
+
+## Verified mechanics (do not re-derive)
+
+- Output styles apply to the **main conversation only** — subagents keep their own system
+  prompt. That is intentional here: terse with the user, verbose inside.
+- A plugin **cannot** ship an output style (agents, skills, hooks and MCP servers only) —
+  which is why this kit installs by copy rather than as a plugin.
+- Subagents **cannot ask the user anything**; a background run silently denies whatever
+  needs approval. Keep every decision in the main thread and give agents narrow tool lists.
+- Omitting `tools:` in an agent grants **all** tools. Every agent here lists them explicitly.
+- Auto-memory (`~/.claude/projects/<repo>/memory/`) is per-repo and machine-local; it is the
+  place for accumulated model-tier conclusions.
