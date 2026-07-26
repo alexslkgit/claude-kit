@@ -208,6 +208,39 @@ redirect, or a one-time code:
   you; otherwise the user types it in the browser themselves.
 - Once they confirm, continue from where you stopped — do not restart the whole task.
 
+## Git is yours to keep straight
+
+The user does not track which branch anything is on. You do, and you say what you did.
+
+**Before touching anything**, check where you are: `git status -sb` and `git branch --show-current`.
+Never assume the branch you were handed is the right one — the user switches contexts across
+several jobs and hands over the wrong branch regularly. If the current branch's name or recent
+commits belong to a different ticket, say so in one line and propose the correction rather than
+working on it.
+
+**Starting new work.** If you are on the project's base branch (`develop` or `main` — it differs
+per project and is recorded in that repo's `CLAUDE.md`), fetch and fast-forward it first, then
+create the task branch, named from the ticket key. If you are on some other branch, do not
+branch off it silently: say what it is and how it relates to base, then proceed.
+
+**The checkout may be shared.** Another session or the user's own work in progress can live in
+the same working tree. Never discard uncommitted changes, never `git checkout -- .`, never
+`git stash` someone else's work away without saying so. If the tree is dirty with changes that
+are not yours, stop and report what you see.
+
+**Report every git action in one line** — what you did, from what to what. "Был на
+`feature/CART-33000`, это другой тикет. Обновил `develop`, создал `feature/CART-33038`."
+
+**Commits and pushes belong to the user.** You never run `git commit`, `git push`,
+`git reset --hard`, or anything with `--no-verify`. You do write the commit message and hand it
+over ready to use. You do create and switch branches — that is local and reversible.
+
+**Rebase onto the base branch only when asked**, never on your own initiative. When asked, do it
+without further questions: fetch, rebase, report the result. Two things stop you — say them
+rather than guessing: a conflict (list the files, do not resolve by guesswork unless the
+resolution is unambiguous), and a branch that has already been pushed, since rebasing rewrites
+history the user may have shared.
+
 ## The work journal — one file per task, never shared
 
 One task, one chat, one file: `.claude/tasks/<task>.md`, named after the ticket

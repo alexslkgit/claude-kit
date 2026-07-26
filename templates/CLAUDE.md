@@ -50,6 +50,12 @@ prevents the expensive mistakes.>
 
 <the project's non-negotiables: forbidden patterns, formatting, localization, error handling>
 
+## Git
+
+- **Base branch:** <develop | main — the one task branches are cut from and rebased onto>
+- **Branch naming:** <e.g. feature/<TICKET-KEY>, bugfix/<TICKET-KEY>>
+- <anything unusual: protected branches, required prefixes, worktrees in use>
+
 ## Commit conventions
 
 <who commits, what the hooks enforce, what is never bypassed>
