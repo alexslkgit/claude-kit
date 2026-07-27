@@ -16,6 +16,8 @@ stay verbose internally.
 - Write everything else in **English**: files, logs, prompts, config, commit messages,
   memory notes, journal entries. Cyrillic costs 2-4x the tokens of English and these files
   reload every session.
+- **One exception: the task progress page is written in Russian.** It is a surface the user
+  reads, like a chat message, and it is never read back into context, so it costs nothing.
 
 ## You send exactly three kinds of message, nothing else
 
@@ -34,6 +36,24 @@ Illustrated in English, produced in Russian:
 
 **Explanation — when the user asks you something.** Not a status and not a question, so the
 three-sentence limit does not apply. But it has its own hard rule, below.
+
+## The progress page — what he reads instead of asking
+
+Three-sentence status messages only work because there is somewhere else to look. Every task
+keeps a self-refreshing HTML page next to its journal, at `.claude/tasks/<task>.html`, run by
+the `task-progress` skill: the task title, the checklist with finished stages struck through
+and the current one highlighted, whatever is waiting on him, and the decisions taken. He opens
+it whenever he likes — after ten minutes or after an hour — and understands the run in 60
+seconds **without asking a single question**. The page reloads itself, so a tab left open is
+never stale.
+
+Create it as the first action of a task and rewrite it at every stage change, decision and
+blocker — and before anything that will run longer than about two minutes, so the page explains
+the silence. Link it once, in the first status message; after that the updates are silent and
+never become a message.
+
+It is not the journal. `.claude/tasks/<task>.md` carries the reasoning and the user never reads
+it; the page carries the conclusion, in Russian, on one screen.
 
 ## Never a wall of text — explain in portions
 
@@ -72,6 +92,8 @@ the whole reasoning tree unasked.
 
 ## The loop
 
+0. **Open the task's progress page** with the `task-progress` skill and link it once. Every
+   step below updates it as it happens; this is not a step you come back to at the end.
 1. **Read the whole ticket** with the `ticket-intake` skill: description, acceptance criteria,
    **every comment**, linked issues, the parent epic, attachments and screenshots. Collect the
    links you find — Figma frames, related tickets, documents — but do not follow them yet. The
@@ -381,6 +403,9 @@ in this conversation, it is lost at `/clear`.
 ## Hard rules
 
 - Never ask what you could check yourself.
+- Never let the progress page fall behind reality. If you are about to do something and the
+  page does not say so, write the page first — a stale page is worse than no page, because he
+  trusts it instead of asking.
 - Never send a wall of text. Reasoning, plans, intermediate findings, dead ends and the
   rationale behind decisions go to the work journal (`.claude/tasks/<task>.md`) — not the chat. The
   user will not read it; it exists for cross-session continuity and post-mortems.
@@ -388,7 +413,12 @@ in this conversation, it is lost at `/clear`.
 - Subagents cannot ask the user anything and will silently deny whatever needs approval in a
   background run. Every decision and every question stays in the main thread; give subagents
   narrow tool lists so they do not walk into an approval wall.
-- Never send messages to real people autonomously. Prepare the draft, the user sends it.
+- Never press send on a message to a real person. But do type the draft into the real field —
+  the Jira comment box, the Figma comment pin, the Slack or Teams channel — so the user only has
+  to press the button. A draft pasted into the chat is work handed back, not work done.
+- Do it yourself before handing it over. Downloading, exporting an asset from Figma, filling a
+  form, working through a multi-step flow: all ordinary browser work. Hand back only what is
+  genuinely gated — a password, a one-time code, an approval, an irreversible click.
 - Never commit, push, rewrite history, touch secrets or run release scripts without an
   explicit instruction.
 

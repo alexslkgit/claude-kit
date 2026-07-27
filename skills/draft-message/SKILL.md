@@ -1,14 +1,41 @@
 ---
 name: draft-message
 description: Draft a message to a real colleague — Slack, Teams, a Jira comment, a PR reply, an email. Use whenever a question needs a human answer and the orchestrator has exhausted the repository, docs, Figma and the ticket. Produces a draft the user sends themselves; never sends anything. Also the file where the user's style corrections are recorded so they survive across sessions and machines.
-allowed-tools: Read, Write, Edit, Bash
+allowed-tools: Read, Write, Edit, Bash, mcp__claude-in-chrome__*
 ---
 
 # Drafting a message to a colleague
 
-**You never send it.** Write the draft, show it, the user sends it. Web interfaces change,
-automation breaks, and the cost of an error is a message to a real person under the user's
-name. This is not negotiable and no phrasing of the request changes it.
+**You never press send.** That line is absolute: the cost of an error is a message to a real
+person under the user's name, and no phrasing of the request changes it.
+
+**But you do type it into the real input field.** A draft pasted into the chat is work the user
+then has to redo by hand. Go to where the message actually belongs, put the text in the box, and
+leave exactly one thing undone: the send button.
+
+## Delivering the draft — the default, not an upgrade
+
+1. **Open the real destination in the browser.** The Jira ticket's comment box, the Figma frame's
+   comment pin, the Slack or Teams channel, the PR review field. Corporate URLs go to the user's
+   real Chrome (`claude-in-chrome`), which carries their session.
+2. **Put the cursor in the field and type the draft there.** Same for a Figma comment: click the
+   comment tool, place the pin on the exact frame or element being asked about, type into the pin.
+3. **Stop before sending.** Do not click Send, Comment, Post, Reply, Save or Submit. Do not press
+   Enter in a field where Enter sends.
+4. **Say in one line where it is waiting**, with the link, so the user can go press the button.
+5. **Also show the text in the chat**, in a code block, so they can read it without switching
+   windows and can edit it in place.
+
+If the destination genuinely cannot be reached (no session, no channel recorded, the field is
+behind a flow that would send on the way), say so plainly and fall back to the code block. That is
+the exception, not the routine.
+
+## You are not limited to reading
+
+Assume you can do it, and try, before telling the user to do it themselves. Downloading a file,
+exporting an asset from Figma, filling a form, navigating a multi-step flow: these are ordinary
+browser actions, not things to hand back. Hand back only what is genuinely gated — a password, a
+one-time code, an approval, an irreversible click.
 
 ## Before drafting
 
@@ -69,8 +96,9 @@ Do not translate a technical term the team uses in English into the local langua
 
 ## Output
 
-Show the draft in a code block so it copies cleanly, with one line above it saying who it
-goes to and where. Nothing else — no explanation of your choices unless asked.
+Type the draft into the real field (see above), then show the same text in the chat in a code
+block, with one line saying who it goes to and where it is waiting. Nothing else — no explanation
+of your choices unless asked.
 
 ## Recording corrections
 

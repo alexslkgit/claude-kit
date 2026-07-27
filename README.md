@@ -97,7 +97,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | Path | Contents |
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
-| `skills/` | procedures loaded on demand — `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
+| `skills/` | procedures loaded on demand — `task-progress`, `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 
 Lives in each repository, not here:
@@ -107,9 +107,23 @@ Lives in each repository, not here:
 | `CLAUDE.md` | stack, build/test/lint commands, conventions, invariants | committed |
 | `CLAUDE.local.md` | personal policy — start from `templates/CLAUDE.local.md` | gitignored |
 | `.claude/tasks/<task>.md` | per-task journal: STATE header, open questions, log | gitignored |
+| `.claude/tasks/<task>.html` | per-task progress page — **for you**, self-refreshing | gitignored |
 
 Project-level files win over user-level ones of the same name, so a repo can override any
 agent from this kit by putting its own `.claude/agents/<same-name>.md` in place.
+
+## The progress page
+
+While a task runs you can open `.claude/tasks/<task>.html` in a browser tab and see where the
+work stands: the checklist with finished stages struck through, the current stage highlighted,
+anything waiting on you in heavy red, and the decisions taken. The page carries
+`<meta http-equiv="refresh" content="10">`, so a tab left open keeps itself current — open it
+once when a task starts, then just look at it whenever you want.
+
+Two files per task, same basename: `<task>.md` is the journal you never read, `<task>.html` is
+the page written for you, in Russian, capped at one screen and rewritten in full at every stage
+change by the `task-progress` skill. Reasoning stays in the journal; the page carries only the
+conclusion.
 
 ## Model routing
 
