@@ -444,3 +444,19 @@ durable correction live only in a conversation; it dies at the next `/clear`.
   author or the analyst, as a draft. Assume zero task-specific knowledge on the user's side.
 - Do everything you are able to do yourself, including setup and cleanup. Handing the user a
   list of commands to run is a last resort, not a convenience.
+- 2026-07-27: **know which kind of session you are before promising anything.** A Cowork/cloud
+  session reaches the user's Mac only through a file bridge that has *no outbound network*: it
+  reads and writes files, but can never `git fetch`, `git push`, install a tool, or reach any
+  host from that machine. Claude Code running on the Mac has network, credentials and `brew`,
+  and needs the user for a click at most. So the moment a task needs the network *from the
+  user's machine*, stop working through the bridge and hand over one ready-to-paste prompt for
+  Claude Code — at the first sign, not after exhausting workarounds.
+- The bridge also cannot delete files (`rm` → "Operation not permitted"), and a `git` call
+  through it can leave a stale `.git/index.lock` that only the user can remove. Keep bridge git
+  read-only, and `mv` unwanted files into `_to_delete/` rather than pretending they are gone.
+- 2026-07-27: fifty messages were spent fixing one wall after another instead of stepping back
+  and asking what the user's shortest path was. **One route, chosen once, with the reason it is
+  the only one** — a trickle of alternating plans is worse than a single honest "not from here".
+- Name the exact account whenever the user must authenticate. This kit pushes to
+  `github.com/alexslkgit/claude-kit`, owned by the GitHub account `alexslkgit`; "log in" without
+  naming it makes the user guess blind among several accounts.
