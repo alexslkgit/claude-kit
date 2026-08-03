@@ -110,6 +110,10 @@ quadratic in its length. What decides everything is how much each turn *adds*.
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
   place within ~20 turns.
+- **Each phase of a task is its own session.** Implementation, every round of review comments, and
+  every returned bug start fresh from the status files and the diff — never as a continuation of the
+  session before them. Most of a ticket's calendar life is after the PR opens, and carrying the
+  implementation context into a review round pays for it again on every request.
 
 ## Choosing the model
 
