@@ -106,7 +106,7 @@ quadratic in its length. What decides everything is how much each turn *adds*.
 - Send independent tool calls in one message. Trim at the call site: `git`/`grep` piped through
   `head`, `Read` with `offset`/`limit`, never a whole file pulled in to skim.
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
-- Watch the context. Past ~150k, stop at the next natural boundary — a finished sub-task, never
+- Watch the context. Past ~200k, stop at the next natural boundary — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
   place within ~20 turns.
