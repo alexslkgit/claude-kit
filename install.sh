@@ -28,6 +28,39 @@ echo "Installing orchestrator kit from ${KIT_DIR}"
 copy_tree agents
 copy_tree skills
 copy_tree output-styles
+copy_tree hooks
+chmod +x "${CLAUDE_DIR}/hooks/"*.sh 2>/dev/null || true
+
+# Register the status guard. It records context resets and briefs the next session on whether
+# the project's status files can be trusted; it never writes them — only the wrap-up skill does.
+# Merged into settings.json, never overwriting other hooks; re-running install is idempotent.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/status-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+wanted = {"SessionStart": [None], "PreCompact": ["manual", "auto"], "SessionEnd": ["clear"]}
+added = 0
+for event, matchers in wanted.items():
+    entries = hooks.setdefault(event, [])
+    for matcher in matchers:
+        if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+            continue
+        entry = {"hooks": [{"type": "command", "command": script, "timeout": 10}]}
+        if matcher is not None:
+            entry["matcher"] = matcher
+        entries.append(entry); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: status guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
 
 # Select the output style non-interactively. `/output-style` was removed in newer versions,
 # and `/config` is a manual step — this sets the same `outputStyle` key those wrote.
