@@ -56,7 +56,14 @@ done
 
 record_break() {
   detail="${end_reason:-${trigger:-${source_kind:-unspecified}}}"
+  # Capture how fresh the wrap-up was AT THE MOMENT OF THE BREAK. A wrap-up always
+  # finishes before the /clear it hands over to, so its stamp is always older than the
+  # break it covers; comparing the two directly reports the correct flow as a failure.
+  stamp_at_break=0
+  [ -n "$status_dir" ] && [ -f "$status_dir/.wrapup-stamp" ] && \
+    stamp_at_break="$(/usr/bin/stat -f %m "$status_dir/.wrapup-stamp" 2>/dev/null || echo 0)"
   {
+    printf 'stamp_at_break=%s\n' "$stamp_at_break"
     printf 'last_break_human=%s\n' "$now_h"
     printf 'last_break_epoch=%s\n' "$now_e"
     printf 'last_break_event=%s\n' "$event"
@@ -120,8 +127,15 @@ EOF
       brk_d="$(/usr/bin/sed -n 's/^last_break_detail=//p' "$state" | head -1)"
       stamp_e=0
       [ -f "$status_dir/.wrapup-stamp" ] && stamp_e="$(/usr/bin/stat -f %m "$status_dir/.wrapup-stamp" 2>/dev/null || echo 0)"
+      brk_stamp="$(/usr/bin/sed -n 's/^stamp_at_break=//p' "$state" | head -1)"
+      : "${brk_stamp:=0}"
+      # Covered if a wrap-up ran after the break, or shortly before it — a wrap-up that
+      # hands over to a /clear stamps minutes before that clear is recorded.
+      covered=0
+      [ "$stamp_e" -ge "$brk_e" ] 2>/dev/null && covered=1
+      [ "$brk_stamp" -gt 0 ] 2>/dev/null && [ "$((brk_e - brk_stamp))" -le 1800 ] 2>/dev/null && covered=1
       if [ -n "${brk_e:-}" ] && [ "$brk_e" -gt 0 ] 2>/dev/null; then
-        if [ "$stamp_e" -ge "$brk_e" ] 2>/dev/null; then
+        if [ "$covered" -eq 1 ] 2>/dev/null; then
           printf 'The last context reset was %s (%s), and a wrap-up ran after it, so these files are current.\n' "$brk_h" "$brk_d"
         else
           cat <<EOF
