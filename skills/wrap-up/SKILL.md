@@ -38,15 +38,15 @@ If this project has neither file yet, create the directory and both files from s
 structure here, and add a one-line pointer to auto-memory (`~/.claude/projects/<repo>/memory/`) so
 the next session knows where to look before it knows anything else.
 
-**`status.html` is not optional.** Every project gets one, beside the other two. It is the user's
-own view: it must take him from zero to oriented in five minutes — what we are doing, why, where we
-are, what he says at his next standup, and, at the very top, **the short list of things only he can
-physically do** (approve a push, sign in, click submit, decide scope). It is written in his language,
-plainly, no jargon he did not use himself. Self-contained HTML, no external assets, light and dark,
-one clear action block. If it does not exist yet, create it in this wrap-up.
+**There is no third file.** The user's own view is the task progress page written by the
+`task-progress` skill (`.claude/tasks/<task>.html`) — a wrap-up updates that page, it does not
+create a second HTML status beside it. If a project still carries an older `status.html`, fold
+whatever is current in it into the progress page and delete it.
 
-It is updated in the *same* wrap-up as the other two files, never later. A stale `status.html` is
-worse than none, because he trusts it before a call and will repeat what it says out loud.
+What that page must carry after a wrap-up: what we are doing and why, where we are, what he says at
+his next standup, and, at the very top, **the short list of things only he can physically do**
+(approve a push, sign in, click submit, decide scope). In his language, plainly, no jargon he did
+not use himself. A stale page is worse than none — he trusts it before a call and repeats it aloud.
 
 One project, one set of files. Never let another project's status leak in.
 
