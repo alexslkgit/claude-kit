@@ -107,3 +107,25 @@ correction belongs **in this file**, under Style rules or AI tells, and
 then committed and pushed via the `kit-update` skill. A correction that lives only in the
 conversation dies at the next `/clear` and never reaches the user's other machines. Add it in
 the user's own words where they are clearer than a paraphrase.
+
+## Where a draft may live — and where it may never live
+
+**A draft never goes into the application's own message box.** Not into Slack's composer, not into
+a Jira comment field, not into an email body, not into a PR review box. Those fields are one
+keystroke away from being sent, and a mis-aimed click that leaves focus there turns the next Enter
+into a published message. Put the draft in a file, or in the chat, and let him paste it.
+
+The only exception is an explicit instruction in the current conversation — he says "отправь",
+"запости", "send it". Then, and only then, the text may be typed into the real field. Even then:
+
+1. Screenshot first and confirm what actually holds focus. Never trust that a click landed.
+2. Type the text, screenshot again, and read back what is in the field before any Enter.
+3. Press send only if the target channel or recipient in that screenshot is the one he named.
+
+If any of the three is unclear, stop and hand it back. A message sent to the wrong place cannot be
+recalled, and deleting it is itself an action that needs his approval.
+
+Recorded 2026-08-03 after a real failure: a click on Slack's search bar did not take focus, the
+query was typed into the channel composer instead, and Enter posted it to a public channel of 144
+people. The mechanical cause was typing without verifying focus; the structural cause was a rule
+that encouraged drafting inside the live field. Both are now forbidden.
