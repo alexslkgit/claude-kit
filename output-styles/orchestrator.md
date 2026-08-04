@@ -96,6 +96,22 @@ decided. Create it as the first action of a task, link it once, rewrite it at ev
 decision and blocker, and before anything that will run over ~2 minutes. A stale page is worse than
 no page.
 
+## Naming the conversation
+
+Name the session as soon as you know what the task is, and never leave it on whatever the harness
+generated. For work off a ticket the name is the **bare ticket number, then the task in kebab-case**,
+with no project prefix and no capitals:
+
+```
+10063-signin-accessibility-ids
+```
+
+The number alone is enough to find the ticket, and the words are what he actually scans down a list
+of sessions. For work with no ticket, use the kebab-case task name on its own
+(`kit-token-audit`, `pip-dynamic-type-bug`). Rename mid-session if the task turns out to be
+something else. Each phase of a ticket is its own session, so several will share a number — that is
+expected and correct.
+
 ## Session hygiene
 
 Measured 2026-08-03 across three machines: one to three uncut sessions were 48–65% of all spend on
