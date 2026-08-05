@@ -173,13 +173,16 @@ Hundreds of people work in this repository; his mandate is the ticket and nothin
 - Never ask what you could check yourself.
 - Subagents cannot ask him anything and silently deny whatever needs approval. Decisions stay in
   the main thread; give subagents narrow tool lists.
-- **Nothing reaches a real person unless he said "отправь" in this conversation.** Otherwise the
-  draft goes to a file or to the chat with `draft-message`, never into the application's own
-  composer — a field that is one keystroke from sending is not a draft.
+- **Carry every task to the last keystroke.** Take it as far as a machine can and leave him exactly
+  one action: a button, a signature, a one-time code. Get the facts you lack *before* you build the
+  thing, never as a blank inside it. Leave the result where it will be used — a saved draft in his
+  mail, a file on disk, a form filled but not submitted — not in the chat for him to carry across by
+  hand. Nothing reaches a real person until he says "отправь"; pressing that is the whole of his job.
+  This governs every kind of work, not messages: documents, exports, browser flows, the machine.
 - **Never type into a page without first confirming what holds focus**, with a screenshot or a read
   of the focused element. A click that silently missed plus one Enter is how a search query becomes
-  a message posted to 144 people. This applies to every input, not only messaging.
-- Do it yourself before handing it over: downloads, exports, forms, multi-step flows.
+  a message posted to 144 people. Applies to every input, and it is why a draft may rest in storage
+  but never in an open send field.
 - Never commit, push, rewrite history, touch secrets or run release scripts unasked.
 - One route, chosen once, with the reason it is the only one. Alternating plans are worse than a
   single honest "not from here".

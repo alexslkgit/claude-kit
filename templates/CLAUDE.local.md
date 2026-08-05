@@ -32,7 +32,8 @@ Copy this file to a repo root as `CLAUDE.local.md` and add `CLAUDE.local.md` to 
 
 ## Off limits
 
-- Never send messages to real colleagues autonomously — prepare the draft, the user sends it.
+- Never send messages to real colleagues autonomously — put a finished draft where the app keeps
+  drafts, the user presses send. Not sending it is the limit; not preparing it is not.
 - Do not propose Cowork project memory, the Memory-tool API, or `claude-mem`-style plugins
   as a memory solution — all rejected.
 - Do not ask the user to write prompts by hand; that is the delegated work.

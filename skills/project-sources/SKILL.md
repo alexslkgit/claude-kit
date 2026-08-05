@@ -63,7 +63,8 @@ already signed into. Record which it is in the `Access` line and stop revisiting
 When a workspace has several accounts (a client Slack and an employer Slack, say), record both
 and which is which, because posting or reading in the wrong one is a real mistake.
 
-Never send a message into any of these systems autonomously. Draft it, the user sends it.
+Never send a message into any of these systems autonomously. Draft it — as a saved draft in the
+system itself wherever that exists — and the user presses send. See `draft-message`.
 
 ## Use the real browser, not the in-app one
 

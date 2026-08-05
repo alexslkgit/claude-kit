@@ -1,7 +1,6 @@
 ---
 name: draft-message
 description: Draft a message to a real colleague — Slack, Teams, a Jira comment, a PR reply, an email. Use whenever a question needs a human answer and the orchestrator has exhausted the repository, docs, Figma and the ticket. Produces a draft the user sends themselves; never sends anything. Also the file where the user's style corrections are recorded so they survive across sessions and machines.
-allowed-tools: Read, Write, Edit, Bash, mcp__claude-in-chrome__*
 ---
 
 # Drafting a message to a colleague
@@ -9,26 +8,37 @@ allowed-tools: Read, Write, Edit, Bash, mcp__claude-in-chrome__*
 **You never press send.** That line is absolute: the cost of an error is a message to a real
 person under the user's name, and no phrasing of the request changes it.
 
-**But you do type it into the real input field.** A draft pasted into the chat is work the user
-then has to redo by hand. Go to where the message actually belongs, put the text in the box, and
-leave exactly one thing undone: the send button.
+**But you do deliver it.** A draft pasted into the chat is work the user then has to redo by hand:
+read it, copy it, find the right window, find the right thread, paste, fix what you left blank.
+Take all of that yourself and leave exactly one thing undone — the send button.
 
 ## Delivering the draft — the default, not an upgrade
 
-1. **Open the real destination in the browser.** The Jira ticket's comment box, the Figma frame's
-   comment pin, the Slack or Teams channel, the PR review field. Corporate URLs go to the user's
-   real Chrome (`claude-in-chrome`), which carries their session.
-2. **Put the cursor in the field and type the draft there.** Same for a Figma comment: click the
-   comment tool, place the pin on the exact frame or element being asked about, type into the pin.
-3. **Stop before sending.** Do not click Send, Comment, Post, Reply, Save or Submit. Do not press
-   Enter in a field where Enter sends.
-4. **Say in one line where it is waiting**, with the link, so the user can go press the button.
-5. **Also show the text in the chat**, in a code block, so they can read it without switching
-   windows and can edit it in place.
+Everything up to sending is yours. Sending is his. The whole question is *where you leave it*, and
+there is a hard line running through the middle of that:
 
-If the destination genuinely cannot be reached (no session, no channel recorded, the field is
-behind a flow that would send on the way), say so plainly and fall back to the code block. That is
-the exception, not the routine.
+- **A saved draft object is the right destination.** A Gmail draft created through the mail API, a
+  Jira comment saved as a draft, a `gh pr review` left pending, a file the tool itself reads back.
+  These are stored, not armed: nothing sends until he opens the thing and presses the button. Put
+  the draft here whenever the destination supports it. This is the default.
+- **A live send field is never a destination.** Text sitting in Slack's composer, in an open reply
+  box, in a comment field with the cursor in it — one Enter, or one mis-aimed click that left focus
+  there, and it is published. See the incident at the bottom of this file.
+
+So: prefer the API or the tool that creates a *stored* draft. Reach for the browser only when
+nothing else can get there, and then place the text and verify focus as described below.
+
+Order of preference, best first:
+
+1. **A dedicated tool that creates a saved draft** — the mail connector's create-draft call, the
+   ticket system's API, `gh`. Use the reply/thread field so the draft lands in the right
+   conversation, not as a new message.
+2. **A file**, when the destination has no draft concept — write it, and say the path.
+3. **A code block in the chat** — the fallback, not the routine. If you end up here, say in one
+   line why the first two were impossible.
+
+Whichever you use, finish with one line: who it goes to, where it is waiting, and the exact click
+that sends it — "Gmail → Черновики → письмо с темой X → Send". Not "I drafted a reply."
 
 ## You are not limited to reading
 
@@ -47,6 +57,11 @@ one-time code, an approval, an irreversible click.
    element, the two options you see. Do not make them go dig.
 4. **Name the recipient and the channel** from the repo's `CLAUDE.local.md` `## Sources`
    block. If it is not recorded, use the `project-sources` skill first.
+5. **Collect the facts you are missing before you write, not inside what you wrote.** A draft that
+   contains `[your address]`, `[account number]`, `[fill in the date]` is not a draft — it is a form
+   you handed him. Work out what the message needs, get what you can yourself from the repo, the
+   ticket, the account settings, the page you are already on; ask for the genuine remainder in one
+   short question; *then* write the finished text.
 
 ## Style rules
 
@@ -96,9 +111,10 @@ Do not translate a technical term the team uses in English into the local langua
 
 ## Output
 
-Type the draft into the real field (see above), then show the same text in the chat in a code
-block, with one line saying who it goes to and where it is waiting. Nothing else — no explanation
-of your choices unless asked.
+Put the draft where the destination stores drafts (see above), then one line in the chat: who it
+goes to, where it is waiting, and the exact click that sends it. Show the text in a code block too
+only when he cannot see it without switching windows, or when the destination was unreachable and
+the code block *is* the delivery. Nothing else — no explanation of your choices unless asked.
 
 ## Recording corrections
 
@@ -110,12 +126,21 @@ the user's own words where they are clearer than a paraphrase.
 
 ## Where a draft may live — and where it may never live
 
-**A draft never goes into the application's own message box.** Not into Slack's composer, not into
-a Jira comment field, not into an email body, not into a PR review box. Those fields are one
-keystroke away from being sent, and a mis-aimed click that leaves focus there turns the next Enter
-into a published message. Put the draft in a file, or in the chat, and let him paste it.
+The distinction is **stored versus armed**, not "inside the app versus outside it".
 
-The only exception is an explicit instruction in the current conversation — he says "отправь",
+**Stored — allowed, and the default.** A draft the application has saved: a Gmail draft, a saved
+reply, a pending `gh` review, a file. He has to open it and press a button. Nothing about it is one
+keystroke from a real person.
+
+**Armed — never.** Text left sitting in an open composer or reply box with focus in it. Slack's
+message field, a Jira comment box mid-edit, an email compose window you typed into by hand. A
+mis-aimed click that leaves focus there turns the next Enter into a published message. Do not park
+a draft in one of these, and do not leave one open behind you.
+
+If the only way to reach a destination is by typing into a live field, that is not a reason to do
+it — fall back to a file or the chat and say why.
+
+The exception is an explicit instruction in the current conversation — he says "отправь",
 "запости", "send it". Then, and only then, the text may be typed into the real field. Even then:
 
 1. Screenshot first and confirm what actually holds focus. Never trust that a click landed.
@@ -128,4 +153,10 @@ recalled, and deleting it is itself an action that needs his approval.
 Recorded 2026-08-03 after a real failure: a click on Slack's search bar did not take focus, the
 query was typed into the channel composer instead, and Enter posted it to a public channel of 144
 people. The mechanical cause was typing without verifying focus; the structural cause was a rule
-that encouraged drafting inside the live field. Both are now forbidden.
+that encouraged drafting inside the live field. Both are forbidden.
+
+Amended 2026-08-05. The 2026-08-03 wording banned every destination inside an application and told
+you to paste into the chat instead. That over-corrected: it took a *focus* failure and turned it
+into a *destination* ban, and the result was the user being handed text to copy by hand — the exact
+work he keeps asking to have taken off him. A saved draft object has no focus and no Enter key. It
+was never what went wrong.
