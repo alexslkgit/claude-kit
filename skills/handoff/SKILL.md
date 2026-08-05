@@ -24,6 +24,30 @@ successor must know what job it is doing before it knows what has been done. A b
 reads like a report leaves the next instance unsure of its own role, and it will default to
 being a passive summarizer.
 
+## Flush the durable files first — this is not optional
+
+A handoff prompt is one artefact and it dies when that chat closes. The files outlive it, and the
+successor reads them before it reads you. **Bring all three up to date before you write a single
+line of the prompt**, then write the prompt from them:
+
+1. **`STATUS.md`** — rewrite the state it gets wrong, do not append. Every claim carries its
+   evidence: the command, the sha, the `file:line`, the date. If it says "1 commit ahead" and there
+   are two, that is the kind of error that makes the successor act on a lie.
+2. **`DECISIONS.md`** — append every decision and every dead end this conversation produced, with
+   its reason and its cost. If you decided something and did not write it down, the next session
+   will re-litigate it from scratch, which is exactly what a handoff is meant to prevent.
+3. **The task progress page** — the self-refreshing HTML page the `task-progress` skill maintains,
+   at `.claude/tasks/<task>.html`. This one is for the user, not for you: it is what he opens to
+   re-orient in five minutes without asking anything. A stale page is worse than none, and a `/clear`
+   is exactly the moment he will open it.
+
+Then the prompt itself carries pointers to all three, not copies of them.
+
+Where the files do not exist — a Cowork or Cloud session with no repository checkout, a machine
+reached through the file bridge — say so in one line inside the handoff instead of inventing paths,
+and put the state that would have gone into them into the prompt itself. Absence of the files is a
+fact the successor needs; silence about them is not.
+
 ## Build it from evidence, not memory
 
 Before writing, gather the facts rather than recalling them: read the task journal's `STATE`
