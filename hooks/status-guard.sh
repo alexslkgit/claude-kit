@@ -19,7 +19,8 @@
 # output can trip prompt-injection defences and be surfaced to the user instead of used.
 #
 # Per-project wiring: `.claude/status-dir` inside the repo — one line, an absolute path to
-# the directory holding STATUS.md / DECISIONS.md / status.html. The `wrap-up` skill writes it.
+# the directory holding STATUS.md / DECISIONS.md. The third artefact, the board, lives beside
+# the task journal instead, at `<repo>/.claude/tasks/<task>.html`. The `wrap-up` skill writes it.
 #
 # Never fails a session: always exits 0.
 
@@ -43,11 +44,12 @@ now_h="$(date '+%Y-%m-%d %H:%M')"
 now_e="$(date '+%s')"
 
 # Resolve the project's status directory by walking up from cwd.
-status_dir=""; dir="$cwd"
+status_dir=""; repo_root=""; dir="$cwd"
 for _ in 1 2 3 4 5 6 7 8; do
   if [ -f "$dir/.claude/status-dir" ]; then
     status_dir="$(head -1 "$dir/.claude/status-dir" | /usr/bin/sed 's/[[:space:]]*$//')"
     case "$status_dir" in "~"*) status_dir="$HOME${status_dir#\~}" ;; esac
+    repo_root="$dir"
     break
   fi
   [ "$dir" = "/" ] && break
@@ -95,7 +97,7 @@ case "$event" in
 status-guard: this project has no persistent status files.
 
 No \`.claude/status-dir\` marker exists at or above $cwd, so there is no STATUS.md, no
-DECISIONS.md and no status.html for this project, and nothing here survives a context reset.
+DECISIONS.md and no board for this project, and nothing here survives a context reset.
 The wrap-up skill creates all of them, writes the marker, and adds the auto-memory pointer.
 The user has asked to be told about this in one line rather than have work proceed silently
 without project memory.
@@ -107,15 +109,14 @@ EOF
       cat <<EOF
 status-guard: $status_dir is registered as this project's status directory, but STATUS.md is
 not there. This project currently has no memory of previous sessions. The wrap-up skill creates
-STATUS.md, DECISIONS.md and status.html.
+STATUS.md, DECISIONS.md and the board.
 EOF
       exit 0
     fi
 
     printf 'status-guard: this project keeps its memory in %s.\n' "$status_dir"
     printf 'STATUS.md holds current state and opens with a cold-start section; DECISIONS.md is append-only and holds every decision and dead end with its reason.\n'
-    [ -f "$status_dir/status.html" ] && \
-      printf 'status.html is the user'\''s own five-minute view of the same thing, and is kept in step with the other two.\n'
+    printf 'The board is the third artefact: a self-refreshing HTML page per task, at %s/.claude/tasks/<task>.html, kept in step with the other two.\n' "${repo_root:-$cwd}"
     case "$source_kind" in
       clear)   printf 'This session started immediately after a /clear.\n' ;;
       compact) printf 'This session started immediately after a compaction.\n' ;;

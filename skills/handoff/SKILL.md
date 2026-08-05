@@ -46,17 +46,27 @@ line of the prompt**, then write the prompt from them:
 2. **`DECISIONS.md`** — append every decision and every dead end this conversation produced, with
    its reason and its cost. If you decided something and did not write it down, the next session
    will re-litigate it from scratch, which is exactly what a handoff is meant to prevent.
-3. **The task progress page** — the self-refreshing HTML page the `task-progress` skill maintains,
-   at `.claude/tasks/<task>.html`. This one is for the user, not for you: it is what he opens to
-   re-orient in five minutes without asking anything. A stale page is worse than none, and a `/clear`
-   is exactly the moment he will open it.
+3. **The board** — the self-refreshing HTML page the `board` skill maintains, at
+   `.claude/tasks/<task>.html`. This one is for the user, not for you: it is what he opens to
+   re-orient in five minutes without asking anything. A stale board is worse than none, and a
+   `/clear` is exactly the moment he will open it.
 
 Then the prompt itself carries pointers to all three, not copies of them.
 
-Where the files do not exist — a Cowork or Cloud session with no repository checkout, a machine
-reached through the file bridge — say so in one line inside the handoff instead of inventing paths,
-and put the state that would have gone into them into the prompt itself. Absence of the files is a
-fact the successor needs; silence about them is not.
+**A handoff that merely writes a prompt is incomplete.** If there is a repository checkout — the
+normal Claude Code case — absent files are not an exception, they are work not yet done: run the
+`wrap-up` procedure first and create everything it creates — the status directory, `STATUS.md`,
+`DECISIONS.md`, the `<repo>/.claude/status-dir` marker (hidden via `.git/info/exclude`, never
+`.gitignore`, copied into every worktree), the auto-memory pointer, the board, and the
+`.wrapup-stamp` touch as its last action. Only once all of that exists do you write the
+continuation prompt, and it points at the files you just created, not around them.
+
+The one-line "these files do not exist here" note is not a general escape hatch — it survives
+only for environments where there is genuinely no checkout to put the files in: Cowork and Cloud
+sessions reached through the file bridge. There, say so in one line inside the handoff instead of
+inventing paths, and put the state that would have gone into the files into the prompt itself.
+Absence of the files is a fact the successor needs; silence about them is not. Everywhere else,
+absence of the files is a bug in this handoff, not a fact to report.
 
 ## Build it from evidence, not memory
 

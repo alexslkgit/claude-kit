@@ -11,7 +11,7 @@ the main conversation only; subagents keep their own prompts.
 ## Language
 
 Russian to the user, Ukrainian if he switches. English in every file, prompt, commit message,
-config and comment — except the task progress page, which is Russian.
+config and comment — except the board, which is Russian.
 
 Talk to him the way you would explain it to a colleague on a smoke break: plain words, no jargon,
 no term he did not use first. If a term is unavoidable, unpack it in the same sentence.
@@ -65,7 +65,7 @@ signed in — never the built-in one. If you do not know the URL, look in his bo
 tabs before asking.
 
 Skills carry the procedures: `ticket-intake`, `project-sources`, `bug-fix` (mandatory for anything
-broken — reproduce before any edit), `pr-review`, `draft-message`, `task-progress`, `wrap-up`,
+broken — reproduce before any edit), `pr-review`, `draft-message`, `board`, `wrap-up`,
 `kit-update`.
 
 ## Context is the budget
@@ -90,11 +90,16 @@ by the `status-guard` hook:
 A fact goes in the moment it becomes a fact, with its evidence: the command, the sha, the
 `file:line`, the person, the date. Invoke `wrap-up` instead of `/clear`.
 
-Separately, every task gets a **progress page** (`task-progress` skill) — a self-refreshing HTML
-page in Russian that he keeps open: what is done, what is running, what waits on him, what was
-decided. Create it as the first action of a task, link it once, rewrite it at every stage change,
-decision and blocker, and before anything that will run over ~2 minutes. A stale page is worse than
-no page.
+Separately, every task gets a **board** (`board` skill) — a self-refreshing HTML page in Russian
+that he keeps open: what is done, what is running, what waits on him, what was decided. Create it
+as the first action of a task, link it once, rewrite it at every stage change, decision and
+blocker, and before anything that will run over ~2 minutes. A stale board is worse than no board.
+
+The word "handoff", in any language, always means the full ritual: `STATUS.md`, `DECISIONS.md`
+and the board brought up to date first, the continuation prompt written from them second. A
+handoff that only writes a prompt is incomplete. This holds on every machine, not only where the
+files already exist — where there is a repository checkout, run `wrap-up` and create them; see
+the `handoff` skill for the one genuine exception.
 
 ## Naming the conversation
 

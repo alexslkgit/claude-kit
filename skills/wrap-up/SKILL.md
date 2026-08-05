@@ -38,15 +38,15 @@ If this project has neither file yet, create the directory and both files from s
 structure here, and add a one-line pointer to auto-memory (`~/.claude/projects/<repo>/memory/`) so
 the next session knows where to look before it knows anything else.
 
-**There is no third file.** The user's own view is the task progress page written by the
-`task-progress` skill (`.claude/tasks/<task>.html`) — a wrap-up updates that page, it does not
-create a second HTML status beside it. If a project still carries an older `status.html`, fold
-whatever is current in it into the progress page and delete it.
+**There is no third file.** The user's own view is the board written by the `board` skill
+(`.claude/tasks/<task>.html`) — a wrap-up updates that board, it does not create a second HTML
+status beside it. If a project still carries an older `status.html`, fold whatever is current in
+it into the board and delete it.
 
-What that page must carry after a wrap-up: what we are doing and why, where we are, what he says at
+What that board must carry after a wrap-up: what we are doing and why, where we are, what he says at
 his next standup, and, at the very top, **the short list of things only he can physically do**
 (approve a push, sign in, click submit, decide scope). In his language, plainly, no jargon he did
-not use himself. A stale page is worse than none — he trusts it before a call and repeats it aloud.
+not use himself. A stale board is worse than none — he trusts it before a call and repeats it aloud.
 
 One project, one set of files. Never let another project's status leak in.
 
@@ -114,7 +114,7 @@ forever.
    If yes, it is a decision.
 3. **Write Part 2 first, Part 1 second.** Part 1 is derived from it, not the other way round — that
    is what keeps the human summary honest.
-4. **Update the HTML twin** if there is one, including the "what only you can do" block. Send it to
+4. **Update the board** if there is one, including the "what only you can do" block. Send it to
    the user with `SendUserFile` so it is one click away.
 5. **Prune under rule 3** — by asking of each section whether a wrong line in it would change the
    next action, not by counting lines. Report what you moved out and why, not the file size.
