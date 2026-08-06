@@ -127,6 +127,33 @@ and 11 are the ones that get forgotten, and each costs a whole confused exchange
 14. **Pointers**: the task journal path, key files, ticket and design URLs, the repository and
     branch.
 
+## When the handoff splits work across two parallel sessions
+
+Everything above still applies, per branch. Four extra things must be settled **in the handoff**,
+before either session starts, because none of them can be fixed cheaply afterwards. Measured
+2026-08-06 on two branches of one screen: every one of these cost real time.
+
+1. **Commit the shared bookkeeping first.** Any append-only file with running ids — a decisions
+   log, a changelog, a migration counter — must be committed before the split. Both sessions read
+   the last id from disk; uncommitted entries are invisible to one of them, so both allocate the
+   same numbers and the merge has to renumber one side and chase every reference. Reserve a range
+   per branch in the handoff and say which.
+2. **Decide worktrees up front.** Two sessions cannot hold two branches in one checkout. Left
+   unstated, they will discover this by yanking `HEAD` out from under each other. Name the path of
+   each worktree, or name which single session keeps the main checkout and why.
+3. **Split by concern, not only by file region.** A file-level boundary is what git checks, and git
+   passing is not the question. Name the concepts both branches will touch — the shared policy, the
+   design tokens, the state machine — and say which branch owns each. Two branches that add an
+   animated layer to the same screen merge without a single conflict marker and still ship two
+   different power policies.
+4. **State the merge order and the mechanical recipes.** Which branch lands first, and how to
+   resolve each shared generated file: project files by re-running the idempotent registration
+   scripts against the winner's copy, string catalogues by giving each branch its own key prefix.
+   Hand-resolving generated files is where the silent corruption lives.
+
+After the merge, verify the union rather than the diff: the combined test count must equal the base
+plus each branch's contribution, and every new suite must appear by name in the log.
+
 ## Form
 
 - Output the whole thing inside **one fenced code block**, so it copies in a single gesture.
