@@ -53,6 +53,14 @@ git check-ignore -q .claude/ || \
 
 `.git/info/exclude` is per clone and never committed, which is why it is used here.
 
+**The board never goes in `/tmp`, in the scratchpad, or anywhere else session-scoped.** It has to
+survive a `/clear` and it has to be somewhere the user can reopen without a fresh link from you.
+A task brief that says "create no files except X" does not apply here: `.claude/` is gitignored,
+so writing the board there is not creating a file in the project. If the checkout genuinely cannot
+hold it, say so in one line and carry on — but do not silently downgrade to a temp path.
+Measured 2026-08-06: a board written to the session scratchpad did not open for the user at all,
+and the whole run was invisible to him.
+
 One board per task. Starting the next ticket creates its own board; the finished one stays on
 disk as the record of that task and is never touched again.
 
@@ -74,9 +82,11 @@ Then rewrite it in full at every one of these:
 The board must never be more than one stage behind reality. If you are about to do something and
 the board does not say so, write the board first.
 
-Give the `file://` link **once**, in the first status message of the task. After that the
-updates are silent: they are never narrated, never become a message, and never count against
-the three-sentence limit.
+Give the link **once**, in the first status message of the task, as a **full `file://` URL with
+the absolute path** — `file:///Users/…/project/.claude/tasks/CART-33038.html`. A bare or relative
+path is not clickable and the user simply never sees the board. After that the updates are silent:
+they are never narrated, never become a message, and never count against the three-sentence limit.
+Repeat the link only if the path changes or the user says it does not open.
 
 ## How to write it
 
