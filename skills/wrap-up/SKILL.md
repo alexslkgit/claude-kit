@@ -95,6 +95,14 @@ forever.
 
 ## Procedure
 
+0. **Run `date` before you write a single dated line.** A session can stay open for days: the user
+   comes back to the same chat on Tuesday and again on Thursday, and nothing in the conversation
+   tells you which one it is. Recorded 2026-08-06, when a wrap-up dated three days of work as one
+   and recorded a merged PR as still open, because the date was carried forward from the first
+   message instead of being read from the clock. The repository, the tickets and the remote all
+   moved in between, and sibling chats had changed the checked-out branch underneath the session.
+   Read the clock, then re-verify state, then write.
+
 1. **Re-verify live state before writing a word of it.** Branch, worktrees, remote position, PR
    state, ticket state — by command, not from memory. Recording a stale number as current is the
    one failure this skill exists to prevent.

@@ -10,6 +10,16 @@ The user is not asking for a summary. They are asking you to **write the system 
 your own successor**, who will wake up with zero memory and must carry on mid-stride without
 asking them to repeat anything.
 
+## Do the flush by invoking `wrap-up`, and do it unasked
+
+Recorded 2026-08-06, after he had to ask whether the status files update by themselves. They do
+not, and he should never have to ask: **a request for a handoff is a request for both halves.**
+Invoke the `wrap-up` skill rather than editing the three files by hand — it also touches
+`.wrapup-stamp`, without which the `status-guard` hook warns forever and stops being read. Then
+write the briefing on top of what it refreshed, and say in one line that both happened.
+
+What that flush must contain is the next section.
+
 ## The two rules that decide whether this works
 
 **1. Completeness beats brevity, by a wide margin.** A handoff prompt of two thousand words is

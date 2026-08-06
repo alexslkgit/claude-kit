@@ -77,6 +77,17 @@ writing a memo.
   "ensure", "facilitate", "delve", "robust", "seamless", "comprehensive".
 - **Ask, do not summarise your own work.** They do not need to know what you already checked
   unless it changes their answer.
+- **Write it the way he types it, not the way a document is written.** Recorded 2026-08-04 from
+  his own edit of a draft before sending. Lower case after a line break, no full stop at the end
+  of the last line, a plain hyphen where a comma or a colon would look composed, and the message
+  broken across short lines instead of tidy paragraphs.
+- **"Я пока занимаюсь", not "Я на стороне приложения".** Same edit. He describes what he is doing
+  right now; he does not declare which side of a boundary he stands on. Any phrasing that reads
+  like a position statement gets rewritten by him into a plain list of what is on his plate.
+- **Answer the awkward question, softly, at the end.** In that same edit he put the refusal back
+  in, as a trailing clause in lower case: *"но по этим пунктам не думаю что нужен еще человек"*.
+  Dropping an uncomfortable question entirely is not tact, it just makes him answer it later.
+  Say it, keep it short, and do not build an argument around it.
 
 ## Always run it through `humanizer`
 
