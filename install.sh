@@ -29,6 +29,9 @@ copy_tree agents
 copy_tree skills
 copy_tree output-styles
 copy_tree hooks
+# The plan renderer the chew skill copies into a repo's .claude/tasks/_shell/. Installed here so
+# the skill finds it at a fixed path whatever the machine's clone location is.
+copy_tree plan-shell
 chmod +x "${CLAUDE_DIR}/hooks/"*.sh 2>/dev/null || true
 
 # Register the status guard. It records context resets and briefs the next session on whether

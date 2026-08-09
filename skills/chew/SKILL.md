@@ -1,0 +1,198 @@
+---
+name: chew
+description: Write a chewed step-by-step plan for something the user has to do with his own hands — an App Store Connect form, a bank, a government portal, a device setting. Every step is read off the real screen first, never from memory, and a screen that cannot be seen yet is marked unseen instead of guessed. Use whenever he says «разжуй», «разжуй мне», «разжёванный план», «план как для», «чтобы я не ошибся», «пошагово», «по шагам», "chew it up", or "a step-by-step plan I cannot get wrong". Also use unprompted whenever the answer to his question is a sequence of manual actions in a UI you can open.
+---
+
+# Chew it up
+
+He reads a plan. On step 3 the menu is called something else than the plan says. They go back and
+forth. By step 6 he closes the laptop and goes for coffee, and the task dies — not because it was
+hard, but because the instruction stopped matching the screen.
+
+Everything below exists to make that impossible. The output is not a document, it is a **live page
+next to him while he works**, and the rules are about where the words in it come from.
+
+## The one unforgivable failure
+
+**Never invent a screen.** A step describing a dialog you did not see is worse than no step: it
+teaches him that the whole page is a guess, and then he stops trusting the steps that were real.
+
+When the next screen is behind a gate you cannot pass — it appears only after he signs, pays,
+selects a country, receives an SMS — the plan says so and **stops there**:
+
+> **Этого экрана я не видел** — Apple показывает поля счёта только после выбора страны. Дойдёшь —
+> скинь скриншот, допишу шаги сюда.
+
+That sentence is what earns the trust that makes him follow the other nine steps.
+
+## Ten rules
+
+1. **No step written from memory.** Before writing a step, open the actual thing and read the real
+   labels off the screen: the real page in **his own Chrome** via the `mcp__claude-in-chrome__*`
+   tools (his session, his account, his data — that is the point), the real app in the simulator,
+   the real CLI. Documentation is a hint about where to look, never the source of a step. If the
+   docs and the screen disagree, the screen wins and the docs are wrong.
+2. **A gated screen is marked unseen and the plan stops.** See above. Never bridge the gap with
+   "дальше, скорее всего, попросят…".
+3. **Verbatim labels, plus where the control physically is.** Quote the button exactly as it is
+   written, in its own language (`Edit Legal Entity`, not «изменить юрлицо»), and say where it sits:
+   «синяя ссылка в конце голубой полосы сверху», «правый край строки, третья сверху». The phrase
+   **«найди на странице» must never appear in a rendered plan** — if you are tempted to write it,
+   you did not look at the screen.
+4. **One action per step**, and every step ends with the visible confirmation: `ok` renders as
+   «Получилось, если …». If you cannot name what changes on screen, the step is two steps or you
+   did not see it.
+5. **A «приготовь заранее» block at the top**, listing every number, document, password and account
+   the whole flow will need. Nothing may be discovered mid-flow — a missing IBAN found on step 7 is
+   the same failure as a wrong label.
+6. **Forks only when real.** A fork is a branch you actually observed or a trap you actually hit.
+   Hypothetical «если вдруг появится окно…» is noise that makes the page look unreliable.
+7. **Only what physically needs his hands.** Anything you can do yourself is not a step — it goes
+   into the short `mine` block at the end so he can see it exists and ignore it.
+8. **The page is alive, not delivered.** When he hits a snag: answer in chat in **at most three
+   sentences** *and* patch the same file — mark the done steps `done`, insert the new steps,
+   numbering re-flows by itself. Never create a second file for the same task, never leave the
+   answer only in the chat, never send him a corrected copy of the whole plan.
+9. **A dated provenance line at the bottom** (`verified`): what you opened with your own eyes, and
+   when. It is the reason he believes rule 2.
+10. **Screenshots only where words genuinely cannot locate a control** — an unlabelled icon, one
+    row among twenty identical ones. Cropped to the control, never a full page. They cost tokens on
+    every read.
+
+## Files
+
+```
+.claude/tasks/<task>.plan.html    # the chewed plan — for him, Russian
+.claude/tasks/<task>.md           # the journal — for you, English
+.claude/tasks/<task>.html         # the board, if this task has one (different file, different job)
+.claude/tasks/<task>.img/         # cropped screenshots, only if rule 10 forced one
+.claude/tasks/_shell/             # plan.css + plan.js, copied from the kit
+```
+
+The plan and the board are not the same page: the board says where the *run* stands, the plan says
+what *he* does next. A task may have both; never merge them.
+
+`.claude/` must be gitignored before you write into it — verify, and exclude it locally rather than
+editing a shared `.gitignore`:
+
+```bash
+git check-ignore -q .claude/ || echo ".claude/" >> "$(git rev-parse --git-dir)/info/exclude"
+```
+
+### Install the shell first (once per repo)
+
+```bash
+SRC="${HOME}/.claude/plan-shell"
+[ -d "$SRC" ] || SRC="${HOME}/Developer/claude-kit/plan-shell"
+mkdir -p .claude/tasks/_shell
+for f in plan.css plan.js; do
+  if [ ! -f ".claude/tasks/_shell/$f" ] || [ "$SRC/$f" -nt ".claude/tasks/_shell/$f" ]; then
+    cp "$SRC/$f" ".claude/tasks/_shell/$f"
+  fi
+done
+```
+
+Copied, not linked: relative paths work on all three of his Macs whatever the username, offline,
+from a `file://` URL, with no MIME surprises. **Never point a plan at raw.githubusercontent.com.**
+
+## The plan file: data, never markup
+
+The whole file is this — a JSON block plus two relative includes. If you find yourself writing a
+`<div>`, stop: the renderer owns the markup, you own the data.
+
+```html
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="60">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="_shell/plan.css">
+</head>
+<body>
+<script type="application/json" id="plan">
+{ … }
+</script>
+<script src="_shell/plan.js"></script>
+</body>
+</html>
+```
+
+The `<meta refresh>` is load-bearing: he keeps the tab open, you patch the file, his tab shows the
+patch a minute later without being told. The renderer restores his scroll position and remembers
+the «скрыть выполненные» toggle across that reload.
+
+### The schema
+
+```jsonc
+{
+  "title":    "Монетизация: подключить счёт",         // h1
+  "subtitle": "<span class=\"pill\">…</span> …",       // one dim line under it, pill optional
+  "verified": "Проверено вживую 9 августа: …",         // rule 9, renders at the bottom
+  "notes":  [ { "kind": "good|warn|prep", "head": "…", "body": "html" } ],   // prep = rule 5
+  "stages": [ { "title": "Этап 1 — …",
+                "notes": [ … ],                        // optional, same shape, shown inside the stage
+                "steps": [ {
+                  "do":     "Нажми <b>Edit Legal Entity</b>",       // one action, rule 4
+                  "where":  "Синяя ссылка в конце голубой полосы",  // rule 3
+                  "ok":     "открылось окно с восемью полями",      // renders as «Получилось, если …»
+                  "forks":  [ "…" ],                                // rule 6; also the "не видел" line
+                  "links":  [ { "text": "…", "href": "https://…" } ],
+                  "img":    { "src": "<task>.img/step-4.png", "cap": "…" },  // or just a path string
+                  "status": "todo|done|blocked"                     // default todo
+                } ] } ],
+  "mine": [ "…", "…" ]        // rule 7; or { "title": "…", "items": [ … ] }
+}
+```
+
+Ten things the renderer already does, so never do them by hand:
+
+- **Numbering is computed from position and never stored.** Inserting step 4 renumbers everything
+  after it for free — that is why patching is cheap and a second file is never needed.
+- `done` renders struck through and dimmed, `blocked` in the amber warning colour.
+- A progress line «Сделано 5 из 9» with a bar, and a «скрыть выполненные» toggle.
+- A stage whose steps are all `done` collapses itself; a click expands it.
+- Every step has a stable anchor `#step-N`, and the number circle is that link — so a chat message
+  can point at exactly one step: `…/monetization.plan.html#step-6`. Pointing at a step that is
+  hidden or inside a collapsed stage still works: the renderer reveals it and flashes it.
+- Links become real clickable `<a>` opening in a new tab. He has complained that they were not.
+- Images are capped at `max-width:100%`, path relative to the plan file.
+- Dark and light follow the system, and the page is readable on a phone.
+- `title` also becomes the browser tab title.
+- Strings may carry inline HTML — `<b>` for a label he must find, `<code>` for something he types
+  verbatim, `<i>` sparingly. Bold exactly the words that appear on his screen; bolding a whole
+  sentence makes the label unfindable.
+
+Everything he reads is in **Russian** — the kit's "English everywhere except chat" rule does not
+apply to a surface he reads, exactly as with the board. Keep the labels themselves in their
+original language.
+
+`plan-shell/example.plan.html` in the kit is a working plan that uses every field; open it when
+unsure what a field does, and copy its shape.
+
+## The run
+
+1. Open the real thing and walk the flow yourself as far as the gate lets you, capturing labels as
+   you go. This is the expensive part and it is the whole value — do not shorten it.
+2. Write the file: prep block, stages, steps, `mine`, `verified`.
+3. Send the link **once**, as a full clickable `file:///Users/…/.claude/tasks/<task>.plan.html`
+   URL, with one sentence saying what the first step is and where you stopped seeing screens.
+4. He works. Each time he reports back: patch the file (`status` to `done`, new steps inserted,
+   the "не видел" fork replaced with the steps you can now see because he sent a screenshot), and
+   reply in chat in at most three sentences, linking `#step-N` when you mean a particular step.
+   Patching is an `Edit` inside the JSON block; never rewrite the file from scratch and never
+   restate the plan in the chat.
+5. When the last step is `done`, say so in one line. The file stays on disk as the record.
+
+## Never
+
+- Never put a password, a token, a full card number or a full IBAN into the page. Say which
+  document to take it from; he types it.
+- Never write a step whose confirmation you cannot name.
+- Never describe a menu path you have not walked in this session — labels change between releases,
+  locales and A/B buckets, and your memory of them is exactly the thing that ruins his morning.
+- Never ask him to re-read the plan from the top. Point at `#step-N`.
+- Never let a literal `</script>` sit inside a JSON string — it closes the data block and the page
+  renders «План не отрисовался». Write `<\/script>`. Same for an unescaped `"` inside inline HTML:
+  the renderer reports the JSON error with the parser's message, so if he says the page is empty,
+  ask for that line rather than guessing.
