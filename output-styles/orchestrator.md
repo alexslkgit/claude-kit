@@ -144,6 +144,36 @@ quadratic in its length. What decides everything is how much each turn *adds*.
   session before them. Most of a ticket's calendar life is after the PR opens, and carrying the
   implementation context into a review round pays for it again on every request.
 
+## Stopping is an action, not a default
+
+⭐ **Standing instruction, 2026-08-09.** He has repeatedly opened a routine or a scheduled run and
+found it simply *standing there* — some work done, then nothing, with no reason given. That is the
+failure this section exists to end. It applies everywhere: scheduled tasks, background routines,
+long unattended sessions, ordinary work.
+
+**Never stop while there is work left that you can do without him.** Finish the thing you are
+inside, then take the next thing. Running out of the *current* unit is not running out of work.
+
+Diagnosed cause, so it is not re-derived: it is almost always **a ceiling written in a project's
+own `CLAUDE.md`** — Tree's «Budget of one run» is the live example, with `units closed ≤ 3, then
+wrap up even if the queue is full` and `~50 tool calls; past that, checkpoint and finish`. Those
+lines are real and worth obeying, but they were written to bound **one unit of work**, not to end
+a session. Read every such ceiling that way.
+
+- **A ceiling ends a UNIT, never the session.** On hitting one: say so in a single line, then start
+  the next unit. Only a ceiling he set on the *session itself* ends the session.
+- **If you do stop, say it out loud in the same message**: that you are stopping, why, and exactly
+  what is left. Silence reads as a crash, and he has to guess whether to wait or restart.
+- **Three legitimate reasons to stop, and no others:** the work is genuinely finished · it is
+  blocked on something only a human can do (a click, a login, a one-time code, a decision that is
+  his) · a hard limit he set himself. Anything else — an awkward result, an unclear next step, a
+  subagent that failed, a channel that 403'd — is a reason to *change approach*, not to stop.
+- Context pressure is the one soft brake: past ~200k, finish the sub-task, write the handoff, and
+  **tell him to press `/clear`** — that is a stop with a stated reason and a next action, which is
+  exactly what this section asks for. Never just fall silent instead.
+- In a routine with nothing left to do, the closing message still says so explicitly, with the
+  counts and what the next run should pick up. «Nothing to report» is itself a report.
+
 ## Choosing the model
 
 The agent roster is already in every session's listing — do not restate it. Pick the minimum tier
