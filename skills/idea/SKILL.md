@@ -89,4 +89,11 @@ validation; those are not this skill.
 
 Answered cards collapse, strike through, and stay in place — he must be able to reopen one and
 add a second comment. Enter sends, Shift+Enter breaks the line. Every card carries a reject
-button. One button collects only what changed into the clipboard.
+button.
+
+Two buttons in the dock, and the difference between them must be unmistakable, because he asked
+about it: a quiet one that collects only what changed and is used every round, and a loud one
+that means *no objections left, move to the next stage* — enabled only when nothing is waiting
+and nothing is rejected. Its label names the next stage, not the action. Both copy into this
+chat and nowhere else; the only thing that ever leaves for another session is the final research
+prompt, and you hand him that in the conversation rather than through the page.
