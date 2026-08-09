@@ -78,6 +78,17 @@ a.num:hover { filter:brightness(1.12); }
 .body { flex:1; min-width:0; }
 .do { font-weight:600; margin:2px 0 6px; }
 .where { color:var(--dim); font-size:14px; margin:0 0 6px; }
+
+/* --- collapsed step detail (where + forks) ------------------------------ */
+.detail-toggle { background:none; border:none; padding:0; margin:0 0 2px; cursor:pointer;
+                 font-family:inherit; font-size:12px; color:var(--dim); display:inline-flex;
+                 align-items:center; gap:4px; }
+.detail-toggle:hover { color:var(--text); }
+.detail-toggle .caret { display:inline-block; font-size:9px; line-height:1;
+                         transition:transform .15s ease; }
+.detail-toggle.open .caret { transform:rotate(90deg); }
+.detail { display:none; margin-top:6px; }
+.detail.open { display:block; }
 .ok { font-size:14px; color:var(--ok); margin:6px 0 0; }
 .fork { font-size:14px; color:var(--wait); margin:6px 0 0; }
 .links { margin:8px 0 0; display:flex; flex-wrap:wrap; gap:8px; }

@@ -49,10 +49,23 @@ That sentence is what earns the trust that makes him follow the other nine steps
    Hypothetical «если вдруг появится окно…» is noise that makes the page look unreliable.
 7. **Only what physically needs his hands.** Anything you can do yourself is not a step — it goes
    into the short `mine` block at the end so he can see it exists and ignore it.
-8. **The page is alive, not delivered.** When he hits a snag: answer in chat in **at most three
-   sentences** *and* patch the same file — mark the done steps `done`, insert the new steps,
-   numbering re-flows by itself. Never create a second file for the same task, never leave the
-   answer only in the chat, never send him a corrected copy of the whole plan.
+8. **THE PAGE IS ALIVE — EVERY SINGLE EXCHANGE ENDS WITH THE FILE PATCHED, NO EXCEPTIONS.** Not
+   "when it changes materially." Every time, while the plan is open, whatever he said. He asks a
+   question, you answer it in chat — that answer also becomes data in the file, at the step it
+   concerns, before you consider the turn done. Concretely, every reply maps to a patch:
+   - He reports a step done → that step's `status` becomes `done`; the step he is now on stays
+     `todo`.
+   - He sends a screenshot of a screen you had marked "не видел" → the fork with that line is
+     replaced by the real steps read off the screenshot.
+   - He asks a question and you answer it → the answer becomes a `fork` on the step it belongs
+     to, or a `note` on the stage if it is broader than one step.
+   - He says something is ready (a document, a number, a password he now has) → it moves into the
+     `prep` block, or off it if it was the last missing item.
+   Never announce the patch as a task — no "сейчас обновлю план", no "дай обновлю файл". Just do
+   it, silently, as part of answering, and keep the chat reply itself to at most three sentences.
+   Only the JSON block is ever edited; the HTML around it was written once and is never rewritten.
+   Never create a second file for the same task, never leave the answer only in the chat, never
+   send him a corrected copy of the whole plan.
 9. **A dated provenance line at the bottom** (`verified`): what you opened with your own eyes, and
    when. It is the reason he believes rule 2.
 10. **Screenshots only where words genuinely cannot locate a control** — an unlabelled icon, one

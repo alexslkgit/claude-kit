@@ -16,9 +16,13 @@
    inserting a step mid-flow costs nothing. Strings may carry inline HTML (<b>, <code>, <a>);
    the file is local and authored by the assistant, so it is trusted markup.
 
-   State that must survive the page's own <meta refresh>: the "скрыть выполненные" toggle and
-   any stage the user expanded by hand live in localStorage, the scroll position in
-   sessionStorage, both keyed by the plan's own path. */
+   State that must survive the page's own <meta refresh>: the "скрыть выполненные" and
+   "подробности" toggles, and any stage the user expanded by hand, live in localStorage, the
+   scroll position in sessionStorage, both keyed by the plan's own path.
+
+   A step's `where` + `forks` render collapsed behind one small "подробнее" toggle (do/number/ok
+   always show). A `blocked` step opens its detail by default, and jumping to #step-N opens it
+   too. The page-level "подробности" checkbox expands or collapses every step's detail at once. */
 
 (function () {
   'use strict';
@@ -39,9 +43,9 @@
     try {
       var raw = localStorage.getItem(KEY);
       var s = raw ? JSON.parse(raw) : {};
-      return { hideDone: !!s.hideDone, stages: s.stages || {} };
+      return { hideDone: !!s.hideDone, detailAll: !!s.detailAll, stages: s.stages || {} };
     } catch (e) {
-      return { hideDone: false, stages: {} };
+      return { hideDone: false, detailAll: false, stages: {} };
     }
   }
   function saveState(state) {
@@ -84,7 +88,18 @@
     return box;
   }
 
-  function stepCard(step, number) {
+  // Sets one step's detail (where + forks) open or closed, in sync across the toggle button,
+  // the detail block itself and the button's label. Shared by the per-step click, the
+  // page-level "подробности" control, and #step-N anchoring.
+  function setDetail(toggle, detail, open) {
+    detail.classList.toggle('open', open);
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    var label = toggle.querySelector('.label');
+    if (label) { label.textContent = open ? 'скрыть' : 'подробнее'; }
+  }
+
+  function stepCard(step, number, detailAllOpen) {
     var status = step.status === 'done' || step.status === 'blocked' ? step.status : 'todo';
     var card = el('section', 'step' + (status === 'todo' ? '' : ' ' + status));
     card.id = 'step-' + number;
@@ -97,13 +112,33 @@
 
     var body = el('div', 'body');
     body.appendChild(el('div', 'do', text(step['do'])));
-    if (step.where) { body.appendChild(el('p', 'where', text(step.where))); }
+
+    // where + forks are grey/amber detail he does not always want — one toggle covers both,
+    // and only renders when there is something to hide. A blocked step opens by default: that
+    // is where the "этого экрана я не видел" line lives, and he must see it without a click.
+    var hasDetail = !!(step.where || (step.forks && step.forks.length));
+    if (hasDetail) {
+      var detailOpen = status === 'blocked' || detailAllOpen;
+      var toggle = el('button', 'detail-toggle' + (detailOpen ? ' open' : ''),
+        '<span class="caret">&#9656;</span><span class="label">' +
+        (detailOpen ? 'скрыть' : 'подробнее') + '</span>');
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', detailOpen ? 'true' : 'false');
+      var detail = el('div', 'detail' + (detailOpen ? ' open' : ''));
+      if (step.where) { detail.appendChild(el('p', 'where', text(step.where))); }
+      (step.forks || []).forEach(function (f) { detail.appendChild(el('p', 'fork', text(f))); });
+      toggle.addEventListener('click', function () {
+        setDetail(toggle, detail, !detail.classList.contains('open'));
+      });
+      body.appendChild(toggle);
+      body.appendChild(detail);
+    }
+
     if (step.img) { var s = shot(step.img); if (s) { body.appendChild(s); } }
     if (step.links && step.links.length) {
       var lr = linkRow(step.links);
       if (lr) { body.appendChild(lr); }
     }
-    (step.forks || []).forEach(function (f) { body.appendChild(el('p', 'fork', text(f))); });
     if (step.ok) { body.appendChild(el('p', 'ok', 'Получилось, если ' + text(step.ok))); }
     card.appendChild(body);
     return card;
@@ -143,6 +178,14 @@
     label.appendChild(box);
     label.appendChild(document.createTextNode('скрыть выполненные'));
     meter.appendChild(label);
+
+    var dLabel = el('label', 'toggle');
+    var dBox = document.createElement('input');
+    dBox.type = 'checkbox';
+    dBox.checked = state.detailAll;
+    dLabel.appendChild(dBox);
+    dLabel.appendChild(document.createTextNode('подробности'));
+    meter.appendChild(dLabel);
     wrap.appendChild(meter);
 
     (data.notes || []).forEach(function (n) { wrap.appendChild(noteBlock(n)); });
@@ -172,7 +215,10 @@
 
       var sbody = el('div', 'stage-body');
       (st.notes || []).forEach(function (n) { sbody.appendChild(noteBlock(n)); });
-      steps.forEach(function (sp) { counter++; sbody.appendChild(stepCard(sp, counter)); });
+      steps.forEach(function (sp) {
+        counter++;
+        sbody.appendChild(stepCard(sp, counter, state.detailAll));
+      });
       stage.appendChild(sbody);
       wrap.appendChild(stage);
     });
@@ -199,6 +245,16 @@
       saveState(state);
     });
 
+    dBox.addEventListener('change', function () {
+      state.detailAll = dBox.checked;
+      saveState(state);
+      wrap.querySelectorAll('.step').forEach(function (step) {
+        var toggle = step.querySelector('.detail-toggle');
+        var detail = step.querySelector('.detail');
+        if (toggle && detail) { setDetail(toggle, detail, dBox.checked); }
+      });
+    });
+
     return wrap;
   }
 
@@ -210,6 +266,9 @@
     if (!node) { return false; }
     var stage = node.closest ? node.closest('.stage') : null;
     if (stage) { stage.classList.remove('collapsed'); }   // never point at a hidden step
+    var toggle = node.querySelector('.detail-toggle');
+    var detail = node.querySelector('.detail');
+    if (toggle && detail) { setDetail(toggle, detail, true); } // and never a hidden detail
     node.classList.add('pinned');                          // survives "скрыть выполненные"
     node.scrollIntoView({ block: 'center' });
     node.classList.remove('flash');
