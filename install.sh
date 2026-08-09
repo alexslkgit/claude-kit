@@ -48,7 +48,8 @@ if os.path.exists(path):
     except Exception:
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
-wanted = {"SessionStart": [None], "PreCompact": ["manual", "auto"], "SessionEnd": ["clear"]}
+wanted = {"SessionStart": [None], "UserPromptSubmit": [None],
+          "PreCompact": ["manual", "auto"], "SessionEnd": ["clear"]}
 added = 0
 for event, matchers in wanted.items():
     entries = hooks.setdefault(event, [])

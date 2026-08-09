@@ -13,7 +13,16 @@
 #   PreCompact    stdout is DISCARDED, stderr is shown; matchers: manual | auto
 #   SessionEnd    stdout is DISCARDED, cannot block, 1.5s shared budget;
 #                 the field is `session_end_reason` (clear | resume | logout | ...)
-# So the briefing goes out on SessionStart, and the other two only record.
+#   UserPromptSubmit  stdout IS added to the context of that turn
+# So the briefing goes out on SessionStart, the reminder on UserPromptSubmit, and the other
+# two only record.
+#
+# Why there is a reminder at all: SessionStart speaks once, at turn zero, and is never heard
+# from again. On 2026-08-09 a session was told at startup that the project had no status files,
+# acknowledged nothing, and ran three hours of design work — 36 decisions — with no STATUS.md,
+# no DECISIONS.md and no board, until the user asked. A rule that fires once and depends on
+# goodwill for the next hundred turns is not a rule. So the absence is restated as the session
+# turns into real work: silent for the first two prompts, then once, then every fifth.
 #
 # Output is phrased as factual statements rather than commands: imperative text in hook
 # output can trip prompt-injection defences and be surfaced to the user instead of used.
@@ -91,7 +100,51 @@ case "$event" in
     exit 0
     ;;
 
+  UserPromptSubmit)
+    # Count this turn. The counter lives beside the break record and is reset on SessionStart.
+    n="$(/usr/bin/sed -n 's/^prompts=//p' "$state" 2>/dev/null | head -1)"; : "${n:=0}"
+    n=$((n + 1))
+    tmp="$state.tmp.$$"
+    { [ -f "$state" ] && /usr/bin/grep -v '^prompts=' "$state" 2>/dev/null
+      printf 'prompts=%s\n' "$n"; } > "$tmp" 2>/dev/null && mv "$tmp" "$state" 2>/dev/null
+    rm -f "$tmp" 2>/dev/null || true
+
+    speak=0
+    [ "$n" -eq 3 ] 2>/dev/null && speak=1
+    [ "$n" -gt 3 ] 2>/dev/null && [ "$((n % 5))" -eq 0 ] 2>/dev/null && speak=1
+    [ "$speak" -eq 1 ] || exit 0
+
+    if [ -z "$status_dir" ] || [ ! -f "$status_dir/STATUS.md" ]; then
+      cat <<EOF
+status-guard: $n prompts into this session, and this project still has no STATUS.md, no
+DECISIONS.md and no board, so nothing decided here survives a context reset. The wrap-up skill
+creates all three and writes the marker; it is meant to run when the work starts producing
+decisions, not only when the context is about to be cleared. The user has said he wants this
+raised while it is still cheap to fix rather than discovered at the end of a session.
+EOF
+      exit 0
+    fi
+
+    # Files exist. Say nothing until enough has happened that they are plausibly behind.
+    if [ "$((n % 30))" -eq 0 ] 2>/dev/null; then
+      stamp_e=0
+      [ -f "$status_dir/.wrapup-stamp" ] && stamp_e="$(/usr/bin/stat -f %m "$status_dir/.wrapup-stamp" 2>/dev/null || echo 0)"
+      age=$(( now_e - stamp_e ))
+      if [ "$stamp_e" -eq 0 ] 2>/dev/null || [ "$age" -gt 3600 ] 2>/dev/null; then
+        printf 'status-guard: %s prompts in and the last wrap-up in %s is over an hour old, so anything settled since then exists only in this conversation.\n' "$n" "$status_dir"
+      fi
+    fi
+    exit 0
+    ;;
+
   SessionStart|*)
+    # New session, new turn count.
+    if [ -f "$state" ]; then
+      tmp="$state.tmp.$$"
+      /usr/bin/grep -v '^prompts=' "$state" > "$tmp" 2>/dev/null && mv "$tmp" "$state" 2>/dev/null
+      rm -f "$tmp" 2>/dev/null || true
+    fi
+
     if [ -z "$status_dir" ]; then
       cat <<EOF
 status-guard: this project has no persistent status files.

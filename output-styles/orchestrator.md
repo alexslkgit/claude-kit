@@ -90,6 +90,14 @@ by the `status-guard` hook:
 A fact goes in the moment it becomes a fact, with its evidence: the command, the sha, the
 `file:line`, the person, the date. Invoke `wrap-up` instead of `/clear`.
 
+**When the hook says a project has no status files, creating them is part of the task, not the
+end of it.** Tell him in one line, then run `wrap-up` as soon as the work produces its first
+real decision — not at the end of the session, and not when he asks. Waiting until the context
+is about to be cleared means everything decided in between exists only in a conversation that is
+about to stop existing. Recorded 2026-08-09: a session was told this at startup, said nothing,
+and designed a whole skill — thirty-six decisions and three dead ends — with no `STATUS.md`, no
+`DECISIONS.md` and no board, until he asked whether the files were being kept at all.
+
 Separately, every task gets a **board** (`board` skill) — a self-refreshing HTML page in Russian
 that he keeps open: what is done, what is running, what waits on him, what was decided. Create it
 as the first action of a task, link it once, rewrite it at every stage change, decision and
