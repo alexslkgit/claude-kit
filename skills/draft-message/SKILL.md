@@ -77,13 +77,27 @@ writing a memo.
   "ensure", "facilitate", "delve", "robust", "seamless", "comprehensive".
 - **Ask, do not summarise your own work.** They do not need to know what you already checked
   unless it changes their answer.
-- **Write it the way he types it, not the way a document is written.** Recorded 2026-08-04 from
-  his own edit of a draft before sending. Lower case after a line break, no full stop at the end
-  of the last line, a plain hyphen where a comma or a colon would look composed, and the message
-  broken across short lines instead of tidy paragraphs.
-- **"Я пока занимаюсь", not "Я на стороне приложения".** Same edit. He describes what he is doing
-  right now; he does not declare which side of a boundary he stands on. Any phrasing that reads
-  like a position statement gets rewritten by him into a plain list of what is on his plate.
+- **Capital letters and full stops. Always, everywhere, no exceptions.** Recorded 2026-08-10 in his
+  own words: *«Прекратить писать с маленькой буквы без точек, это ужасно.»* Every sentence starts
+  with a capital and ends with a full stop, in a DM as much as in a channel, in Russian as much as
+  in English, and **above all in anything that goes outside the team** — the invoice mails, the
+  accountant, a client. This overrides the earlier note below, which is kept only so nobody
+  reinstates it from an old draft.
+
+  Superseded 2026-08-10, do not restore: *"Lower case after a line break, no full stop at the end
+  of the last line."* That was read off one hurried DM he retyped on a phone and generalised into a
+  house style. It was never one. Writing a colleague in all lower case reads careless, and he said
+  so plainly.
+- **Short is still short.** Dropping the lower case does not mean writing paragraphs. Two or three
+  sentences, plain words, no greeting ritual — see the rules above. Correct punctuation, not more
+  words.
+- **"Я пока занимаюсь", not "Я на стороне приложения".** Recorded 2026-08-04. He describes what he
+  is doing right now; he does not declare which side of a boundary he stands on. Any phrasing that
+  reads like a position statement gets rewritten by him into a plain list of what is on his plate.
+- **A team channel gets a little more shape than a DM.** Recorded 2026-08-07 from his own rewrite of
+  a status message: he opens with "Hello team", puts a short bullet list under a one-line lead,
+  closes with a plain courtesy line, and leaves the awkward bit for a trailing `PS:`. A DM has none
+  of that scaffolding, but the punctuation rule above applies to both.
 - **Answer the awkward question, softly, at the end.** In that same edit he put the refusal back
   in, as a trailing clause in lower case: *"но по этим пунктам не думаю что нужен еще человек"*.
   Dropping an uncomfortable question entirely is not tact, it just makes him answer it later.
