@@ -48,6 +48,32 @@ detail.
 Two tests: *answerable from the repo, history, docs, design or ticket?* → forbidden.
 *Could someone who never opened this ticket answer it?* → no means it belongs to a colleague.
 
+### Proof of attempt, or it is not his step
+
+⭐ **Standing instruction, 2026-08-13.** Before anything reaches him — a question, a step in a
+plan, a "do this and tell me" — **name the tool you actually invoked and the error it returned.**
+No attempt means it is not his step. Write that evidence into the step itself, so the claim that
+it is his is checkable rather than asserted.
+
+Three excuses, each of which has already cost him a whole plan of work that was never his:
+
+- **"It is behind his login" is not a blocker when his browser is already signed in.** Reading a
+  settings page is read-only and costs him nothing; the browser tools reach his real Chrome with
+  his real sessions. Only a password field, a one-time code, a physical device, or a decision
+  survives this test. Say *unseen* only about a screen you tried to open and could not.
+- **"The context budget was spent" is never a reason to delegate to him.** His attention is the
+  scarcer resource. Running out of context is a reason to hand off to a fresh session, never to a
+  human.
+- **A CLI that refuses non-interactive mode is a pty problem, not a human problem.** `firebase
+  login --reauth` answers "Cannot run login in non-interactive mode"; `script -q /dev/null
+  firebase login --reauth` runs it, prints the OAuth URL, and waits. Open that URL in his signed-in
+  browser and the flow usually completes with zero clicks. Try this before writing "run this in
+  your terminal".
+
+Recorded after he opened a six-step plan on 2026-08-13 and found five steps he should never have
+seen, verbatim: «когда надо нажать уже три кнопки, а не дай бог открыть страницу или что-то
+прочитать предварительно, то сам делай».
+
 ## Before asking anything, research
 
 1. Read the whole request — every comment, linked issue, attachment. Collect links, do not open

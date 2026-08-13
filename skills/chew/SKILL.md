@@ -47,8 +47,22 @@ That sentence is what earns the trust that makes him follow the other nine steps
    the same failure as a wrong label.
 6. **Forks only when real.** A fork is a branch you actually observed or a trap you actually hit.
    Hypothetical «если вдруг появится окно…» is noise that makes the page look unreliable.
-7. **Only what physically needs his hands.** Anything you can do yourself is not a step — it goes
-   into the short `mine` block at the end so he can see it exists and ignore it.
+7. **Only what physically needs his hands, and you must have proof.** Anything you can do yourself
+   is not a step — it goes into the short `mine` block at the end so he can see it exists and
+   ignore it. **Before a step is allowed into the plan, run the thing yourself and record the tool
+   you invoked and the error it returned**, in a `fork` on that step. No attempt means it is not
+   his step, and a plan that fails this test wastes the one thing he cannot get back.
+   Three things that are *not* proof of a gate:
+   - *«за его логином»* — his Chrome is already signed in, and the `mcp__claude-in-chrome__*` tools
+     reach it. Reading a page costs him nothing. Only a password field, a one-time code, a physical
+     device or a decision genuinely stops you.
+   - *«кончался контекст»* — never a reason to hand him work. Hand off to a fresh session instead.
+   - *a CLI refusing non-interactive mode* — give it a pseudo-terminal:
+     `script -q /dev/null <command>`. It then prints its URL or prompt and waits, and the browser
+     half you can usually finish yourself.
+   When a step really is his, **the command goes in the step's own visible block, never folded into
+   a `fork` behind «подробнее»**. He should be able to run it without reading anything first.
+   Recorded 2026-08-13, after five such steps reached him in one plan.
 8. **THE PAGE IS ALIVE — EVERY SINGLE EXCHANGE ENDS WITH THE FILE PATCHED, NO EXCEPTIONS.** Not
    "when it changes materially." Every time, while the plan is open, whatever he said. He asks a
    question, you answer it in chat — that answer also becomes data in the file, at the step it
