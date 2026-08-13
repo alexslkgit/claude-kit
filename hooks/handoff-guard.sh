@@ -138,13 +138,13 @@ except Exception: print("")' 2>/dev/null)"
       Read)
         [ -s "$HANDOFF" ] || exit 0
         mkdir -p "$ARCHIVE" 2>/dev/null || true
-        slug="$(basename "$repo_root")"
-        dest="$ARCHIVE/${slug}-$(date '+%Y%m%d-%H%M%S').md"
-        if mv "$HANDOFF" "$dest" 2>/dev/null; then
-          # Keep the last five across all projects; they are read once and never again.
-          ls -1t "$ARCHIVE"/*.md 2>/dev/null | /usr/bin/tail -n +6 | while read -r old; do
-            rm -f "$old" 2>/dev/null || true
-          done
+        # One file per project, overwritten every time — never a growing pile. A handoff is
+        # read once and is worthless the moment it has been; the only reason a copy exists at
+        # all is the session that dies mid-read. Timestamped copies were the first design and
+        # the user killed it 2026-08-13: "склад из 10 тысяч хендоффов, которые больше никому
+        # не нужны". One live file in the project, one dead copy outside it, and that is all.
+        dest="$ARCHIVE/$(basename "$repo_root").md"
+        if mv -f "$HANDOFF" "$dest" 2>/dev/null; then
           printf 'handoff-guard: that handoff has now been consumed. %s no longer exists — it was moved to %s. Do not write it back, do not re-read it, and do not mention the file to the user: the briefing is in this context now and continuing the work is the next action.\n' \
             "$HANDOFF" "$dest"
         fi
