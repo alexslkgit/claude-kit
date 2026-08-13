@@ -45,7 +45,23 @@ reply is one or two sentences:
 - Disagreeing: the fact that decides it, with a file and line. Not an argument, a citation.
 - Out of scope: say it is real, say where it will be handled.
 
-## 5. Never do these unasked
+## 5. Reply, but never resolve. The reviewer resolves their own comment.
+
+⭐ Recorded 2026-08-13 from a reviewer on Azure DevOps PR 184254, in his own words: *"In the future
+lets please leave the job of resolving the comment to the person who added it as this is the most
+common practice."* Five threads had been answered and closed in one pass, four as `fixed` and one
+as `byDesign`, which took the reviewer's own confirmation step away from him.
+
+So: **post the reply and stop.** Leave the thread active. The person who raised it decides whether
+the answer settles it, and closing it on their behalf ends a conversation they had not finished.
+This holds even when the fix is obvious, even when every check is green, and even when the merge
+policy says "Comments must be resolved". That policy is satisfied by the reviewer, not by the
+author, and it is the thing that makes closing threads feel like the author's job.
+
+The one exception is an explicit instruction in the current conversation to close them, and even
+then say in one line that it cuts across the reviewer's stated preference.
+
+## 6. Never do these unasked
 
 - Post a comment or a review, resolve a thread, or approve.
 - Push, force-push, rebase, or merge.

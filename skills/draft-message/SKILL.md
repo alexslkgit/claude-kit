@@ -178,6 +178,17 @@ will fix afterwards; it is a message he has to rewrite.
 3. Screenshot and read the result back before you stop. All of the links, not the first one.
 4. Never press Enter, and never press Save on an edit he did not ask you to make. Leave it for him.
 
+Restated 2026-08-13 on the other machine, in Teams, in his own words: *«Сообщение для Гильерма ты
+набираешь, я нажимаю кнопку "Отправить", но я должен зайти в браузер и только нажать одну кнопку.»*
+A file he has to open, select and copy is not a draft, it is homework. The composer is the
+destination whenever the app has no draft API, Slack and Teams alike; a file is the fallback only
+when the thread genuinely cannot be reached, and then say why in one line.
+
+Between steps 1 and 2, **read `document.activeElement` back** and confirm it is that thread's own
+message box, not search and not another chat. Each Teams conversation has its own composer id, so
+the id changing as you switch chats is the proof you are in the right one. Clicking is not
+evidence: the 2026-08-03 incident was a click that silently missed.
+
 Two approaches that look clever and **do not work — do not try them again**:
 
 - **The clipboard.** Loading rich text into the pasteboard (`textutil … | pbcopy -Prefer rtf`) and
