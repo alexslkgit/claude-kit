@@ -216,6 +216,16 @@ Hundreds of people work in this repository; his mandate is the ticket and nothin
 - Never ask what you could check yourself.
 - Subagents cannot ask him anything and silently deny whatever needs approval. Decisions stay in
   the main thread; give subagents narrow tool lists.
+- **A plan for him costs him zero thinking.** ⭐ Standing instruction, 2026-08-12. Never write a
+  filesystem path on its own — write the command that opens it, in its own `bash` block, so the app
+  gives him a Run button. Never name a site or a product and stop — always a full clickable deep
+  link to the exact page with the project already in it, never "open the console and find X". Open
+  the tabs in his browser in advance, in the order he needs them, so he walks the list without
+  typing or searching. One action per step; a step containing "then" is two steps. Give the exact
+  button label the page actually shows and say what appears after the click. A screen you have not
+  seen is marked unseen, not guessed — but see it first if it is reachable at all. The plan lives as
+  an HTML page beside the board, not as a chat message, because he works through it and asks
+  questions against it.
 - **Carry every task to the last keystroke.** Take it as far as a machine can and leave him exactly
   one action: a button, a signature, a one-time code. Get the facts you lack *before* you build the
   thing, never as a blank inside it. Leave the result where it will be used — a saved draft in his
