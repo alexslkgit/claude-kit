@@ -154,10 +154,36 @@ before either session starts, because none of them can be fixed cheaply afterwar
 After the merge, verify the union rather than the diff: the combined test count must equal the base
 plus each branch's contribution, and every new suite must appear by name in the log.
 
+## Where it goes: a file, not a chat message
+
+**Write the briefing to `<repo>/.claude/HANDOFF.md` with the Write tool.** Not into the chat.
+Agreed 2026-08-13, after months of him copying the block out of the terminal by hand: a copy can
+be partial, a paste can land in the wrong window, and the block dies with the chat that printed
+it. The file survives all three.
+
+Then say one line to him, and nothing else — the path, and that pasting it into the fresh session
+is all he has to do:
+
+```
+.claude/HANDOFF.md
+```
+
+The rest is machinery he does not have to think about, and it is a hook rather than an instruction
+here on purpose — `hooks/handoff-guard.sh` states the path when he asks for a handoff, appends the
+file to `.git/info/exclude` when you write it, tells the next session at startup that a briefing is
+waiting, and **moves the file out of the repository the instant that session reads it**. So the
+handoff is delivered exactly once and leaves nothing behind. Do not delete the file yourself, do
+not copy it anywhere, and do not also paste its contents into the chat "just in case" — that is the
+duplication this replaced.
+
+The one exception is an environment with no checkout — a Cowork or Cloud session on the file
+bridge. There, output the block in the chat as before and say why.
+
 ## Form
 
-- Output the whole thing inside **one fenced code block**, so it copies in a single gesture.
-  Nothing outside it except one short line saying what to do with it.
+- The file holds the briefing itself, with no code fence around it — it is the whole file.
+  In the no-checkout exception, output it inside **one fenced code block** so it copies in a
+  single gesture, with nothing outside it except one short line saying what to do with it.
 - Write the briefing in **English** — it is a prompt, and it is two to four times cheaper than
   Cyrillic — while instructing the successor to reply to the user in their language.
 - Use headings and lists. The successor reads it as a specification, so structure earns its
@@ -172,5 +198,5 @@ handoff and the journal do not diverge. Anything durable that emerged — a rule
 work, a tier that was wrong for a class of task — belongs in the kit or in auto-memory, not
 only in the handoff, because the handoff is consumed once and then discarded.
 
-Tell the user in one sentence to paste it as the first message of the new chat, and remind them
-to send anything still in flight into that chat when it comes back.
+Tell the user in one sentence that the file is written and he pastes its path as the first message
+of the new chat, and remind him to send anything still in flight into that chat when it comes back.
