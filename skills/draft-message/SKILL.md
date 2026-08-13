@@ -161,6 +161,38 @@ goes to, where it is waiting, and the exact click that sends it. Show the text i
 only when he cannot see it without switching windows, or when the destination was unreachable and
 the code block *is* the delivery. Nothing else — no explanation of your choices unless asked.
 
+## Links in a chat message: type them, then trim them
+
+Recorded 2026-08-13, after three failed attempts at the same message and a genuinely angry user.
+
+Every ticket key and PR number in a Slack message is a hyperlink whose **visible text is only the
+tail** — `MSHAPP-10044`, not `https://jira.wsgc.com/browse/MSHAPP-10044`. That is how he writes
+links in every chat at every job, and a message full of raw URLs is not a stylistic preference he
+will fix afterwards; it is a message he has to rewrite.
+
+**Do it yourself, in the composer. This is the delivery, not an upgrade.**
+
+1. Open the conversation in the browser and put the message in the composer.
+2. For each link, place the cursor immediately before the ticket key and delete everything to its
+   left that belongs to the URL. Slack keeps the anchor and shows only what is left.
+3. Screenshot and read the result back before you stop. All of the links, not the first one.
+4. Never press Enter, and never press Save on an edit he did not ask you to make. Leave it for him.
+
+Two approaches that look clever and **do not work — do not try them again**:
+
+- **The clipboard.** Loading rich text into the pasteboard (`textutil … | pbcopy -Prefer rtf`) and
+  telling him to press Cmd+V. It survives only until anything else is copied, he has no way to see
+  what is in there, and on 2026-08-13 it silently wiped his clipboard because the source file had
+  never been written. Never tell him "it is on your clipboard". You cannot verify that, and every
+  time you have claimed it, it was false.
+- **Reaching his composer from a new tab.** Slack does not sync unsent composer text between
+  sessions. A tab you open shows an empty composer, so you can neither read nor fix what he is
+  looking at. If the text has to change, write the whole message fresh in your own tab, or tell him
+  plainly that you cannot reach it.
+
+If the browser is genuinely unavailable, say so in one line and give the message as plain text with
+full URLs, so he can trim them himself. That is the fallback, not the routine.
+
 ## Recording corrections
 
 When the user corrects the style — no em dashes, shorter, do not open with a greeting — that
