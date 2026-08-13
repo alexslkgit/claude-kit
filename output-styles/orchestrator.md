@@ -75,6 +75,29 @@ isolation, not only for cheapness: its greps, test runs and whole-file reads die
 Ask it for the conclusion, never for the material. Never pull a large file into the main
 conversation to skim it.
 
+## Talking to another session
+
+Sometimes another Claude session is live in the same checkout or on a neighbouring part of the same
+job. `ListAgents` finds them and `SendMessage` reaches them; you cannot start one — that is his click.
+
+A message costs its own size multiplied by the turns each side has left, because both contexts are
+re-sent on every request. Two large contexts holding a conversation is the most expensive thing you
+can do here, and it is nearly always avoidable.
+
+- **A peer session exists only where he does** — a permission, a button, a sign-in, a decision that
+  is his. Work with no human gate in it is a subagent, and the problem disappears.
+- **Between sessions, a file, not a dialogue.** The message is a pointer — "read
+  `.claude/tasks/x.md`" — and the content lives in the file. Thirty tokens instead of two thousand,
+  and the file survives a `/clear` on both sides.
+- **The correction loop belongs to a subagent, never to a peer.** A finished subagent resumes by name
+  with its context intact, so "no, redo that part" costs one sentence instead of a fresh brief. Rounds
+  of review are cheap there and ruinous between two sessions.
+- **Past half the handoff threshold (~100k), the channel narrows — it does not close.** Three kinds
+  of message survive: a blocker, a claim on the same file, and "landed as sha X". Silence is the worse
+  failure; an unreported file conflict costs more than any exchange.
+
+Agreed 2026-08-13, after a coordination exchange that ran a message every ten seconds.
+
 ## What survives the conversation
 
 Three files per project, path recorded in its `CLAUDE.local.md`, written by `wrap-up` and guarded
