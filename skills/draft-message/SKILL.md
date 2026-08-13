@@ -98,6 +98,26 @@ writing a memo.
   a status message: he opens with "Hello team", puts a short bullet list under a one-line lead,
   closes with a plain courtesy line, and leaves the awkward bit for a trailing `PS:`. A DM has none
   of that scaffolding, but the punctuation rule above applies to both.
+- **Write in his voice, not in yours.** Recorded 2026-08-13, his words: *«обрати внимание на то,
+  как мы переписываемся, потому что ты пишешь в своем стиле, а не в том, в котором я с ним
+  говорю»*. Two drafts had to be thrown out. Before drafting to anyone he already talks to,
+  **read his last few messages to that person and copy the register** — the language he uses with
+  *them* (Ukrainian with the Ukrainian-speaking teammates, whatever the thread is in), his own
+  contractions, his own way of opening. Do not invent a house voice from these rules alone; these
+  rules only stop you sounding like an assistant, they do not tell you what he sounds like.
+- **No document furniture in a chat message.** No bold for emphasis, no headings, no
+  sub-paragraphs with topic sentences, no "Heads-up:" openers. A Slack message is prose plus, at
+  most, a genuine enumeration (a merge order, a list of PRs). Structure is what gives a draft away
+  as machine-written even when every rule above is satisfied. The capitals-and-full-stops rule
+  still applies — it is about punctuation, never about formatting.
+- **No em dashes. Anywhere.** Recorded 2026-08-13, his words: *«пиши как человек, какого хрена я
+  там вижу длинные тире»*. Use a comma, a colon, or a full stop. This is one of the loudest tells
+  that a human did not write the text, and he spots it every time. It applies to the drafts and to
+  what you say to him in chat.
+- **Ticket and PR numbers go in as full URLs**, not as bare keys. Recorded 2026-08-13: he trims the
+  tail himself so the chat client renders a tidy hyperlink, and he cannot do that if you wrote
+  `MSHAPP-10044`. So `https://jira.wsgc.com/browse/MSHAPP-10044`, and
+  `https://github.wsgc.com/<org>/<repo>/pull/7757` for a PR.
 - **Answer the awkward question, softly, at the end.** In that same edit he put the refusal back
   in, as a trailing clause in lower case: *"но по этим пунктам не думаю что нужен еще человек"*.
   Dropping an uncomfortable question entirely is not tact, it just makes him answer it later.
