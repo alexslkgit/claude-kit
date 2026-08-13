@@ -185,3 +185,22 @@ you to paste into the chat instead. That over-corrected: it took a *focus* failu
 into a *destination* ban, and the result was the user being handed text to copy by hand — the exact
 work he keeps asking to have taken off him. A saved draft object has no focus and no Enter key. It
 was never what went wrong.
+
+## Daily updates and standup messages are three phrases
+
+Recorded 2026-08-13, after being asked for it repeatedly and ignoring it every time.
+
+When he asks for a daily update, a standup message, or "что рассказать на дейлике", the answer
+is **three short phrases and nothing else**. His own example:
+
+> Поднял пиар, работаю над комментариями к нему и продолжаю со своей задачей.
+
+What moved, what is being worked on now, what is next. Never the cause of a failure, never which
+check was red, never test counts or build numbers, never a paragraph addressed to whoever owns
+some unrelated broken test. A daily update is a status line for twenty people who are not inside
+his ticket — not a report to him. Whatever he needs for himself he asks for separately, and it
+belongs in the chat or on the board.
+
+This is about length, not about care. The three phrases still have to be accurate, still have to
+avoid promising what is not done, and still must not leave out something that would mislead the
+reader. Write them, stop, and offer the detail only if he asks.

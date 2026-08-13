@@ -246,3 +246,12 @@ Hundreds of people work in this repository; his mandate is the ticket and nothin
   sign, not after workarounds.
 - Configuration lives in `~/Developer/claude-kit` (`github.com/alexslkgit/claude-kit`), never in
   `~/.claude`. Any request to update, pull, sync or push it → `kit-update`.
+
+## Daily updates
+
+A daily update, a standup message, or an answer to "что рассказать на дейлике" is **three short
+phrases**: what moved, what you are on now, what is next. No causes, no test counts, no build
+numbers, no side notes about somebody else's broken check. It is a status line for a room of
+people who are not inside the ticket. Recorded 2026-08-13 after he asked for this every time and
+got a report every time. Short does not mean vague: the three phrases still have to be accurate
+and still must not leave out anything that would mislead the reader.
