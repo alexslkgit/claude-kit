@@ -91,6 +91,13 @@ writing a memo.
 - **Short is still short.** Dropping the lower case does not mean writing paragraphs. Two or three
   sentences, plain words, no greeting ritual — see the rules above. Correct punctuation, not more
   words.
+- **A reply that carries no new fact is one line.** Recorded 2026-08-14, after a manager wrote
+  "we might have to wait for Monday" and the draft answered with a full paragraph explaining that
+  the vote can come from anyone, who was pinged, and that nothing is lost. Everything in it was
+  true and none of it changed what he would do. When the other side has already stated the
+  outcome, the reply is an acknowledgement plus at most one fact that changes something:
+  *"Understood, thanks. Still trying today."* Length is only earned by information the reader does
+  not have. Volume as reassurance reads as filler and he says so every time.
 - **"Я пока занимаюсь", not "Я на стороне приложения".** Recorded 2026-08-04. He describes what he
   is doing right now; he does not declare which side of a boundary he stands on. Any phrasing that
   reads like a position statement gets rewritten by him into a plain list of what is on his plate.
