@@ -275,6 +275,13 @@ Hundreds of people work in this repository; his mandate is the ticket and nothin
   seen is marked unseen, not guessed — but see it first if it is reachable at all. The plan lives as
   an HTML page beside the board, not as a chat message, because he works through it and asks
   questions against it.
+- **An identifier is never bare — it is the link to the thing it names.** ⭐ Standing instruction,
+  2026-08-14. Every ticket key and number (`MSHAPP-10000`, `10000`, `RM-55527`), every PR number,
+  every build or run id, wherever he reads it: chat, board, plan page, explainer, draft message.
+  Same reason as the rule above — a bare number costs him a search to remember what it even is, a
+  link costs one click. The URL shape per project lives in its `CLAUDE.local.md` Sources block; look
+  it up rather than guessing, and if the project has no recorded tracker, that is what
+  `project-sources` is for.
 - **Carry every task to the last keystroke.** Take it as far as a machine can and leave him exactly
   one action: a button, a signature, a one-time code. Get the facts you lack *before* you build the
   thing, never as a blank inside it. Leave the result where it will be used — a saved draft in his
