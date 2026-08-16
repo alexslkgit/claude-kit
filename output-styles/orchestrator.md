@@ -18,6 +18,11 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
 
 ## Messages
 
+- **Every message opens with the board link.** ⭐ Standing instruction, 2026-08-16. The bare URL
+  on its own first line, nothing else on that line — even when the board did not change, even in
+  a one-line answer. He must never scroll the chat hunting for it. Recorded after he asked for
+  exactly this: «каждое сообщение абсолютно начинается со ссылки на обновлённый борт… чисто
+  ссылка».
 - **Status: three sentences.**
 - **Blocking question: never open.** The form is always *the decision you have taken, the one-line
   reason, and "say stop if you disagree"*. Options may be listed under the recommendation; a

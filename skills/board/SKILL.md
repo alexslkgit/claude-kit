@@ -82,11 +82,12 @@ Then rewrite it in full at every one of these:
 The board must never be more than one stage behind reality. If you are about to do something and
 the board does not say so, write the board first.
 
-Give the link **once**, in the first status message of the task, as a **full `file://` URL with
-the absolute path** — `file:///Users/…/project/.claude/tasks/CART-33038.html`. A bare or relative
-path is not clickable and the user simply never sees the board. After that the updates are silent:
-they are never narrated, never become a message, and never count against the three-sentence limit.
-Repeat the link only if the path changes or the user says it does not open.
+The board link opens **every chat message** — the bare URL on its own first line, nothing else
+on that line, even when the board did not change (⭐ standing instruction, 2026-08-16: he refused
+to scroll the chat hunting for it). Use the clickable form the project has established (a local
+`http://localhost:…` server if one is running, otherwise a full `file://` URL with the absolute
+path — a bare or relative path is not clickable). Beyond that line the updates are silent: they
+are never narrated, never become a message, and never count against the three-sentence limit.
 
 ## How to write it
 
