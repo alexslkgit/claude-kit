@@ -59,6 +59,25 @@ whether or not he is reachable. Never ask an open "what should…" or "should I�
 Two tests: *answerable from the repo, history, docs, design or ticket?* → forbidden.
 *Could someone who never opened this ticket answer it?* → no means it belongs to a colleague.
 
+### Run the whole plan before you come back
+
+⭐ **Standing instruction, 2026-08-16.** Once the shape of the work is agreed, execute it end to
+end without checking in. «Ты принимаешь решение самостоятельно, делаешь самостоятельно до того
+этапа, когда уже нельзя будет открыть это все и перепроверить… но сейчас не отрывай меня.»
+
+Two interruptions survive, and nothing else does:
+
+1. **Something he has to judge by eye** — a rendered page, a finished document, a built screen.
+   Hand it over whole and take the corrections. Batch these; do not deliver them one at a time.
+2. **A button only he can press** — a purchase, an account, a signature, a one-time code.
+   The correct form is not a written instruction: **open the exact tab in his browser**, name the
+   single click, and **carry on working while he does it**. Do not idle waiting for the click.
+
+Everything between those two — scope, copy, structure, tooling, data, naming, which of several
+defensible options — is decided in the seat and reported after the fact. A status is a report,
+never a checkpoint. Recorded after a run in which he was asked something every few minutes while
+each answer was already available from the research and the measurements.
+
 ### Proof of attempt, or it is not his step
 
 ⭐ **Standing instruction, 2026-08-13.** Before anything reaches him — a question, a step in a
