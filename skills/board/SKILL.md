@@ -95,31 +95,36 @@ with `Write`. Always **replace the whole file** — never append. Growth is the 
 
 Timestamp from the real clock, local time: `date +%H:%M`.
 
-### Hard size caps — the 60-second budget
+### Hard size caps — the 10-second budget
 
-- stages: **max 12**. More means they are too fine-grained — merge them.
-- decisions: **max 7**, one line each. Older ones drop off; the journal keeps them.
-- alerts: **max 3**, and usually zero.
-- the whole board fits one screen without scrolling. If it does not, cut.
+⭐ **Standing instruction, 2026-08-16: as simple as possible, his action always on top.** He said
+he had to scroll every board to find the one thing he actually had to do. The board's reading
+order is now fixed: **«Ждёт от тебя» is the first block on the page**, visible without any
+scrolling — and when nothing waits on him, that same block says so in one line ("От тебя пока
+ничего"), so the answer to "do I need to do anything?" is always in the same place. Everything
+else is optional detail below it.
 
-### The parts
+- the whole board fits one PHONE screen without scrolling. If it does not, cut.
+- history is the failure mode: no full checklist of every past stage, no tables of what was
+  found and fixed. One short paragraph of current state, one muted line of what comes next.
+  The journal and DECISIONS.md keep the history; the board keeps only today.
+- decisions: only ones he might still want to veto, **max 3**, one line each.
+- alerts: **max 1**, and usually zero.
+
+### The parts, in page order
 
 **Заголовок** — ticket key and the human title of the task, not a restatement of the stage.
 
-**Статус** — pill plus `обновлено HH:MM`: `работает` / `ждёт тебя` (`.pill.wait`) /
-`готово` (`.pill.done`).
+**Ждёт от тебя** — ALWAYS present and ALWAYS first. Either a physical action with the exact
+steps, or a decision already taken and awaiting a yes/no — never an open question, never a list
+of options with no winner named. When nothing waits on him: one calm line saying so, plus what
+will appear here next and roughly when. Style it so waiting-on-him and nothing-needed look
+different at a glance (warm vs neutral background).
 
-**Ход работы** — the checklist, and the first thing he reads:
+**Статус** — one short paragraph: what is happening right now and why it matters. Pill plus
+`обновлено DD.MM HH:MM` from the real clock.
 
-- finished: `class="done-step"` — struck through and muted
-- current: `class="now-step"` — highlighted and bold, **exactly one at a time**, phrased as
-  what is happening now ("Ищу правила валидации, researcher-opus")
-- planned: `class="todo-step"` — muted
-
-Plan the full list when you create the board and keep the wording stable. He re-reads the same
-board, so a step that quietly changes its name reads as a different step. Adding a stage you
-discovered is fine; rewording a finished one is not. A stage is struck through when it is
-**finished**, not when it is started.
+**Дальше** — one muted line: the next couple of steps, then the tail of the task.
 
 **Alert** — only for something genuinely critical: a blocker, a discovered risk, a decision
 that changes the shape of the task, anything he would be angry to learn about late. Uppercase
@@ -130,12 +135,8 @@ of the time this block is absent entirely.
 > This board is a different medium with one job — to be scannable in seconds — and the heavy
 > weight, the colour and the uppercase alert line are deliberate. Do not "fix" them.
 
-**Ждёт от тебя** — present only while the run is actually waiting. Either a physical action, or a
-decision already taken and awaiting a yes/no. Never an open question, and never a list of options
-with no winner named. This block and the `ждёт тебя` pill appear and disappear together.
-
-**Принятые решения** — what was decided and, where it is not obvious, why. Enough that he can
-disagree with a decision without reading anything else.
+**Принятые решения** — only if a decision is still vetoable; one line each, max 3. Everything
+already executed lives in the journal, not here.
 
 ## Rules
 

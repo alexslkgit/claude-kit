@@ -1,127 +1,66 @@
 <!DOCTYPE html>
-<!--
-  The board — the user's live view of this task. Rewritten in full by the agent on every stage change.
-  Never appended to, never allowed to grow past one screen.
-  Placeholders are {{...}} — replace all of them; delete whole blocks that do not apply.
--->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<!-- The page reloads itself so an already-open tab is always current. Do not remove. -->
-<meta http-equiv="refresh" content="10">
-<title>{{TASK_KEY}} — {{TASK_TITLE}}</title>
+<meta http-equiv="refresh" content="30">
+<title>TASK-KEY — human title</title>
 <style>
   :root {
     --bg: #ffffff; --fg: #16181d; --muted: #8a9099; --line: #e6e8ec;
-    --now-bg: #eef4ff; --now-fg: #0b3d91; --alert-fg: #b3001b; --alert-bg: #fff1f2;
-    --wait-fg: #8a5300; --wait-bg: #fff8e6; --pill-bg: #eef4ff; --pill-fg: #0b3d91;
+    --now-bg: #eef4ff; --now-fg: #0b3d91;
+    --warn-bg: #fff8e6; --warn-fg: #8a5300;
+    --ok-bg: #e7f7ed; --ok-fg: #0a6b32;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #14161a; --fg: #eef0f4; --muted: #878e99; --line: #272b33;
-      --now-bg: #14243f; --now-fg: #9dc0ff; --alert-fg: #ff8a95; --alert-bg: #2a1418;
-      --wait-fg: #ffcc70; --wait-bg: #2a2213; --pill-bg: #14243f; --pill-fg: #9dc0ff;
+      --now-bg: #14243f; --now-fg: #9dc0ff;
+      --warn-bg: #2a2213; --warn-fg: #ffcc70;
+      --ok-bg: #102b1a; --ok-fg: #7fdca4;
     }
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 34px 30px 44px; background: var(--bg); color: var(--fg);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  main { max-width: 760px; margin: 0 auto; }
-
-  h1 { font-size: 25px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 10px; }
-  h1 .key { color: var(--muted); font-weight: 600; }
-
-  .meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-          font-size: 13px; color: var(--muted); margin-bottom: 26px; }
-  .pill { background: var(--pill-bg); color: var(--pill-fg); font-weight: 700;
-          font-size: 12px; padding: 3px 10px; border-radius: 999px; letter-spacing: .01em; }
-  .pill.done { background: #e7f7ed; color: #0a6b32; }
-  .pill.wait { background: var(--wait-bg); color: var(--wait-fg); }
-  @media (prefers-color-scheme: dark) { .pill.done { background: #102b1a; color: #7fdca4; } }
-
-  /* The one thing he must not miss. Real heavy weight, not a nudge. */
-  .alert { background: var(--alert-bg); border-left: 5px solid var(--alert-fg);
-           border-radius: 0 8px 8px 0; padding: 15px 18px; margin: 0 0 26px; }
-  .alert p { margin: 0; color: var(--alert-fg); font-size: 19px; line-height: 1.35;
-             font-weight: 800; letter-spacing: -0.01em; }
-  .alert p + p { margin-top: 8px; font-size: 15px; font-weight: 600; }
-
-  h2 { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
-       color: var(--muted); margin: 0 0 12px; }
-  section { margin-bottom: 26px; }
-
-  ol.steps { list-style: none; margin: 0; padding: 0; }
-  ol.steps li { display: flex; gap: 10px; align-items: baseline;
-                padding: 6px 10px; border-radius: 7px; margin-left: -10px; }
-  ol.steps li .mark { flex: 0 0 15px; font-size: 13px; }
-  /* strike the text only — a struck-through checkmark reads as "cancelled", not "done" */
-  .done-step { color: var(--muted); }
-  .done-step span:last-child { text-decoration: line-through;
-               text-decoration-color: var(--muted); text-decoration-thickness: 1px; }
-  .now-step { background: var(--now-bg); color: var(--now-fg); font-weight: 700; }
-  .todo-step { color: var(--muted); }
-
-  ul.plain { margin: 0; padding-left: 18px; }
-  ul.plain li { margin-bottom: 6px; }
-  ul.plain li::marker { color: var(--muted); }
-
-  .wait { background: var(--wait-bg); border-radius: 8px; padding: 13px 16px; }
-  .wait li { font-weight: 600; color: var(--wait-fg); }
-
-  footer { border-top: 1px solid var(--line); padding-top: 12px;
-           font-size: 12px; color: var(--muted); }
-  code { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  body { margin: 0; padding: 34px 30px 44px; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 18px; }
+  /* «Ждёт от тебя» — ALWAYS the first block. .idle when nothing waits on him. */
+  .you { background: var(--warn-bg); color: var(--warn-fg); border-radius: 12px;
+         padding: 18px 20px; font-size: 17px; font-weight: 600; }
+  .you.idle { background: var(--now-bg); color: var(--now-fg); }
+  .you ol { margin: 8px 0 0; padding-left: 22px; font-weight: 400; font-size: 15px; }
+  .you li { margin-bottom: 8px; }
+  .alert { background: var(--warn-bg); color: var(--warn-fg); border-radius: 12px;
+           padding: 14px 18px; margin-top: 14px; font-size: 15px; }
+  .alert b { display: block; text-transform: uppercase; letter-spacing: .04em; }
+  .status { margin: 22px 0 0; }
+  .status .pill { display: inline-block; border-radius: 999px; padding: 2px 11px;
+    font-size: 12.5px; font-weight: 700; background: var(--now-bg); color: var(--now-fg);
+    margin-right: 8px; }
+  .status .pill.done { background: var(--ok-bg); color: var(--ok-fg); }
+  .next { color: var(--muted); font-size: 14px; margin: 18px 0 0; }
+  .stamp { color: var(--muted); font-size: 13px; margin-top: 26px; }
 </style>
 </head>
 <body>
 <main>
 
-  <h1><span class="key">{{TASK_KEY}}</span> — {{TASK_TITLE}}</h1>
-  <div class="meta">
-    <!-- pill class: (working) | done | wait -->
-    <span class="pill">{{STATUS_TEXT}}</span>
-    <span>обновлено {{HH:MM}}</span>
-    <span>·</span>
-    <span>{{ELAPSED_OR_STAGE_COUNT}}</span>
-  </div>
+  <h1>TASK-KEY — human title of the task</h1>
 
-  <!-- ALERT — only when something is genuinely critical or blocking. Delete otherwise.
-       Never more than 3. If everything is an alert, nothing is. -->
-  <div class="alert">
-    <p>{{ЧТО НЕЛЬЗЯ ПРОПУСТИТЬ, ЗАГЛАВНЫМИ}}</p>
-    <p>{{одна строка контекста — почему это важно прямо сейчас}}</p>
-  </div>
+  <!-- FIRST BLOCK, ALWAYS. Waiting: class="you", exact steps, one action per line.
+       Nothing waiting: class="you idle", one calm line + what appears here next and when. -->
+  <div class="you idle">От тебя пока ничего. Когда X будет готово, здесь появится
+  инструкция на Y (~N минут).</div>
 
-  <section>
-    <h2>Ход работы</h2>
-    <ol class="steps">
-      <li class="done-step"><span class="mark">✓</span><span>{{завершённый этап}}</span></li>
-      <li class="now-step"><span class="mark">▶</span><span>{{текущий этап — что делается прямо сейчас}}</span></li>
-      <li class="todo-step"><span class="mark">○</span><span>{{запланированный этап}}</span></li>
-    </ol>
-  </section>
+  <!-- Optional, max 1, usually absent. -->
+  <!-- <div class="alert"><b>Блокер</b>Одна строка контекста.</div> -->
 
-  <!-- Delete when nothing is waiting on him. -->
-  <section>
-    <h2>Ждёт от тебя</h2>
-    <ul class="plain wait">
-      <li>{{конкретное действие с вариантами, а не открытый вопрос}}</li>
-    </ul>
-  </section>
+  <p class="status"><span class="pill">работает</span>One short paragraph: what is happening
+  right now and why it matters. No history, no tables — the journal keeps those.</p>
 
-  <section>
-    <h2>Принятые решения</h2>
-    <ul class="plain">
-      <li>{{решение — и причина, если она не очевидна}}</li>
-    </ul>
-  </section>
+  <p class="next">Дальше: next step → step after → tail of the task.</p>
 
-  <footer>
-    Страница перезагружается сама раз в 10 секунд · <code>.claude/tasks/{{TASK_KEY}}.html</code>
-  </footer>
+  <p class="stamp">Обновлено DD.MM HH:MM. Страница обновляется сама.</p>
 
 </main>
 </body>
