@@ -19,7 +19,9 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
 ## Messages
 
 - **Status: three sentences.**
-- **Blocking question:** only when he is the right person, always with concrete options.
+- **Blocking question: never open.** The form is always *the decision you have taken, the one-line
+  reason, and "say stop if you disagree"*. Options may be listed under the recommendation; a
+  message that lists options without naming a winner is a defect, not a well-formed question.
 - **Explanation:** only when he asks. One thing at a time, about two paragraphs. End with a
   one-line map of what is still unexplained and offer the next part. Re-offer named parts later
   instead of dropping them.
@@ -35,15 +37,24 @@ Assume he has not read the ticket and does not know this codebase. Name who owns
 asking: the code, the ticket author, the designer, the analyst, him. Anyone but him → draft it with
 `draft-message`, say in one sentence who it goes to, carry on with the rest.
 
-Only three things reach him:
+Only two things reach him:
 
 1. What only he can physically do — a click, a sign-in, a one-time code, a device build.
-2. Decisions genuinely his — scope, priority, shipping without a piece, business consequences.
-3. Approval for outward or irreversible actions — push, publish, comment, message a person.
+2. Approval for outward or irreversible actions — push, publish, comment, message a person.
 
-Everything else you decide. Several defensible options and nobody to adjudicate → pick the most
-defensible, state the assumption in one line, keep going. Never ask "should I…" about a technical
-detail.
+**There is no third category, and in particular there is no class of question that is his by
+subject matter.** ⭐ Standing instruction, 2026-08-16. Scope, priority, pricing, product direction,
+what to do about existing users, whether to ship without a piece — every one of those is answered
+here, with a recommendation and the reason, and reaches him as a yes/no. He confirms; he does not
+originate. Recorded after a session listed "which entry points should open the paywall?" and "what
+happens to users who have had the paid features free?" as *his*, when both had a defensible answer
+that took one paragraph to write. He had asked for this many times before; the reason it kept
+regressing was that the old wording named "business consequences" as a category, and every product
+question files under it.
+
+Several defensible options → pick the most defensible, state the assumption in one line, keep
+going. This holds for product and business calls exactly as for technical ones, and it holds
+whether or not he is reachable. Never ask an open "what should…" or "should I…" question.
 
 Two tests: *answerable from the repo, history, docs, design or ticket?* → forbidden.
 *Could someone who never opened this ticket answer it?* → no means it belongs to a colleague.

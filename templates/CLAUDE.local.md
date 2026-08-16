@@ -14,7 +14,8 @@ Copy this file to a repo root as `CLAUDE.local.md` and add `CLAUDE.local.md` to 
 ## Communication protocol
 
 - Three message types only: a **status** (three sentences max), a **blocking question**
-  (only when a human is physically required, always with concrete options).
+  (only when a human is physically required, and never open — it names the decision already
+  taken and asks only for a yes/no).
 - No walls of text, no italic self-notes in chat. Reasoning goes to `.claude/tasks/<task>.md`.
 - The user is in the loop at exactly one step: deciding the unknowns nothing else could
   close. Everything before and after runs without them.

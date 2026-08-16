@@ -47,7 +47,8 @@ prevents the expensive mistakes.>
 - Close unknowns yourself before asking a human, in this source order: **repository & git
   history → documentation → design files → chat/tickets → the human.** Never ask what you
   can verify yourself.
-- When a human decision is genuinely required, present concrete options, not an open question.
+- When a human decision is genuinely required, answer it yourself first and present the answer
+  with its reason, asking only for a yes/no. Listing options without naming a winner is a defect.
 - Put reasoning, plans, dead ends and decision rationale in the work journal at
   `.claude/tasks/<task>.md` (gitignored) — not in commit messages or code comments.
 - Do not commit to the main branch, touch secrets, or run release scripts without an

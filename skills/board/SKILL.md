@@ -130,9 +130,9 @@ of the time this block is absent entirely.
 > This board is a different medium with one job — to be scannable in seconds — and the heavy
 > weight, the colour and the uppercase alert line are deliberate. Do not "fix" them.
 
-**Ждёт от тебя** — present only while the run is actually waiting. A concrete action with
-options, never an open question. This block and the `ждёт тебя` pill appear and disappear
-together.
+**Ждёт от тебя** — present only while the run is actually waiting. Either a physical action, or a
+decision already taken and awaiting a yes/no. Never an open question, and never a list of options
+with no winner named. This block and the `ждёт тебя` pill appear and disappear together.
 
 **Принятые решения** — what was decided and, where it is not obvious, why. Enough that he can
 disagree with a decision without reading anything else.

@@ -67,7 +67,8 @@ on a branch where it must, is a failed search rather than a fact — re-run it o
 
 ## 4. Bring the residue to the user, once
 
-One message, with concrete options per question, not an open-ended list. Anything that needs a
+One message, and every item in it is a decision you have already taken with its one-line reason,
+needing only a yes/no — never an open question and never a bare list of options. Anything that needs a
 colleague gets a draft via the `draft-message` skill — the user sends it, and meanwhile work
 continues on everything that does not depend on the answer.
 
