@@ -2,7 +2,19 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="30">
+<!-- Refresh by background fetch, NEVER <meta http-equiv="refresh">: a page reload makes
+     Chrome steal focus and yank the user's macOS Space to the browser every 30 s. -->
+<script>
+setInterval(async () => {
+  try {
+    const r = await fetch(location.href, {cache: 'no-store'});
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    if (doc.body && doc.body.innerHTML !== document.body.innerHTML) {
+      document.body.innerHTML = doc.body.innerHTML;
+    }
+  } catch (e) {}
+}, 15000);
+</script>
 <title>TASK-KEY — human title</title>
 <style>
   :root {
