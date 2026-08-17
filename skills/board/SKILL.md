@@ -96,6 +96,13 @@ with `Write`. Always **replace the whole file** — never append. Growth is the 
 
 Timestamp from the real clock, local time: `date +%H:%M`.
 
+Live refresh is **background fetch only** — the template's script re-fetches the file and swaps
+the DOM in place. **Never `<meta http-equiv="refresh">`, on any page you serve him** (boards,
+plans, explainers): a real page reload yanks his macOS Space over to the browser on every cycle,
+endlessly, until he closes the tab. Measured 2026-08-16 — three such pages had him auto-swiped
+to Chrome every 10–60 s while he worked. When a page is finished and will not change again,
+strip the refresh script too: a retired page is static.
+
 ### Hard size caps — the 10-second budget
 
 ⭐ **Standing instruction, 2026-08-16: as simple as possible, his action always on top.** He said
