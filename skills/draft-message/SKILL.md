@@ -100,6 +100,35 @@ cannot, say so and ask him for the name — one short question — instead of fa
 A draft aimed at a group is deleted, not parked. Do not leave it in a file "in case", and never let
 one sit in a channel composer where a stray Enter publishes it.
 
+## The four strikes — run these before the first line, every time
+
+⭐ Recorded 2026-08-17, after a draft to a client tech lead that broke all four at once and he
+called it, verbatim, «сообщение, о котором я пожалею, как будто я идиот». The failure was never a
+missing fact — the whole thread was on screen. It was writing the message before deciding what the
+recipient does not already know.
+
+1. **Does the message need to exist?** Name the action it should produce in the recipient. If they
+   already said they would do the thing, or the action is yours and not theirs, there is no
+   message. Silence is a valid output of this skill.
+2. **Strike everything they can see on their own screen or know from their own job.** The PR's
+   status, how many approvals it needs, who approved, how their branching works, what their own
+   process requires — a lead who has run this repo for years reads that as being explained to.
+   Whatever survives the strike is the message; if nothing survives, go back to strike 1.
+3. **Read the project's team-and-process facts before writing, and use nothing that is not in
+   them.** Every project's `CLAUDE.local.md` carries a facts section — who the people are, who
+   decides what, how review and merge actually work there. Anything I only inferred is a guess, and
+   a guess must never appear in a message to the person who knows the real answer. A missing fact
+   is a thing to go find, in the repo or from him, not to write around.
+4. **Copy the register off his own last messages in that exact chat.** Open the thread, read the
+   two or three he sent, and match them. He does not open with a name — no «Тарасе», no
+   «Привіт, Тарас». Salutations, sign-offs and warm-ups get invented by me and never by him.
+
+Note what these are not: they are four things to *do*, each with an output I can check. A rule of
+the form "do not invent X" is worthless and was removed on 2026-08-17 — at the moment of writing I
+do not know I am inventing, so the ban never fires, and it accumulates into a list of superstitions
+that a better model would only stumble over. The fix for invention is knowing the facts, which is
+strike 3, not a prohibition.
+
 ## Style rules
 
 Write the way the user writes — a working developer messaging a teammate, not an assistant

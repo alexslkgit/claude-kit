@@ -34,8 +34,18 @@
 set -uo pipefail
 
 # ---- Does this machine have the corporate licence at all? -------------------------
+# The bridge, not the endpoint string, is what proves this machine is the right one.
+# Until 2026-08-17 the check was `grep lhg.ghe.com ~/.copilot/config.json`, and when the
+# Copilot CLI re-authenticated the same corporate account against https://github.com that
+# string vanished, the hook went silent on every event, and a whole day of repository
+# reading was billed to the personal plan with nothing ever saying so. A precondition that
+# fails closed and silent is worse than no precondition.
 command -v copilot >/dev/null 2>&1 || exit 0
-/usr/bin/grep -q "lhg.ghe.com" "$HOME/.copilot/config.json" 2>/dev/null || exit 0
+[ -x "$HOME/bin/copilot-ask" ] || exit 0
+
+# Corporate login present? Same account under either host, or the old enterprise endpoint.
+CORP_OK=0
+/usr/bin/grep -qE "lhg\.ghe\.com|OSlobodianiuk_wsi" "$HOME/.copilot/config.json" 2>/dev/null && CORP_OK=1
 
 MODEL="claude-sonnet-5"
 GLOBAL_DIR="$HOME/.claude/copilot-guard"
@@ -53,8 +63,10 @@ state="$GLOBAL_DIR/$slug.state"
 case "$event" in
 
   PreToolUse)
-    # Only the Agent tool matters here. Parse properly: the brief is free text and can
-    # contain anything, so sed on the raw payload is not safe enough to block on.
+    # Two things matter here: the Agent tool, and reading the repository by hand.
+    # The second was the bigger leak — an Agent block teaches nothing when the session
+    # simply greps the repo itself, one cheap-looking call at a time, all on the personal
+    # plan. Added 2026-08-17 after a session made fourteen local reads and one Copilot call.
     command -v python3 >/dev/null 2>&1 || exit 0
     verdict="$(printf '%s' "$payload" | python3 -c '
 import json, re, sys
@@ -62,9 +74,28 @@ try:
     d = json.load(sys.stdin)
 except Exception:
     print("allow"); raise SystemExit(0)
-if d.get("tool_name") != "Agent":
-    print("allow"); raise SystemExit(0)
+tool = d.get("tool_name")
 ti = d.get("tool_input") or {}
+
+# ---- hand-reading a work repository -------------------------------------------------
+# Only inside the ws-* checkouts: the kit, the home directory and the status files are
+# this session own business and stay free.
+if tool in ("Bash", "Grep", "Glob"):
+    blob = json.dumps(ti)
+    if "COPILOT-EXEMPT" in blob:
+        print("allow"); raise SystemExit(0)
+    cwd = str(d.get("cwd") or "")
+    in_repo = "/ws-" in blob or "/ws-" in cwd
+    if tool in ("Grep", "Glob"):
+        reading = in_repo
+    else:
+        cmd = str(ti.get("command", ""))
+        reading = bool(in_repo and re.search(
+            r"\b(grep|rg|ag|find|cat|head|tail|awk|wc|sed -n|git log|git show|git blame)\b", cmd))
+    print("read" if reading else "allow"); raise SystemExit(0)
+
+if tool != "Agent":
+    print("allow"); raise SystemExit(0)
 prompt = str(ti.get("prompt", ""))
 if "COPILOT-EXEMPT" in prompt:
     print("allow"); raise SystemExit(0)
@@ -79,6 +110,36 @@ else:
     print("allow")
 ' 2>/dev/null)"
     case "$verdict" in
+      read)
+        r="$(/usr/bin/sed -n 's/^reads=//p' "$state" 2>/dev/null | head -1)"; : "${r:=0}"
+        r=$((r + 1))
+        tmp="$state.tmp.$$"
+        { [ -f "$state" ] && /usr/bin/grep -v '^reads=' "$state" 2>/dev/null
+          printf 'reads=%s\n' "$r"; } > "$tmp" 2>/dev/null && mv "$tmp" "$state" 2>/dev/null
+        rm -f "$tmp" 2>/dev/null || true
+
+        # Three free reads a session: checking one fact before answering is not the leak.
+        # The leak is the fourth, tenth and fourteenth, which together are a research task
+        # that belongs on the employer's budget.
+        [ "$r" -le 3 ] 2>/dev/null && exit 0
+        cat >&2 <<EOF
+copilot-guard: this is hand-read number $r of a work repository in this session.
+
+Three are free because checking a single fact is not research. Past that it is research,
+and research on this Mac is paid for by the employer, not by the personal Claude plan:
+
+  ~/bin/copilot-ask -C <repo> "<exact files, exact question>; answer in max N lines"
+
+Brief it the way a subagent gets briefed — name the files, name the question, demand a
+bounded answer, take the conclusion and never the raw material. One whole unit of work per
+call, because each call carries its own ~28k-token system prompt.
+
+COPILOT-EXEMPT anywhere in the command lets a genuine exception through: reading a file
+this conversation must quote verbatim, or a check whose output the next edit depends on
+character for character.
+EOF
+        exit 2
+        ;;
       block:*)
         sub="${verdict#block:}"
         cat >&2 <<EOF
@@ -140,13 +201,29 @@ EOF
   SessionStart|*)
     if [ -f "$state" ]; then
       tmp="$state.tmp.$$"
-      /usr/bin/grep -v '^prompts=' "$state" > "$tmp" 2>/dev/null && mv "$tmp" "$state" 2>/dev/null
+      /usr/bin/grep -vE '^(prompts|reads)=' "$state" > "$tmp" 2>/dev/null && mv "$tmp" "$state" 2>/dev/null
       rm -f "$tmp" 2>/dev/null || true
     fi
+    if [ "$CORP_OK" -eq 0 ]; then
+      cat <<EOF
+!!! COPILOT BRIDGE IS NOT AUTHENTICATED — SAY THIS TO THE USER IN THE FIRST REPLY !!!
+
+~/bin/copilot-ask exists, but no corporate login is visible in ~/.copilot/config.json, so
+every read this session performs will be billed to the personal Claude plan instead of the
+employer's budget. This is a blocker the user has to clear, and it is stated first, in his
+first reply, rather than discovered later from the credit meter. The fix is one command in
+his terminal:
+
+  script -q /dev/null copilot /login
+
+Until it is cleared, say so plainly and keep local reading to the minimum the task needs.
+EOF
+      exit 0
+    fi
     cat <<EOF
-copilot-guard: this Mac carries a corporate GitHub Copilot licence (GitHub Enterprise account
-oleksandr-slobodianiu-sp-lhg at lhg.ghe.com) whose monthly AI-credit budget is paid by the
-employer, and the precondition for it has just been checked and holds. Work that can be handed
+copilot-guard: this Mac carries a corporate GitHub Copilot licence on the account
+OSlobodianiuk_wsi, whose monthly AI-credit budget is paid by the employer, and the bridge
+~/bin/copilot-ask has just been checked and is authenticated. Work that can be handed
 to another agent without losing the thread is meant to go there rather than onto the user's
 personal Claude subscription: bulk reading, repository-wide search, first-draft implementation,
 migrations, log and diff analysis, test and build runs. Subagents included — a brief written for

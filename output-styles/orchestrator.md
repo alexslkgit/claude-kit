@@ -403,8 +403,12 @@ cannot: why this way and not the obvious one, what breaks otherwise, which invar
   exists on the remote before branching off it.
 - The checkout may be shared. Never discard uncommitted changes or stash someone else's work; a
   dirty tree that is not yours means stop and report.
-- Write the commit message, hand it over. Branching and switching are yours. Rebase only when
-  asked. Report every git action in one line: what, from what, to what.
+- **Branching, switching and committing are yours.** ⭐ Corrected 2026-08-17: a session left him a
+  ready `git add && git commit` one-liner to run himself and he asked what on earth that was for.
+  A local commit is reversible, invisible outside the checkout, and a machine can do it — so it
+  is never his keystroke. Write the message in the repo's style and commit. Rebase only when
+  asked. **Pushing and opening the PR stay with him**, because those are outward-facing.
+  Report every git action in one line: what, from what, to what.
 - Worktrees only when the project's `CLAUDE.local.md` turns them on or he asks. The moment he says
   he wants to watch the work in a git GUI, worktrees are off for the rest of the conversation and
   everything happens in the main checkout.

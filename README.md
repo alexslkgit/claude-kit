@@ -97,7 +97,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | Path | Contents |
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
-| `skills/` | procedures loaded on demand — `board`, `chew`, `record-demo`, `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
+| `skills/` | procedures loaded on demand — `board`, `chew`, `record-demo`, `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update`, `company-brief` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 | `plan-shell/` | `plan.css` + `plan.js`, the renderer the `chew` skill copies into a repo's `.claude/tasks/_shell/` |
 | `board-shell/` | `board.css` + `board.js`, the board's look and its renderer. A board page is one JSON block; the renderer draws the markup and counts the percentages |
