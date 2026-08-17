@@ -63,34 +63,12 @@ HANDOFF="$repo_root/.claude/HANDOFF.md"
 case "$event" in
 
   UserPromptSubmit)
-    # --- context meter -------------------------------------------------------------------
-    # The session transcript records the real token count on every assistant message: the sum
-    # of input_tokens, cache_read and cache_creation IS the context that was just re-sent. So
-    # the size of the conversation does not have to be guessed from its feel — it is a number
-    # on disk, and the moment to hand over is a threshold on it rather than a judgement call.
-    # Measured 2026-08-13: a session that felt ordinary was already at 169k.
-    # Only the tail of the file is read; the whole thing runs to megabytes.
-    tp="$(field transcript_path)"
-    if [ -n "$tp" ] && [ -f "$tp" ] && command -v python3 >/dev/null 2>&1; then
-      ctx="$(/usr/bin/tail -c 400000 "$tp" 2>/dev/null | python3 -c 'import json,sys
-n=0
-for l in sys.stdin:
-    try: u=(json.loads(l).get("message") or {}).get("usage") or {}
-    except Exception: continue
-    if u: n=sum(u.get(k,0) for k in ("input_tokens","cache_read_input_tokens","cache_creation_input_tokens"))
-print(n)' 2>/dev/null)"
-      : "${ctx:=0}"
-      if [ "$ctx" -ge 200000 ] 2>/dev/null; then
-        cat <<EOF
-handoff-guard: this conversation is at $(( ctx / 1000 ))k tokens, and every further turn re-sends
-all of it. The user's standing rule is to stop at the next natural boundary past 200k — a finished
-sub-task, never mid-step — write the handoff to $HANDOFF, and tell him to press /clear. He cannot
-be expected to notice this himself; he has said the session should raise it.
-EOF
-      elif [ "$ctx" -ge 170000 ] 2>/dev/null; then
-        printf 'handoff-guard: this conversation is at %sk tokens. Past 200k the standing rule is to wrap up at the next finished sub-task, so it is worth finishing what is open rather than starting something large.\n' "$(( ctx / 1000 ))"
-      fi
-    fi
+    # The context meter that used to live here now lives in context-guard.sh. It had to move:
+    # this script exits early when the cwd is not a git checkout (line ~60), so in ~/Downloads
+    # and every other non-repo directory the meter was silently dead — which is exactly where
+    # the user found himself at 206k with nothing having warned him, 2026-08-17. The new hook
+    # has no repo requirement and also runs on PostToolUse, because a turn is a median of 25
+    # requests and can cross the threshold without ever passing a prompt boundary.
 
     # --- handoff requested ---------------------------------------------------------------
     # Match on the raw payload rather than parsing the prompt out of it: prompts are multi-line

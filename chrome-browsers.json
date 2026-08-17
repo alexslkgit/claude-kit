@@ -31,14 +31,14 @@
     },
     {
       "deviceId": "2a3a86cf-655f-4ac9-b81c-f527aa07f3aa",
-      "hostname": "OMT-GHHD91424H-LDH",
-      "signedInTo": "Lufthansa work Mac — dev.azure.com/lhg-ddl, trackspace.lhsystems.com, outlook.office.com, teams.microsoft.com, all live SSO",
+      "hostname": "CONTESTED — see note",
+      "signedInTo": "Lufthansa work surfaces (dev.azure.com/lhg-ddl, trackspace.lhsystems.com, outlook.office.com, teams.microsoft.com, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN)) AND personal accounts (alexslkmain@gmail.com, Porkbun, GitHub alexslkgit, FamilySearch Oleksandr7170) — both were observed through this same deviceId on 2026-08-17",
       "verified": "2026-08-17",
-      "method": "reconnect-fingerprint + content-proof",
-      "note": "THIS is Luft-Mac. Confirmed 2026-08-17: the user clicked Connect in switch_browser while sitting at OMT-GHHD91424H-LDH, and this deviceId's connectedAt jumped (1786977691088 -> 1786981841801) at that moment while the other two stayed unchanged. Everything then read through it was genuine Lufthansa data. Supersedes the earlier guess that 777dafa0 was Luft-Mac. Re-confirmed 2026-08-17 afternoon: he clicked Connect in switch_browser and named it \"Luft-Mac\" himself, so that is the name to use when speaking to him.",
+      "method": "contested: localhost-probe said Slobodianiuks-MacBook-Pro.local; reconnect-fingerprint + content-proof said OMT-GHHD91424H-LDH",
+      "note": "TWO SESSIONS ON 2026-08-17 REACHED OPPOSITE CONCLUSIONS ABOUT WHICH MAC THIS IS, and both left real evidence, so neither was dropped. (a) A localhost-probe run from Slobodianiuks-MacBook-Pro.local answered for this deviceId — that is the strongest locality proof available, and probe.sh is known NOT to work on OMT-GHHD91424H-LDH, which is why the competing attribution had to use a weaker method. (b) Through this deviceId a session read genuine Lufthansa Teams, Outlook and Jira data as SLOBODIANIUK, OLEKSANDR (EXTERN), and the user clicked Connect in switch_browser and named it \"Luft-Mac\" himself. The reconciliation that fits both: this is a Chrome on the personal MacBook carrying a profile signed into the Lufthansa web apps. Treat the hostname as unknown and the Lufthansa sessions as PRESENT. Confirm with one probe round before acting.",
+      "userGivenName": "Luft-Mac",
       "chromeProfileDir": "Profile 1",
-      "chromeProfileName": "Lufthansa",
-      "userGivenName": "Luft-Mac"
+      "chromeProfileName": "Lufthansa"
     },
     {
       "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
