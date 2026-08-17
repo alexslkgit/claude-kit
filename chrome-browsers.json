@@ -4,7 +4,9 @@
     "Edit THIS file (~/Developer/claude-kit/chrome-browsers.json), never the installed copy,",
     "then run kit-update so the other machines learn it too.",
     "deviceId survives restarts but changes when the extension is reinstalled or re-authenticated,",
-    "so treat an entry as a recommendation and confirm it with one probe round before acting."
+    "so treat an entry as a recommendation and confirm it with one probe round before acting.",
+    "probe.sh does NOT work on OMT-GHHD91424H-LDH (2026-08-17): the local server cannot answer its own loopback request, with or without dangerouslyDisableSandbox. Fall back to the reconnect fingerprint — call list_connected_browsers before and after switch_browser and watch which deviceId's connectedAt changes.",
+    "Do NOT navigate to a vssps.dev.azure.com API URL to work around CORS (2026-08-17, OMT-GHHD91424H-LDH): that host bounces to an AAD account picker offering only the aubay.pt account, which is not in the Lufthansa Group tenant, and the attempt also dropped the live dev.azure.com session in that profile. ADO then needed a fresh switch_browser confirmation before it would load again."
   ],
   "browsers": [
     {
@@ -19,21 +21,24 @@
     },
     {
       "deviceId": "777dafa0-daed-4586-a75d-0c4b54630a98",
-      "hostname": "luft-mac",
+      "hostname": null,
       "chromeProfileDir": null,
       "chromeProfileName": null,
-      "signedInTo": "Lufthansa work Mac — unknown accounts",
+      "signedInTo": "unknown — another Mac",
       "verified": "2026-08-17",
-      "method": "inferred",
-      "note": "Named 'Luft-Mac' by the user in the switch_browser dialog on 2026-08-17; the name did not stick in list_connected_browsers, which is why this file exists. Identified by elimination: it was the only deviceId that vanished from the list while it was the selected browser. Confirm with a probe before trusting."
+      "method": "disproved",
+      "note": "NOT Luft-Mac. The 'identified by elimination' guess of 2026-08-17 was wrong. It dropped off the connected list before the switch_browser round and did not come back; the browser that actually answered on OMT-GHHD91424H-LDH was 2a3a86cf."
     },
     {
       "deviceId": "2a3a86cf-655f-4ac9-b81c-f527aa07f3aa",
-      "hostname": null,
-      "signedInTo": "unknown — another Mac",
+      "hostname": "OMT-GHHD91424H-LDH",
+      "signedInTo": "Lufthansa work Mac — dev.azure.com/lhg-ddl, trackspace.lhsystems.com, outlook.office.com, teams.microsoft.com, all live SSO",
       "verified": "2026-08-17",
-      "method": "probe-negative",
-      "note": "Proven NOT to be on C12239: could not reach its loopback."
+      "method": "reconnect-fingerprint + content-proof",
+      "note": "THIS is Luft-Mac. Confirmed 2026-08-17: the user clicked Connect in switch_browser while sitting at OMT-GHHD91424H-LDH, and this deviceId's connectedAt jumped (1786977691088 -> 1786981841801) at that moment while the other two stayed unchanged. Everything then read through it was genuine Lufthansa data. Supersedes the earlier guess that 777dafa0 was Luft-Mac. Re-confirmed 2026-08-17 afternoon: he clicked Connect in switch_browser and named it \"Luft-Mac\" himself, so that is the name to use when speaking to him.",
+      "chromeProfileDir": "Profile 1",
+      "chromeProfileName": "Lufthansa",
+      "userGivenName": "Luft-Mac"
     },
     {
       "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
