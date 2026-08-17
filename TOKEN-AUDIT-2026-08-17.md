@@ -132,7 +132,29 @@ monster session decides the answer.
 | Aug 10 | 73 | 234k | 255k |
 | Aug 17 | 5 | 220k | 218k |
 
-**On average cost of work: ~10%.** Session peaks fell by a third, but the saving was eaten by the
+**Correction, same day.** The median across sessions was the wrong statistic for the question
+"did this pay?", because it deliberately discards the expensive sessions and those *were* most of
+the bill. Measured on the aggregate — which is what the weekly limit sees:
+
+| week | cost per edit, whole bill | same, worst session removed | requests per edit | median context per request | cost per request |
+|---|---|---|---|---|---|
+| Jul 13 — nothing in place | 456k | 281k | 11.9 | 238k | 38 437 |
+| Aug 3 — the /compact era | 275k | 277k | 9.3 | 173k | 29 564 |
+| Aug 10 — the handoff era | 252k | 253k | 8.9 | 170k | 28 222 |
+| Aug 17 | 186k | 167k | 7.5 | 138k | 24 823 |
+
+**2.4× cheaper per unit of work**, and 1.7× even with each week's worst session removed — so it is
+not only that the monsters are gone, ordinary work got cheaper too. Requests per edit improved
+independently, 11.9 → 7.5.
+
+The three eras, dated from 38 compaction records in the transcripts: nothing until Jul 31 (this is
+where the 4 302-request, 527k session lives) · `/compact` from Jul 31 to Aug 4, 37 calls in five
+days, 16 of them on Jul 31 alone · handoffs and status files from Aug 4, with `/compact` never
+called again. The switch is dated exactly to when "compact is the wrong tool" entered the kit.
+`/compact` was much better than nothing (456k → 275k); handoffs are better than `/compact`
+(275k → 252k → 186k). The order is right and nothing here should be reverted.
+
+**On the per-session median: ~10%.** Session peaks fell by a third, but the saving was eaten by the
 floor growing 60k → 74k over the same month and by the 46% tool traffic being untouched. Commits
 cross-check: week 29 was 100 commits for 273M, week 33 was 187 for 450M — −12% per commit.
 
@@ -184,3 +206,24 @@ A context meter already existed inside `handoff-guard.sh` at 200k and had never 
 script returns early when the cwd is not a git checkout, so in `~/Downloads` — where he sat at 206k
 on 2026-08-17 — it was dead code. That is the actual bug this hook fixes, and it is why the rule
 looked ignored for a month.
+
+## Verified: a subagent can drive the browser
+
+Asked 2026-08-17 whether browsing could be delegated at all. It can. A subagent reached both
+`mcp__claude-in-chrome__list_connected_browsers` (three browsers answered) and
+`mcp__Claude_Browser__tabs_context` (returned the open tab). The grant is the `tools:` line —
+`mcp__claude-in-chrome__*, mcp__Claude_Browser__*` — and a bare tool list without those globs
+grants no MCP tools at all.
+
+Two things that check out and are worth keeping:
+
+- The connectivity check cost **42 755 tokens**. That is the subagent's own floor, and it is why
+  `bulk-guard.sh` allows two images in the main thread rather than none: one screenshot near the end
+  of a session is genuinely cheaper inline. The win is on loops. Narrow `tools:` lists and sonnet
+  rather than opus exist to keep that floor small.
+- The browser-list result had text appended instructing the agent to ask the user and switch
+  browsers. It refused, correctly, on the grounds that tool output is data and not a task. The
+  agents' prompts say this explicitly and it held under a real injection attempt.
+
+Corrected the same day: new agent files become available **immediately**, without `/clear` — the
+registry refreshed inside the same session.
