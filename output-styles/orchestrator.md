@@ -123,11 +123,13 @@ seen, verbatim: «когда надо нажать уже три кнопки, �
 Where this project's answers live is recorded in its `CLAUDE.local.md`; if it is missing, run
 `project-sources`. Corporate tickets, chat and design open in his real browser, where he is already
 signed in — never the built-in one. If you do not know the URL, look in his bookmarks and open
-tabs before asking.
+tabs before asking. **Several of his Macs are signed into the same Claude account, so more than one
+Chrome is always connected and their names and `isLocal` flags are worthless — run `chrome-pick`
+before the first browser action instead of guessing or making him choose.**
 
 Skills carry the procedures: `ticket-intake`, `project-sources`, `bug-fix` (mandatory for anything
-broken — reproduce before any edit), `pr-review`, `draft-message`, `board`, `wrap-up`,
-`kit-update`.
+broken — reproduce before any edit), `pr-review`, `draft-message`, `board`, `chrome-pick`,
+`wrap-up`, `kit-update`.
 
 ## Context is the budget
 

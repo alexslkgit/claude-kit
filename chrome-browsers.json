@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "Which connected Chrome belongs to which Mac. Written by the chrome-pick skill.",
+    "Edit THIS file (~/Developer/claude-kit/chrome-browsers.json), never the installed copy,",
+    "then run kit-update so the other machines learn it too.",
+    "deviceId survives restarts but changes when the extension is reinstalled or re-authenticated,",
+    "so treat an entry as a recommendation and confirm it with one probe round before acting."
+  ],
+  "browsers": [
+    {
+      "deviceId": "8b3a859a-488c-49a0-bbbc-f49791a5c731",
+      "hostname": "C12239",
+      "chromeProfileDir": "Default",
+      "chromeProfileName": "GD",
+      "signedInTo": "work — jira.wsgc.com, github.wsgc.com, both Slack workspaces",
+      "verified": "2026-08-17",
+      "method": "localhost-probe",
+      "note": "Appeared only after the extension was signed in again on 2026-08-17; the three deviceIds present before that (2a3a86cf…, 777dafa0…, c6e75d27…) are other Macs and all falsely reported isLocal:true."
+    },
+    {
+      "deviceId": "777dafa0-daed-4586-a75d-0c4b54630a98",
+      "hostname": "luft-mac",
+      "chromeProfileDir": null,
+      "chromeProfileName": null,
+      "signedInTo": "Lufthansa work Mac — unknown accounts",
+      "verified": "2026-08-17",
+      "method": "inferred",
+      "note": "Named 'Luft-Mac' by the user in the switch_browser dialog on 2026-08-17; the name did not stick in list_connected_browsers, which is why this file exists. Identified by elimination: it was the only deviceId that vanished from the list while it was the selected browser. Confirm with a probe before trusting."
+    },
+    {
+      "deviceId": "2a3a86cf-655f-4ac9-b81c-f527aa07f3aa",
+      "hostname": null,
+      "signedInTo": "unknown — another Mac",
+      "verified": "2026-08-17",
+      "method": "probe-negative",
+      "note": "Proven NOT to be on C12239: could not reach its loopback."
+    },
+    {
+      "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
+      "hostname": null,
+      "signedInTo": "unknown — another Mac",
+      "verified": "2026-08-17",
+      "method": "probe-negative",
+      "note": "Proven NOT to be on C12239: could not reach its loopback."
+    }
+  ]
+}
