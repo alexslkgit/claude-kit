@@ -62,6 +62,24 @@ one-time code, an approval, an irreversible click.
    you handed him. Work out what the message needs, get what you can yourself from the repo, the
    ticket, the account settings, the page you are already on; ask for the genuine remainder in one
    short question; *then* write the finished text.
+6. ⭐ **Every checkable claim in the message gets opened and looked at first — the console, the
+   dashboard, the page — and the message says what you saw.** Standing instruction, 2026-08-17.
+   The repository is not evidence about a system outside it: code can declare a flag that nobody
+   created in Firebase, a key can exist in a plist and not in the console, a job can exist in CI
+   config and be disabled. If a claim spans two systems, verify it in the second one, not by
+   inference from the first.
+7. ⭐ **Answer the question that was asked, and nothing next to it.** Same date, same cause.
+   Volunteered extras are where the wrongness lives: they were never checked, they invite a
+   correction in public, and the correction lands on him, not on you. If a neighbouring fact
+   genuinely matters, verify it to the same standard or leave it out.
+
+   Both rules were written after this: a colleague asked which feature flag hides the Past search
+   bar. The answer named both flags — Past and Upcoming — from a repo grep. He replied "но зачем это
+   нужно для upcomingFlights, если речь идет только о Past flights? В Firebase даже нет feature flag
+   для upcomingFlights", and he was right: the Upcoming parameter existed only in code, merged that
+   morning, never created in the console. Two minutes in the Firebase console — which was reachable,
+   signed in, the whole time — would have caught it. His words: «ты уже заебал писать сообщения
+   каждый раз, после которых я выгляжу идиотом».
 
 ## Style rules
 
