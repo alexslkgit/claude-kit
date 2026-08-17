@@ -119,3 +119,68 @@ Bash batched; long files authored by a subagent; `Read` with `offset`/`limit` or
 3. **The rule was ignored for two weeks.** Same failure mode as the status files before
    `status-guard.sh`: a threshold that fires only in prose loses to whatever is happening at 160k.
    A context-pressure hook is the fix, and it does not exist yet.
+
+## Did two weeks of handoff discipline actually pay?
+
+Unit of work = one `Edit`/`Write`. Median **across sessions**, not the weekly sum — otherwise one
+monster session decides the answer.
+
+| week | sessions | median cost per edit | median session peak |
+|---|---|---|---|
+| Jul 13 — before the discipline | 12 | 245k | 324k |
+| Aug 3 | 50 | 256k | 286k |
+| Aug 10 | 73 | 234k | 255k |
+| Aug 17 | 5 | 220k | 218k |
+
+**On average cost of work: ~10%.** Session peaks fell by a third, but the saving was eaten by the
+floor growing 60k → 74k over the same month and by the 46% tool traffic being untouched. Commits
+cross-check: week 29 was 100 commits for 273M, week 33 was 187 for 450M — −12% per commit.
+
+The payoff is in the tail, where an average cannot see it. Worst single session as a share of its
+whole week:
+
+| week | worst session | its requests | its peak | share of the week |
+|---|---|---|---|---|
+| Jul 13 | 168.0M | 4 302 | 527k | **61%** |
+| Jul 27 | 45.7M | 1 282 | 458k | **92%** |
+| Aug 3 | 16.8M | 416 | 456k | 5% |
+| Aug 10 | 15.9M | 449 | 485k | 4% |
+
+Before the discipline one session ate two thirds to nine tenths of a week. After it the worst is
+four percent. The handoff ritual is insurance against the catastrophic session, not an efficiency
+win — and it is worth keeping on exactly that basis.
+
+## Screenshots cannot be dropped from a context
+
+Asked 2026-08-17 whether an image could be summarised to text and then deleted. It cannot: a
+context is append-only, and rewriting the prefix invalidates the cache, so everything after the
+deletion point would be re-sent at full price — more than leaving the image in place.
+
+The instinct is right about the *place*, though: a subagent takes the screenshots, looks, clicks,
+looks again, and returns words. The images die with its context. Break-even:
+
+| case | cheaper | why |
+|---|---|---|
+| one image, session nearly over | inline | 1 600 × 0.1 × 20 = 3k, under a subagent's own floor |
+| one image, early in a session | about even | 1 600 × 0.1 × 150 = 24k vs that floor |
+| a loop of three or more | subagent, by several times | ten images with 100 requests left = 160k |
+
+Writing the description costs ~100 output tokens = 500 units, i.e. nothing, so the worry that
+narrating the image would cost more than keeping it does not hold.
+
+Caveat on every delegation number here: **subagent spend is not in the 1 142M.** 754 `Agent` calls
+appear in these transcripts and zero sidechain records, so the child side lives elsewhere. What is
+measured is the saving to the main context; the subagent's own bill is real and unquantified.
+
+## The threshold now fires by itself
+
+`hooks/context-guard.sh`, registered by `install.sh` on `UserPromptSubmit` and `PostToolUse`.
+220k soft band (said once), 250k hard band (repeats). PostToolUse is needed because a turn is a
+median of 25 requests and can enter at 150k and leave at 260k without passing a prompt boundary;
+each band announces once per session on the tool path so ten thousand Bash calls do not become ten
+thousand reminders.
+
+A context meter already existed inside `handoff-guard.sh` at 200k and had never fired for him: that
+script returns early when the cwd is not a git checkout, so in `~/Downloads` — where he sat at 206k
+on 2026-08-17 — it was dead code. That is the actual bug this hook fixes, and it is why the rule
+looked ignored for a month.
