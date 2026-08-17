@@ -222,17 +222,21 @@ quadratic in its length. What decides everything is how much each turn *adds*.
   of all spend**, because every one of those tokens is re-sent on every later request in the session.
   Ranked by that carried cost, and each of these is a rule, not an observation:
   - **Screenshots: 13% of everything.** 1 600 images, ~1 600 tokens each, each riding along for the
-    rest of the session. A simulator or browser verify loop — attach, launch, tap, screenshot, look,
-    tap again — belongs to a subagent that returns *words*. The finished image reaches him through
-    `SendUserFile` by path, which costs nothing. Take a screenshot into the main thread only when he
-    asked to be shown one, and never as the way you check your own work.
+    rest of the session. Browsing belongs to `browser-scout-sonnet`, or `browser-scout-opus` when the
+    answer has to be assembled rather than looked up; checking a built app belongs to
+    `sim-verifier-sonnet`. Brief them with the goal, not the clicks, and tell them to look as much as
+    they need — the images die with their context. A screen he must *see* comes back as a PNG path
+    (`xcrun simctl io booted screenshot`) and goes to him with `SendUserFile`, or as a tab opened in
+    his browser; neither costs a token. `bulk-guard.sh` allows two images in the main thread per
+    session and refuses the rest, naming the agent — so this is enforced, not remembered.
+  - **Long files: `Write` is 4%.** A board or a plan page is 8–10k tokens of body, and it rides along
+    afterwards. `page-writer-sonnet` takes the facts and the shape and writes the file; `Edit` on an
+    existing page costs the hunk, not the file. Refused past 12 000 characters by the same hook.
   - **Bash: 13%, from count alone.** 9 819 calls, median 236 tokens in and 81 out — nothing is big,
     there are simply ten thousand of them. Batch independent calls into one message and one script.
   - **`Read`: 5%.** Median 1 431 tokens per call, worst 13 925. Delegate the read, or pass
     `offset`/`limit`. Never a whole file pulled in to skim.
-  - **`Write`: 4%.** Median 2 590 tokens of file body per call, and a board or a plan page is 8–10k
-    — the entire file rides in the context afterwards. Author anything long in a subagent; from the
-    main thread write only short files and `Edit` hunks.
+
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
 - **Watch the context. Past ~250k, stop at the next natural boundary** — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and

@@ -158,6 +158,41 @@ print(f"  hooks: context guard registered ({added} new entr{'y' if added==1 else
 PY
 fi
 
+# Register the bulk guard. It refuses, at the call site, the three things measured to be the largest
+# leaks into the main context: screenshots past a budget of two per session, a whole-file Read, and a
+# Write carrying a page-sized body. Each refusal names the subagent to use instead. Two PreToolUse
+# entries so the script is not run on every unrelated tool call.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/bulk-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+matchers = [
+    "Read|Write",
+    "Bash",
+    "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__browser_batch"
+    "|mcp__Claude_Browser__computer|mcp__Claude_Code_iOS_Simulator__control"
+    "|mcp__computer-use__screenshot|mcp__computer-use__zoom|mcp__computer-use__computer_batch",
+]
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+for m in matchers:
+    if any(script in json.dumps(e) and e.get("matcher") == m for e in entries):
+        continue
+    entries.append({"matcher": m, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: bulk guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the chrome guard. It injects the deviceId → machine mapping at session start, because
 # the browser list itself cannot be told apart: names are positional and isLocal is wrong.
 if command -v python3 >/dev/null 2>&1; then
