@@ -221,10 +221,25 @@ quadratic in its length. What decides everything is how much each turn *adds*.
 - Send independent tool calls in one message. Trim at the call site: `git`/`grep` piped through
   `head`, `Read` with `offset`/`limit`, never a whole file pulled in to skim.
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
-- Watch the context. Past ~200k, stop at the next natural boundary — a finished sub-task, never
+- **Watch the context. Past ~250k, stop at the next natural boundary** — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
-  place within ~20 turns.
+  place within ~20 turns. The one exception: fewer than ~10 requests of work left in the whole task,
+  where the handoff cannot pay for itself — finish instead.
+- 250k, not the token optimum. Measured 2026-08-17: a session starts at a **65k floor** and grows
+  **26k per user message** (p90 84k), so 160k — where the pure token maths points — arrives after
+  3.7 messages and would mean a full wrap-up ritual every three messages. That buys 16%. Crossing
+  250k is where it actually starts hurting: 350k costs 19% more per request than 250k, 400k costs
+  29% more. Below 250k the threshold is not the lever; what enters the context per message is.
+- **Never count messages when deciding to clear; count requests.** Re-measured 2026-08-17 over 173
+  real sessions (`TOKEN-AUDIT-2026-08-17.md`): the median user message costs **25 requests**, each
+  one re-sending the whole context, and 64% of all spend is that re-sending. A block of two messages
+  can be fifty requests and 200k of context, so "we have barely talked" is never a reason to keep a
+  fat session. The break-even for a handoff is 11 requests — under half of one ordinary message.
+- The cost curve is flat to ~130k and then bends hard: 21k per request below 150k, 33k at 200–250k,
+  46k at 300–400k, 94k past 500k. Raising the threshold is measurably worse, not neutral — sessions
+  capped under 150k cost 20.7k a request, sessions past 400k cost 39.3k for the same work. 160k is
+  the measured optimum against a ~90k floor, not a round number.
 - **Each phase of a task is its own session.** Implementation, every round of review comments, and
   every returned bug start fresh from the status files and the diff — never as a continuation of the
   session before them. Most of a ticket's calendar life is after the PR opens, and carrying the
@@ -254,7 +269,7 @@ a session. Read every such ceiling that way.
   blocked on something only a human can do (a click, a login, a one-time code, a decision that is
   his) · a hard limit he set himself. Anything else — an awkward result, an unclear next step, a
   subagent that failed, a channel that 403'd — is a reason to *change approach*, not to stop.
-- Context pressure is the one soft brake: past ~200k, finish the sub-task, write the handoff, and
+- Context pressure is the one soft brake: past ~250k, finish the sub-task, write the handoff, and
   **tell him to press `/clear`** — that is a stop with a stated reason and a next action, which is
   exactly what this section asks for. Never just fall silent instead.
 - In a routine with nothing left to do, the closing message still says so explicitly, with the

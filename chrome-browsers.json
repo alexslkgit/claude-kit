@@ -29,11 +29,13 @@
     },
     {
       "deviceId": "2a3a86cf-655f-4ac9-b81c-f527aa07f3aa",
-      "hostname": null,
-      "signedInTo": "unknown — another Mac",
+      "hostname": "Slobodianiuks-MacBook-Pro.local",
+      "signedInTo": "personal — alexslkmain@gmail.com, Porkbun, GitHub alexslkgit, FamilySearch Oleksandr7170",
       "verified": "2026-08-17",
-      "method": "probe-negative",
-      "note": "Proven NOT to be on C12239: could not reach its loopback."
+      "method": "localhost-probe",
+      "note": "Confirmed by loopback probe from Slobodianiuks-MacBook-Pro: it was the only connected browser that could reach this Mac's 127.0.0.1. The earlier 'probe-negative' on this deviceId was recorded from C12239 and is consistent — it simply is not that Mac. This is the Rodovid working machine.",
+      "chromeProfileDir": null,
+      "chromeProfileName": null
     },
     {
       "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
