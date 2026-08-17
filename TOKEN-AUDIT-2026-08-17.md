@@ -87,6 +87,29 @@ to hurt: 350k is +19% per request, 400k is +29%.
 the handoff cannot pay for itself, finish instead. Message count is never the signal; requests are.
 Below 250k the threshold is not the lever — the 26k per message is.
 
+## Where the 26k per message comes from
+
+"Carried cost" below = the token's size × 0.1 × the number of requests still to come in that
+session. It is what a token actually costs, not what it looked like when it arrived.
+Scripts: `.claude/tasks/m6.py` (results), `m7.py` (inputs and images).
+
+| entering the main context | calls | size each | carried | share of all spend |
+|---|---|---|---|---|
+| **screenshots** (simulator, browser, computer-use) | 1 600 images | ~1 600 | 147M | **13%** |
+| **Bash** — entirely from call count | 9 819 | 236 in / 81 out | 149M | **13%** |
+| **Agent** — briefs out, reports back | 754 | 1 317 / 272 | 59M | 5% |
+| **Read** — whole files | 1 288 | median 1 431, worst 13 925 | 54M | 5% |
+| **Write** — the file body rides along | 986 | median 2 590; a board is 8–10k | 48M | 4% |
+| **Edit** | 3 043 | 601 / 47 | 40M | 3% |
+| **total tool traffic held in main contexts** | | | **530M** | **46%** |
+
+That is the p90 message: ten screenshots (16k) + two whole files (5k) + one board written from the
+main thread (10k) = 31k in a single turn, then re-sent on every request after it.
+
+Rules written into `orchestrator.md` from this: screenshots never in the main thread (the verify
+loop is a subagent that returns words; the finished image goes to him via `SendUserFile` by path);
+Bash batched; long files authored by a subagent; `Read` with `offset`/`limit` or delegated.
+
 ## Bigger leaks than the threshold
 
 1. **25 requests per user message.** It multiplies the 64%. Moving heavy reads and test runs into

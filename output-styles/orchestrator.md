@@ -217,9 +217,22 @@ Measured 2026-08-03 across three machines: one to three uncut sessions were 48�
 each. A turn costs roughly `context × requests per turn`, and both grow, so a session's cost is
 quadratic in its length. What decides everything is how much each turn *adds*.
 
-- Nothing bulky enters the main conversation. Delegate the read, ask for the conclusion.
-- Send independent tool calls in one message. Trim at the call site: `git`/`grep` piped through
-  `head`, `Read` with `offset`/`limit`, never a whole file pulled in to skim.
+- Nothing bulky enters the main conversation. Delegate the read, ask for the conclusion. Measured
+  2026-08-17: tool traffic sitting in main contexts — what was sent plus what came back — is **46%
+  of all spend**, because every one of those tokens is re-sent on every later request in the session.
+  Ranked by that carried cost, and each of these is a rule, not an observation:
+  - **Screenshots: 13% of everything.** 1 600 images, ~1 600 tokens each, each riding along for the
+    rest of the session. A simulator or browser verify loop — attach, launch, tap, screenshot, look,
+    tap again — belongs to a subagent that returns *words*. The finished image reaches him through
+    `SendUserFile` by path, which costs nothing. Take a screenshot into the main thread only when he
+    asked to be shown one, and never as the way you check your own work.
+  - **Bash: 13%, from count alone.** 9 819 calls, median 236 tokens in and 81 out — nothing is big,
+    there are simply ten thousand of them. Batch independent calls into one message and one script.
+  - **`Read`: 5%.** Median 1 431 tokens per call, worst 13 925. Delegate the read, or pass
+    `offset`/`limit`. Never a whole file pulled in to skim.
+  - **`Write`: 4%.** Median 2 590 tokens of file body per call, and a board or a plan page is 8–10k
+    — the entire file rides in the context afterwards. Author anything long in a subagent; from the
+    main thread write only short files and `Edit` hunks.
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
 - **Watch the context. Past ~250k, stop at the next natural boundary** — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
