@@ -50,7 +50,18 @@ setInterval(async () => {
     font-size: 12.5px; font-weight: 700; background: var(--now-bg); color: var(--now-fg);
     margin-right: 8px; }
   .status .pill.done { background: var(--ok-bg); color: var(--ok-fg); }
-  .next { color: var(--muted); font-size: 14px; margin: 18px 0 0; }
+  .stages { list-style: none; margin: 20px 0 0; padding: 0; }
+  .stages li { display: flex; align-items: baseline; gap: 10px; font-size: 15px;
+    padding: 7px 0; border-top: 1px solid var(--line); }
+  .stages li:first-child { border-top: 0; }
+  .stages li.done { color: var(--muted); }
+  .chip { flex: none; min-width: 76px; text-align: center; border-radius: 999px;
+    padding: 2px 9px; font-size: 12px; font-weight: 700;
+    background: var(--now-bg); color: var(--now-fg); }
+  .chip.done { background: var(--ok-bg); color: var(--ok-fg); }
+  .chip.wait { background: var(--warn-bg); color: var(--warn-fg); }
+  .chip.todo { background: transparent; color: var(--muted);
+    box-shadow: inset 0 0 0 1px var(--line); }
   .stamp { color: var(--muted); font-size: 13px; margin-top: 26px; }
 </style>
 </head>
@@ -67,10 +78,17 @@ setInterval(async () => {
   <!-- Optional, max 1, usually absent. -->
   <!-- <div class="alert"><b>Блокер</b>Одна строка контекста.</div> -->
 
-  <p class="status"><span class="pill">работает</span>One short paragraph: what is happening
-  right now and why it matters. No history, no tables — the journal keeps those.</p>
+  <p class="status"><span class="pill">работает</span>One LINE, never a paragraph: what is
+  happening right now.</p>
 
-  <p class="next">Дальше: next step → step after → tail of the task.</p>
+  <!-- Этапы: 3-5 lines, one per part of the task, each led by its chip, so the colours alone
+       say how far the run is. Three or four words per line. No history, no tables, no paths. -->
+  <ul class="stages">
+    <li class="done"><span class="chip done">готово</span>Три-четыре слова</li>
+    <li><span class="chip">идёт</span>Что происходит сейчас</li>
+    <li><span class="chip wait">ждёт тебя</span>Что нужно от него</li>
+    <li><span class="chip todo">не начато</span>Что дальше</li>
+  </ul>
 
   <p class="stamp">Обновлено DD.MM HH:MM. Страница обновляется сама.</p>
 

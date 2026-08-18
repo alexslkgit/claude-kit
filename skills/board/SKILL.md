@@ -1,6 +1,6 @@
 ---
 name: board
-description: Maintain the board — a live, self-refreshing HTML page for the user, one per task, next to the task journal, rewritten in full at every stage change, decision and blocker, so he opens it at any moment and understands the whole run in 60 seconds without asking anything. Use whenever the user says "борд", "обнови борд", "покажи борд", "board" or "update the board". Create it when a task starts and close it on finish.
+description: Maintain the board — a live, self-refreshing HTML page for the user, one per task, next to the task journal, rewritten in full at every stage change, decision and blocker, so he opens it at any moment and understands the whole run in ten seconds without asking anything. Use whenever the user says "борд", "обнови борд", "покажи борд", "board" or "update the board". Create it when a task starts and close it on finish.
 allowed-tools: Read, Write, Edit, Bash, Glob
 ---
 
@@ -10,7 +10,7 @@ The user walks away while the run continues. He comes back in ten minutes or in 
 one tab, and must see **where the work stands, what is already done, what is still coming, and
 whether anything is waiting on him** — without reading the chat and without asking.
 
-That is the whole job of this board. It is not a log and not a report.
+That is the whole job of this board. It is a dashboard: not a log and not a report.
 
 ## Two files per task, two different readers
 
@@ -112,12 +112,34 @@ scrolling — and when nothing waits on him, that same block says so in one line
 ничего"), so the answer to "do I need to do anything?" is always in the same place. Everything
 else is optional detail below it.
 
-- the whole board fits one PHONE screen without scrolling. If it does not, cut.
-- history is the failure mode: no full checklist of every past stage, no tables of what was
-  found and fixed. One short paragraph of current state, one muted line of what comes next.
-  The journal and DECISIONS.md keep the history; the board keeps only today.
+⭐ **Standing instruction, 2026-08-18: a dashboard, not a report — and this is a repeat
+correction, not a first one.** He opened the board and said: «куча каши из текста, не захотел
+читать», then added that every time he says he did not want to read something he is naming a
+defect, not sharing a mood. He has said it before and the page keeps drifting back. So these are
+hard caps, not advice — advice is what has been failing. The acceptance test: **the board is
+scanned in ten seconds without reading a single sentence.** If it has to be read, it has failed.
+
+- **No paragraphs anywhere. One line per item.** A thought that needs a second line is either cut
+  or moved to `STATUS.md` or the journal — long-form reasoning has a home and this is not it.
+- **State first, and visual.** Every item opens with its state as a coloured chip — готово /
+  идёт / ждёт тебя / не начато — so the distribution is legible before a word is read.
+- **One screen.** What matters fits one PHONE screen with no scrolling. Overflow is deleted, never
+  shrunk into smaller type.
+- **What waits on him is loudest and at the top**, and there is almost never more than two or
+  three of it.
+- **No shas, no decision ids, no file paths, no English technical terms in the body.** Those are
+  exactly the noise. A number appears only if he would act on it; everything else is `STATUS.md`.
+- **No history block.** The board is the present tense: what was decided days ago is not on it, and
+  neither is a checklist of every past stage or a table of what was found and fixed. The journal
+  and `DECISIONS.md` keep the history; the board keeps only today.
+- **Whitespace is part of the job.** Crowding is one of the things he is objecting to.
 - decisions: only ones he might still want to veto, **max 3**, one line each.
 - alerts: **max 1**, and usually zero.
+
+**The diagnosis, because a rule without its cause regresses.** The board gets written by summarising
+everything that happened, and summarising everything produces a report. The correct move is to
+decide first what the three or four things he actually needs to see are, and write only those.
+Length is not a proxy for thoroughness here; on this artefact it is the defect.
 
 ### The parts, in page order
 
@@ -129,10 +151,13 @@ of options with no winner named. When nothing waits on him: one calm line saying
 will appear here next and roughly when. Style it so waiting-on-him and nothing-needed look
 different at a glance (warm vs neutral background).
 
-**Статус** — one short paragraph: what is happening right now and why it matters. Pill plus
+**Статус** — one line, never a paragraph: the state pill, what is happening right now, and
 `обновлено DD.MM HH:MM` from the real clock.
 
-**Дальше** — one muted line: the next couple of steps, then the tail of the task.
+**Этапы** — the three to five parts the task actually consists of, one line each, every line
+opening with its own chip (готово / идёт / ждёт тебя / не начато). This block is what he scans:
+the colours alone have to tell him how far the run is. A не начато line is what «Дальше» used to
+say; a готово line is a chip and three or four words, never a summary of what it found.
 
 **Alert** — only for something genuinely critical: a blocker, a discovered risk, a decision
 that changes the shape of the task, anything he would be angry to learn about late. Uppercase
@@ -148,6 +173,9 @@ already executed lives in the journal, not here.
 
 ## Rules
 
+- The shape rules above govern whatever another skill asks to be put on the board. If `wrap-up`
+  or a handoff wants something here that will not fit on one line, the line goes on the board and
+  the substance goes to `STATUS.md`.
 - Never write a state that is not true yet.
 - No reasoning, no list of what was searched, no tool names beyond the agent tier.
 - Never put a credential, a token or raw personal data on the board.
