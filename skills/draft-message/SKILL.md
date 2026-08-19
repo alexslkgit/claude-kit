@@ -158,10 +158,14 @@ writing a memo.
   там вижу длинные тире»*. Use a comma, a colon, or a full stop. This is one of the loudest tells
   that a human did not write the text, and he spots it every time. It applies to the drafts and to
   what you say to him in chat.
-- **Ticket and PR numbers go in as full URLs**, not as bare keys. Recorded 2026-08-13: he trims the
-  tail himself so the chat client renders a tidy hyperlink, and he cannot do that if you wrote
-  `MSHAPP-10044`. So `https://jira.wsgc.com/browse/MSHAPP-10044`, and
-  `https://github.wsgc.com/<org>/<repo>/pull/7757` for a PR.
+- **Every ticket key and PR number carries a link.** Recorded 2026-08-13 as "write the full URL",
+  corrected 2026-08-19 to something better: in a chat client, put the hyperlink **on the number
+  itself** and leave the visible text as he would type it. So the reader sees `PR 180781` and
+  `CART-33038`, and clicking either opens it. In Teams that is select the token, cmd+k, paste the
+  URL, confirm with the dialog button rather than Enter. A bare number with no link is the defect
+  he called idiotic: it costs him a search to remember what the number even was. Where the surface
+  cannot hold a link, fall back to the full URL on its own line.
+  URL shapes live in the project's `CLAUDE.local.md`, never guessed.
 - **Answer the awkward question, softly, at the end.** In that same edit he put the refusal back
   in, as a trailing clause in lower case: *"но по этим пунктам не думаю что нужен еще человек"*.
   Dropping an uncomfortable question entirely is not tact, it just makes him answer it later.
