@@ -81,6 +81,25 @@ one-time code, an approval, an irreversible click.
    signed in, the whole time — would have caught it. His words: «ты уже заебал писать сообщения
    каждый раз, после которых я выгляжу идиотом».
 
+## Never a group, never a channel. A person, always
+
+⭐ **Standing instruction, 2026-08-19, and it has no exceptions.** Every message goes to one named
+human in a direct conversation. Not a channel, not a team, not an @-group, not a mailing list, not a
+"Review needed" post addressed to a tag. His words: *«Ни в какие группы мы не пишем, ни в каких
+обстоятельствах.»*
+
+This holds even when the group is provably the right route on paper. A colleague had asked in
+writing to be pinged through `@Extra reviewers (DesignSystem)` in a channel rather than in a DM, and
+a draft was built around that. It was deleted. **A teammate's stated preference does not outrank
+this rule** — write to that teammate directly and let them forward it.
+
+If the only address you can find is a group, that is not permission to use it. Find the person: the
+ticket's reporter, the last human who touched the thing, whoever assigned it. If you genuinely
+cannot, say so and ask him for the name — one short question — instead of falling back to a channel.
+
+A draft aimed at a group is deleted, not parked. Do not leave it in a file "in case", and never let
+one sit in a channel composer where a stray Enter publishes it.
+
 ## Style rules
 
 Write the way the user writes — a working developer messaging a teammate, not an assistant
@@ -209,10 +228,29 @@ A file he has to open, select and copy is not a draft, it is homework. The compo
 destination whenever the app has no draft API, Slack and Teams alike; a file is the fallback only
 when the thread genuinely cannot be reached, and then say why in one line.
 
-Between steps 1 and 2, **read `document.activeElement` back** and confirm it is that thread's own
-message box, not search and not another chat. Each Teams conversation has its own composer id, so
-the id changing as you switch chats is the proof you are in the right one. Clicking is not
+Between steps 1 and 2, **read `document.activeElement` back** and confirm it is the message box
+and not search: a `contenteditable` element whose `aria-label` is "Type a message". Clicking is not
 evidence: the 2026-08-03 incident was a click that silently missed.
+
+That tells you it is *a* composer. It does not tell you it is the *right* conversation, and the
+check that used to be written here for that is wrong. Corrected 2026-08-19 against the live Teams
+build: the composer id does **not** change between chats. `document.querySelectorAll('[id^="new-message-"]')`
+returns exactly one element at any time, and the same `new-message-<uuid>` was byte-identical in two
+different 1:1 chats. It then *changed* for the same chat after navigating to a channel and back,
+because the editor was torn down and rebuilt. The id tracks the widget's lifecycle, not the
+recipient: identical across two different conversations, different for one conversation at two
+moments. So an unchanged id is not a stop condition and a changed id is not proof of anything.
+
+**Prove the conversation instead, with three independent signals that must all agree** before any
+keystroke: `document.title` or the header naming the right person or channel, the highlighted row in
+the left rail, and a recognisable message in the visible history of that thread. If any of the three
+disagrees, place nothing and say so.
+
+Read the field back after typing. `innerText` serialises CKEditor paragraph breaks as `\n\n\n\n\n`;
+that is one blank line on screen, not four, so do not "fix" it.
+
+Superseded 2026-08-19, do not restore: *"Each Teams conversation has its own composer id, so the id
+changing as you switch chats is the proof you are in the right one."*
 
 Two approaches that look clever and **do not work — do not try them again**:
 
@@ -292,3 +330,28 @@ belongs in the chat or on the board.
 This is about length, not about care. The three phrases still have to be accurate, still have to
 avoid promising what is not done, and still must not leave out something that would mislead the
 reader. Write them, stop, and offer the detail only if he asks.
+
+## Never brief a colleague, and never quote internal research back at one
+
+Recorded 2026-08-19, after a draft to a senior peer who had asked a light, curious question —
+"are these comments from your AI pipeline? what is your stack?" — came back as three sentences
+naming a corporate licence, an announcement and its date. His verdict: it reads like a robot, and
+it made him look stupid, because he had complained on a call that he could not use those very
+models. Repeating the availability date back to a colleague published his own ignorance.
+
+Two rules follow, and they hold for every message to every person.
+
+1. **Research files are background for him, never material for a message.** Everything collected
+   about org policy, tooling positions, who owns what, what was announced and when, exists so that
+   *he* is not surprised. None of it is ever pasted at a colleague. Before a fact goes into a
+   draft, ask what it is doing there: if it is proving that you know something rather than
+   answering what was asked, cut it.
+2. **Match the size and register of the thing you are answering.** A one-line curious question gets
+   a one-line human answer with an emoji, not a paragraph with dates in it. Read his own last three
+   messages in that chat and write the way they are written. The test: if the reply could have been
+   written by a press office, it is wrong.
+
+The reply that stood, for the whole three-sentence briefing that was rejected:
+
+> Yeah, Copilot CLI 😅 it does love comments, I should have trimmed them before pushing. Cut it
+> down to 2 lines now, thanks!

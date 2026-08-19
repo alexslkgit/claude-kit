@@ -315,6 +315,26 @@ Hundreds of people work in this repository; his mandate is the ticket and nothin
 - Name anything you added that was adjacent rather than required, so it can be dropped.
 - Never propose a rewrite.
 
+### Comments
+
+⭐ **Standing instruction, 2026-08-19.** Reviewers keep saying the same thing, and this time it
+arrived as a joke from a senior peer on a pull request — *"It seems to love adding a lot of
+comments 😅"* — with a review comment asking for a six-line doc to be cut to two.
+
+**Write far fewer comments than feel right, and never a comment longer than the code it explains.**
+A four-line note over a one-line change is the exact defect being named here. The reader is a
+developer who can read Swift; the code says what it does, so a comment may only say what the code
+cannot: why this way and not the obvious one, what breaks otherwise, which invariant is being held.
+
+- A comment that restates the line under it is deleted, not shortened.
+- A comment that narrates the history of the change — what it used to do, what the old layout was —
+  belongs in the commit message, never in the file.
+- A doc comment on a property or function is one or two lines. If it needs a paragraph, the reason
+  goes in the commit message or the pull request description.
+- Match the surrounding file's comment density. In a file with no comments, add none.
+- Explaining the change to *him* is a chat message or the board; explaining it in the diff is how
+  the diff gets a review comment.
+
 ## Git
 
 - Check `git status -sb` and the current branch before touching anything. Never assume the branch
