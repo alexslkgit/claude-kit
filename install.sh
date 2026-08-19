@@ -194,6 +194,40 @@ print(f"  hooks: bulk guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the dash guard. The long-dash ban was written down on 2026-08-13 and kept failing,
+# because it lived only in skills/draft-message/SKILL.md and most drafts never load that skill.
+# So the check sits at the keystroke instead: browser typing and form fills always, plus briefs
+# and draft files that carry text meant for a person. Status files, boards and code are untouched.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/dash-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+matchers = [
+    "Write|Edit",
+    "Agent|SendMessage",
+    "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__form_input"
+    "|mcp__Claude_Browser__computer|mcp__Claude_Browser__form_input",
+]
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+for m in matchers:
+    if any(script in json.dumps(e) and e.get("matcher") == m for e in entries):
+        continue
+    entries.append({"matcher": m, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: dash guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the chrome guard. It injects the deviceId → machine mapping at session start, because
 # the browser list itself cannot be told apart: names are positional and isLocal is wrong.
 if command -v python3 >/dev/null 2>&1; then
