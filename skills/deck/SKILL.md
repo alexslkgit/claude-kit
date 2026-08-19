@@ -112,6 +112,25 @@ The link he opens: `http://localhost:8931/decks/<name>/index.html`. A `file://` 
 clickable for him — always the http form. The server dies between sessions; check it with
 `curl -s -o /dev/null -w "%{http_code}" <url>` before sending the link, and restart it silently.
 
+## `key` is written once and never changed again
+
+`DECK.key` is the whole address of his work: the engine reads state from
+`localStorage[DECK.key]` and nothing else (`app/engine.js:12,171`). Bump it — even to something
+that reads more correct, like `-r2` for a second round — and every mark, draft, answer and
+comment he made becomes invisible in one reload, while sitting intact under the old name. He
+opens the deck, sees "38 не пройдено, 0 повтор, 0 знаю" and empty answer fields, and concludes
+the tool lost his evening. This happened on 2026-08-19 to `mayflower-final`.
+
+A new round is a rewrite of the SAME deck: same `key`, same card ids, new `a` text, `rev`
+bumped on the cards whose content actually changed. A new `key` is only correct for a genuinely
+new deck with a new name.
+
+`rev:` is the separate, deliberate lever: on a bump `fresh()` deletes that card's `status` and
+sets `nu:1` (`app/engine.js:240-243`), so the card returns to "не пройдено" with an «обновлено»
+badge while his answer and `told` survive and the разбор stays open. The old mark is destroyed,
+not archived — so leave `rev` alone on cards whose wording you only polished, and set it only
+where he genuinely has to pass the card again.
+
 ## The engine
 
 `app/engine.js` and `app/engine.css` are the tool. **Do not touch them for the sake of a round** —
