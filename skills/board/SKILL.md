@@ -12,6 +12,30 @@ whether anything is waiting on him** — without reading the chat and without as
 
 That is the whole job of this board. It is a dashboard: not a log and not a report.
 
+## The board is the front door, the instruction is a room behind it
+
+⭐ **Standing instruction, 2026-08-20.** When a task also has a chewed instruction (the `chew`
+skill, `plan.html`), **the board's «Ждёт от тебя» block is how he gets to it.** Its `a.btn` links
+straight at the plan and its text names the first step. His words: «по нажатию на ссылку я перехожу
+на нашу же инструкцию».
+
+This is not decoration. Every chat message opens with the board URL and nothing else on that line,
+so the board is the one address he has. An instruction the board does not point at is an
+instruction he will not find tomorrow — and he has already opened the board expecting the
+instruction and found neither a link nor a mention.
+
+```html
+<div class="you">
+  <div class="cap">Ждёт от тебя · 1</div>
+  <h2>Четыре экрана из Резерв+</h2>
+  <p>Первый шаг: нажать «Сповіщення» справа сверху и снять весь список.</p>
+  <a class="btn" href="plan.html">Открыть инструкцию</a>
+</div>
+```
+
+The two pages share one palette and one pair of typefaces on purpose — `plan-shell/plan.css`
+copies its variables from this template. Restyle one, restyle the other in the same commit.
+
 ## Two files per task, two different readers
 
 The journal and the board sit side by side, same basename, same folder:
@@ -211,6 +235,10 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 
 - It lives at `.claude/tasks/<task>.html`, on disk, always — never the scratchpad, never `/tmp`.
 - Its path is named in `STATUS.md`, so a fresh session finds it without asking him.
+- **Outside a git checkout, the board is `<task>/board.html` in the task's own folder**, next to
+  that task's `plan.html`, `STATUS.md`, `DECISIONS.md` and `journal.md`. A scratch directory like
+  `~/Downloads` is a shelf holding many unrelated tasks, and a single shared `.claude/` there makes
+  one task's memory masquerade as another's. See the `chew` skill's Files section for the layout.
 - Its link opens **every** chat message, the bare URL on its own first line.
 - Both themes live in the one file. It follows his system by default, and the three buttons in
   the header (авто / светлая / тёмная) force one; the choice is kept in `localStorage` and

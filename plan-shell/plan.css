@@ -1,29 +1,35 @@
 /* plan.css — the master stylesheet for a chewed plan.
-   Loaded relatively from <repo>/.claude/tasks/_shell/plan.css. No external fonts, no CDN:
-   the page must render offline, on any of the machines, from a file:// URL.
-   Visual language inherited from .claude/tasks/monetization-unblock.html — same card look,
-   same variables, same numbered circles, same green "получилось" and amber fork lines. */
+   Loaded relatively from the task folder's _shell/plan.css.
+
+   THE PALETTE IS THE BOARD'S PALETTE, DELIBERATELY. The plan and the board are one pair: he
+   arrives at the plan by clicking the board's «Ждёт от тебя» block, and two pages that look
+   like two different products break that. Changed 2026-08-20, after he opened a warm paper
+   board and a cold blue plan back to back and said they were supposed to be one thing.
+   Values below are copied from templates/board.html; if that file's palette moves, move these
+   with it. Fonts degrade to Georgia and the system stack, so a file:// page with no network
+   still renders correctly — only the typeface changes. */
 
 :root {
-  --bg:#0f1115; --card:#171a21; --line:#262b35; --text:#e6e8ec;
-  --dim:#8b93a1; --ok:#34d399; --wait:#f5b544; --alert:#f2555a; --accent:#6ea8fe;
-  --accent-soft:rgba(110,168,254,.10); --accent-soft-hi:rgba(110,168,254,.22);
-  --flash:rgba(110,168,254,.16);
+  --bg:#1A1815; --card:#211E1A; --line:#332F28; --text:#EDE9E0;
+  --dim:#A39B8D; --ok:#7FBF92; --wait:#E8B45C; --alert:#C99A9A; --accent:#D9A441;
+  --accent-soft:rgba(217,164,65,.10); --accent-soft-hi:rgba(217,164,65,.22);
+  --flash:rgba(217,164,65,.16);
 }
 @media (prefers-color-scheme: light) {
-  :root { --bg:#f6f7f9; --card:#fff; --line:#e2e5ea; --text:#151821; --dim:#5d6674;
-          --ok:#0d8f63; --wait:#b9770e; --alert:#c0392b; --accent:#2b6cb0;
-          --accent-soft:rgba(43,108,176,.09); --accent-soft-hi:rgba(43,108,176,.20);
-          --flash:rgba(43,108,176,.14); }
+  :root { --bg:#FDFCF9; --card:#FFFFFF; --line:#E7E0D0; --text:#23211E; --dim:#6E675C;
+          --ok:#4B7A57; --wait:#8A5A0B; --alert:#8C6A6A; --accent:#9A6207;
+          --accent-soft:rgba(154,98,7,.09); --accent-soft-hi:rgba(154,98,7,.20);
+          --flash:rgba(154,98,7,.14); }
 }
 
 * { box-sizing: border-box; }
 body { margin:0; padding:28px 20px 80px; background:var(--bg); color:var(--text);
-       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,sans-serif;
+       font-family:Commissioner,-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,sans-serif;
        font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%; }
 .wrap { max-width:720px; margin:0 auto; }
 
-h1 { font-size:22px; margin:0 0 4px; letter-spacing:-0.01em; }
+h1 { font-family:Literata, Georgia, serif; font-size:24px; font-weight:700;
+     margin:0 0 4px; letter-spacing:-0.02em; line-height:1.14; }
 .sub { color:var(--dim); font-size:13px; margin-bottom:18px; }
 .pill { display:inline-block; font-size:12px; font-weight:600; color:var(--bg);
         background:var(--ok); border-radius:5px; padding:2px 8px; margin-right:8px;

@@ -86,18 +86,60 @@ That sentence is what earns the trust that makes him follow the other nine steps
     row among twenty identical ones. Cropped to the control, never a full page. They cost tokens on
     every read.
 
+## The plan and the board are one pair
+
+⭐ **Standing instruction, 2026-08-20.** They are two files with two jobs — the board says where
+the *run* stands, the plan says what *he* does next — and he reaches the second one **through the
+first**. Never merge them, and never let the plan exist only as a link in a chat message.
+
+His words, after a session handed him a plan link in the body of a message: «если я говорю тебе
+про инструкцию, ты на свой основной борт должен дать ссылку на него… по нажатию на ссылку я
+перехожу на нашу же инструкцию». The reason is mechanical: every chat message opens with the board
+URL and nothing else, so the board is the only address he has memorised. A plan the board does not
+point at is a plan he cannot find tomorrow morning.
+
+Three things follow, and none of them is optional:
+
+1. **Writing a plan means patching the board in the same turn.** The board's «Ждёт от тебя» block
+   becomes the entrance: its `a.btn` links to the plan, and its text says what the first step is.
+   Not a mention somewhere on the page — the call-to-action itself.
+2. **They look like one product.** `plan.css` carries the board's palette and typefaces on purpose.
+   If you restyle one, restyle the other in the same commit.
+3. **The board link still opens every message.** The plan link may appear in the body once, when
+   the plan is new. After that, point at `board.html` and let him click through — or point at one
+   step, `plan.html#step-6`, when you mean exactly that step.
+
 ## Files
+
+Two layouts, and which one applies is decided by a single question: **is this a git checkout?**
+
+**Inside a repository** — many tickets share one project, so the plan sits beside the board:
 
 ```
 .claude/tasks/<task>.plan.html    # the chewed plan — for him, Russian
+.claude/tasks/<task>.html         # the board — for him, Russian
 .claude/tasks/<task>.md           # the journal — for you, English
-.claude/tasks/<task>.html         # the board, if this task has one (different file, different job)
 .claude/tasks/<task>.img/         # cropped screenshots, only if rule 10 forced one
 .claude/tasks/_shell/             # plan.css + plan.js, copied from the kit
 ```
 
-The plan and the board are not the same page: the board says where the *run* stands, the plan says
-what *he* does next. A task may have both; never merge them.
+**Outside a repository** — a scratch directory like `~/Downloads` is a shelf, not a project, and
+each task is its own world. The task gets a folder and everything in it is flat and stably named,
+so a link never changes and the whole task can be zipped, moved or deleted as one thing:
+
+```
+~/Downloads/<task>/plan.html      # the chewed plan
+~/Downloads/<task>/board.html     # the board
+~/Downloads/<task>/journal.md     # the journal
+~/Downloads/<task>/STATUS.md      # current state
+~/Downloads/<task>/DECISIONS.md   # append-only
+~/Downloads/<task>/_shell/        # plan.css + plan.js
+~/Downloads/<task>/.claude/status-dir   # one line: the absolute path to this folder
+```
+
+Recorded 2026-08-20: three unrelated tasks had been sharing one `~/Downloads/.claude/`, so the
+session-start hook announced a third task's STATUS.md as this task's memory, and the task actually
+being worked on had no STATUS.md at all.
 
 `.claude/` must be gitignored before you write into it — verify, and exclude it locally rather than
 editing a shared `.gitignore`:
@@ -135,6 +177,7 @@ The whole file is this — a JSON block plus two relative includes. If you find 
 <!-- No auto-refresh: a reload yanks his macOS Space to the browser. A plan is static;
      after editing it, tell him to reload the tab. Enforced by hooks/page-guard.sh. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap">
 <link rel="stylesheet" href="_shell/plan.css">
 </head>
 <body>

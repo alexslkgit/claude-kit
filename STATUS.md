@@ -45,3 +45,18 @@ Source Serif 4 для длинной прозы. Проверено на 375 и 
 - `hooks/page-guard.sh` проверяет не только записываемый файл, но и текст bash-команды. Скрипт,
   который просто перечисляет запрещённые строки для самопроверки, будет отклонён — проверку делает
   сам хук, дублировать её не нужно.
+
+## 2026-08-20 — the board and the chewed plan are one pair; artefacts belong to a task
+He opened the board expecting the instruction he had just asked for and found neither a link to it
+nor a mention. Root cause: nothing in the kit connected the two skills. `skills/board/SKILL.md`
+never mentioned `plan.html`, `skills/chew/SKILL.md` mentioned the board only to say they were
+different files, `templates/board.html` had an unused `.you a.btn`, and `plan-shell/plan.css` was
+a cold blue design against the board's warm paper. Fixed in all four, plus the output style.
+
+Second failure found while checking the first: `~/Downloads` held three unrelated tasks
+(tck-reserve, justmarkets, raads-r) sharing one `.claude/`, with `status-dir` pointing at the third
+one. So `status-guard.sh` announced raads-r's STATUS.md as the memory of whatever task the session
+was on, and the task actually being worked had no STATUS.md at all. The hook now recognises a shelf
+— a directory that is not a project but holds task folders — and lists them instead of picking one.
+Outside a git checkout, a task gets its own folder with STATUS.md, DECISIONS.md, journal.md,
+board.html, plan.html, _shell/ and its own .claude/status-dir.

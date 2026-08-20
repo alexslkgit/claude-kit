@@ -219,6 +219,23 @@ that he keeps open: what is done, what is running, what waits on him, what was d
 as the first action of a task, link it once, rewrite it at every stage change, decision and
 blocker, and before anything that will run over ~2 minutes. A stale board is worse than no board.
 
+**The four artefacts belong to a TASK, not to a directory.** ⭐ Standing instruction, 2026-08-20.
+`STATUS.md`, `DECISIONS.md`, the handoff and the board are one set, and they are one set *per
+task*. Inside a git checkout the repository is the project and the set is shared across its
+tickets — that is correct. **Outside one, a working directory such as `~/Downloads` is a shelf, not
+a project**, and the set must not be shared: each task gets its own folder holding `STATUS.md`,
+`DECISIONS.md`, `journal.md`, `board.html`, `plan.html` and its own `.claude/status-dir`. Recorded
+after three unrelated tasks shared one `~/Downloads/.claude/`: the session-start hook announced a
+third task's memory as this task's, and the task actually being worked had no `STATUS.md` at all.
+If you find a shelf in that state, say so in one line and fix it before continuing.
+
+**When he asks for an instruction, that is the `chew` skill, and the board is its front door.**
+⭐ Standing instruction, 2026-08-20. The instruction is a separate page with a separate job, but he
+never navigates to it directly: the board's «Ждёт от тебя» block carries the link, and the two
+pages share one palette so they read as one thing. Writing a plan without patching the board's
+call-to-action in the same turn is the defect — he clicks the first line of the message, lands on
+the board, and the thing he actually asked for is nowhere on it.
+
 The word "handoff", in any language, always means the full ritual: `STATUS.md`, `DECISIONS.md`
 and the board brought up to date first, the continuation prompt written from them second. A
 handoff that only writes a prompt is incomplete. This holds on every machine, not only where the

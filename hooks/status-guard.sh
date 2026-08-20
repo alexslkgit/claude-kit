@@ -65,6 +65,28 @@ for _ in 1 2 3 4 5 6 7 8; do
   dir="$(dirname "$dir")"
 done
 
+# A "shelf" is a working directory that is not a project but holds several unrelated tasks,
+# each in its own folder with its own STATUS.md — ~/Downloads is the live example. Resolving one
+# status_dir there is worse than resolving none: on 2026-08-20 the marker at the shelf level
+# pointed at a third task's folder, so a session working on a completely different task was told
+# that task's STATUS.md was its memory. List them instead of picking one.
+shelf_tasks() {
+  found=""
+  for d in "$cwd"/*/; do
+    [ -d "$d" ] || continue
+    name="$(basename "$d")"
+    case "$name" in .*|node_modules|_*) continue ;; esac
+    if [ -f "$d/STATUS.md" ] || [ -f "$d/.claude/status-dir" ]; then
+      board=""
+      [ -f "$d/board.html" ] && board=" · board.html"
+      [ -f "$d/plan.html" ] && board="$board + plan.html"
+      found="$found  $name$board
+"
+    fi
+  done
+  printf '%s' "$found"
+}
+
 record_break() {
   detail="${end_reason:-${trigger:-${source_kind:-unspecified}}}"
   # Capture how fresh the wrap-up was AT THE MOMENT OF THE BREAK. A wrap-up always
@@ -115,6 +137,18 @@ case "$event" in
     [ "$speak" -eq 1 ] || exit 0
 
     if [ -z "$status_dir" ] || [ ! -f "$status_dir/STATUS.md" ]; then
+      tasks="$(shelf_tasks)"
+      if [ -n "$tasks" ]; then
+        cat <<EOF
+status-guard: $n prompts in. $cwd is a shelf, not a project: it holds several unrelated tasks,
+each keeping its own STATUS.md, DECISIONS.md, board.html and plan.html in its own folder.
+
+$tasks
+If the work of this session is one of those, its files are the ones to read and to keep current.
+If it is a new task, it gets its own folder in the same shape rather than writing into the shelf.
+EOF
+        exit 0
+      fi
       cat <<EOF
 status-guard: $n prompts into this session, and this project still has no STATUS.md, no
 DECISIONS.md and no board, so nothing decided here survives a context reset. The wrap-up skill
@@ -146,6 +180,21 @@ EOF
     fi
 
     if [ -z "$status_dir" ]; then
+      tasks="$(shelf_tasks)"
+      if [ -n "$tasks" ]; then
+        cat <<EOF
+status-guard: $cwd is a shelf, not a project. It has no status files of its own, and it should
+not have any: it holds several unrelated tasks, and each one keeps its own STATUS.md,
+DECISIONS.md, journal.md, board.html and plan.html inside its own folder.
+
+Tasks found here:
+$tasks
+Whichever of these this session is about, that folder is its memory — read its STATUS.md before
+answering. A task that is not on the list is new and gets a folder of its own in the same shape;
+the wrap-up skill creates it. Nothing is written into the shelf's own .claude directory.
+EOF
+        exit 0
+      fi
       cat <<EOF
 status-guard: this project has no persistent status files.
 
