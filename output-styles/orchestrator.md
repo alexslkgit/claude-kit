@@ -166,6 +166,23 @@ can do here, and it is nearly always avoidable.
 - **Past half the handoff threshold (~100k), the channel narrows — it does not close.** Three kinds
   of message survive: a blocker, a claim on the same file, and "landed as sha X". Silence is the worse
   failure; an unreported file conflict costs more than any exchange.
+- **Two sessions on one checkout share every project file, and that is the whole hazard.** He forks
+  a session whenever a task splits, so this is normal, not an emergency. Four rules make a collision
+  impossible instead of unlikely, and they are settled the moment a second session appears, not after
+  something is lost:
+  - **`DECISIONS.md` is appended, never rewritten, and each session owns an id series.** The older
+    session keeps `X-nnn`, the new one takes `Y-nnn`, then `Z-nnn`. Two appends can then never claim
+    the same number.
+  - **`STATUS.md` is edited surgically, in the section belonging to your task.** A whole-file rewrite
+    is what actually destroys the other session's work.
+  - **One board per task**, never a shared page, and never a write to a board you did not create.
+  - **One handoff per task**, at `.claude/handoffs/<task-slug>.md`. `hooks/handoff-guard.sh` lists
+    every waiting handoff by title at session start, so a fresh session reads the one that matches its
+    task instead of the only one it can see. Recorded 2026-08-20, when a single shared `HANDOFF.md`
+    nearly fed one session's briefing to another.
+  Write the split into a file both can read, `.claude/tasks/COORDINATION.md`, and send the peer a
+  pointer to it. A peer claiming a piece of work is accepted rather than escalated to him: honouring
+  the claim costs nothing, and two sessions clicking the same button is the only expensive outcome.
 
 Agreed 2026-08-13, after a coordination exchange that ran a message every ten seconds.
 
