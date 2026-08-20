@@ -183,6 +183,11 @@ can do here, and it is nearly always avoidable.
   Write the split into a file both can read, `.claude/tasks/COORDINATION.md`, and send the peer a
   pointer to it. A peer claiming a piece of work is accepted rather than escalated to him: honouring
   the claim costs nothing, and two sessions clicking the same button is the only expensive outcome.
+- **None of that is left to memory.** `hooks/parallel-guard.sh` registers every live session per
+  repository, hands each one its own id series, and states the division in context the moment a
+  second session appears. It speaks on `UserPromptSubmit`, because a fork receives no `SessionStart`
+  hook at all and would otherwise never learn that it is a fork. When it names your series, that is
+  your series: do not negotiate it with the peer.
 
 Agreed 2026-08-13, after a coordination exchange that ran a message every ten seconds.
 

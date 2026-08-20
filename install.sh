@@ -228,6 +228,33 @@ print(f"  hooks: dash guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the parallel guard. A fork inherits the parent's context and receives no SessionStart
+# hook, so it believes it owns the parent's id series, board and handoff. This assigns each live
+# session its own series and states the division, on UserPromptSubmit because that is the only
+# event a forked session actually gets. Silent while there is one session, which is almost always.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/parallel-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+added = 0
+for event in ("UserPromptSubmit", "SessionStart"):
+    entries = hooks.setdefault(event, [])
+    if any(script in json.dumps(e) for e in entries):
+        continue
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]}); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: parallel guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the chrome guard. It injects the deviceId → machine mapping at session start, because
 # the browser list itself cannot be told apart: names are positional and isLocal is wrong.
 if command -v python3 >/dev/null 2>&1; then
