@@ -22,7 +22,8 @@ skill is invoked, so most pages were written by something that had never seen th
 абсолютно все».
 
 **What was done.** Those four sources fixed; `hooks/page-guard.sh` refuses the `Write` itself on
-`PreToolUse Write|Edit`, in subagents as well as the main session, with `PAGE-GUARD-EXEMPT` as the
+`PreToolUse Write|Edit` and on `Bash`, because a heredoc writing an html file bypasses `Write`
+entirely; it fires in subagents as well as the main session, with `PAGE-GUARD-EXEMPT` as the
 deliberate escape; `tools/strip-page-refresh.py` sweeps everything already on disk. First sweep:
 4875 html files scanned across the home directory, 5 boards cleaned, 0 left. Minified bundles and
 HTML comments are excluded, so a third-party library's own focus handling is not corrupted and the

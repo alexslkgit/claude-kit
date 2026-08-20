@@ -245,11 +245,13 @@ if os.path.exists(path):
         print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
 entries = hooks.setdefault("PreToolUse", [])
-matcher = "Write|Edit"
 added = 0
-if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+for matcher in ("Write|Edit", "Bash"):
+    if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+        continue
     entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
-    added = 1
+    added += 1
+if added:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
 print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'ies'})")
 PY

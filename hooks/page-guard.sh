@@ -39,17 +39,26 @@ import json,sys,re
 try: d=json.load(sys.stdin)
 except Exception: raise SystemExit
 tool=str(d.get("tool_name") or "")
-if tool not in ("Write","Edit"): raise SystemExit
+if tool not in ("Write","Edit","Bash"): raise SystemExit
 ti=d.get("tool_input") or {}
-path=str(ti.get("file_path") or "")
-body=str(ti.get("content") or ti.get("new_string") or "")
+# A page written by a shell heredoc bypasses Write entirely, so the same check runs on any
+# Bash command that is clearly building an html file.
+if tool=="Bash":
+    cmd=str(ti.get("command") or "")
+    # only a command that actually WRITES an html file; a grep or a find over one is read-only
+    if not re.search(r"(>>?|\btee\b)\s*[\"\x27]?[^\s|;\"\x27]*\.html?\b",cmd,re.I): raise SystemExit
+    path,body="",cmd
+else:
+    path=str(ti.get("file_path") or "")
+    body=str(ti.get("content") or ti.get("new_string") or "")
 if not body: raise SystemExit
 
 # the guard, its own documentation, and anything explicitly exempted
 if "page-guard" in path or "PAGE-GUARD-EXEMPT" in body: raise SystemExit
+if "strip-page-refresh" in path or "strip-page-refresh" in body: raise SystemExit
 if re.search(r"/(hooks|\.git)/", path): raise SystemExit
 
-is_page = path.lower().endswith((".html",".htm")) or re.search(r"<html|<head\b|http-equiv", body, re.I)
+is_page = tool=="Bash" or path.lower().endswith((".html",".htm")) or re.search(r"<html|<head\b|http-equiv", body, re.I)
 if not is_page: raise SystemExit
 
 # A page is allowed to TALK about the ban. Comments and code samples are prose, not behaviour,
