@@ -52,6 +52,11 @@ if re.search(r"/(hooks|\.git)/", path): raise SystemExit
 is_page = path.lower().endswith((".html",".htm")) or re.search(r"<html|<head\b|http-equiv", body, re.I)
 if not is_page: raise SystemExit
 
+# A page is allowed to TALK about the ban. Comments and code samples are prose, not behaviour,
+# so they are removed before the check: <!-- ... -->, <code>, <pre>, <kbd>, <samp>.
+body = re.sub(r"<!--.*?-->","",body,flags=re.S)
+body = re.sub(r"<(code|pre|kbd|samp)\b[^>]*>.*?</\1>","",body,flags=re.S|re.I)
+
 RULES=[
  (r"<meta[^>]+http-equiv\s*=\s*[\"\x27]?refresh", "a <meta http-equiv=\"refresh\"> reload"),
  (r"location\s*\.\s*reload\s*\(", "a location.reload() call"),
@@ -89,6 +94,9 @@ re-fetches its own file and swaps the DOM, with no reload and no focus change:
     } catch (e) {}
   }, 15000);
   </script>
+
+If you are only writing ABOUT one of these, on a page that explains the ban, put the name inside
+a <code> block or an HTML comment: both are ignored by this check.
 
 If the page is finished and will not change again, give it no refresh at all.
 Remove the offending markup and call again. If he has agreed to an exception, put
