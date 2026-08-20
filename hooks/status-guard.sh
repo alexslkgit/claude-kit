@@ -218,7 +218,11 @@ EOF
 
     printf 'status-guard: this project keeps its memory in %s.\n' "$status_dir"
     printf 'STATUS.md holds current state and opens with a cold-start section; DECISIONS.md is append-only and holds every decision and dead end with its reason.\n'
-    printf 'The board is the third artefact: a self-refreshing HTML page per task, at %s/.claude/tasks/<task>.html, kept in step with the other two.\n' "${repo_root:-$cwd}"
+    if [ -f "$status_dir/board.html" ]; then
+      printf 'This task owns its whole folder: board.html is the page he keeps open, plan.html the chewed instruction beside it, journal.md the evidence trail. Keep all of them in step with STATUS.md.\n'
+    else
+      printf 'The board is the third artefact: a self-refreshing HTML page per task, at %s/.claude/tasks/<task>.html, kept in step with the other two.\n' "${repo_root:-$cwd}"
+    fi
     case "$source_kind" in
       clear)   printf 'This session started immediately after a /clear.\n' ;;
       compact) printf 'This session started immediately after a compaction.\n' ;;

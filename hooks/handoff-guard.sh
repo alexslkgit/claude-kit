@@ -45,7 +45,17 @@ for _ in 1 2 3 4 5 6 7 8; do
   [ "$dir" = "/" ] && break
   dir="$(dirname "$dir")"
 done
-[ -n "$repo_root" ] || [ -n "$status_dir" ] || exit 0
+# A shelf directory has neither marker — no .git, no status-dir — and that is exactly the cwd he
+# lands in after a /clear. Bailing out here is what made the briefing invisible, so the third way
+# to stay alive is: at least one <cwd>/<task>/HANDOFF.md exists one level down.
+shelf_handoffs() {
+  for d in "$cwd"/*/; do
+    [ -d "$d" ] || continue
+    case "$(basename "$d")" in .*|node_modules|_*) continue ;; esac
+    [ -s "${d%/}/HANDOFF.md" ] && printf '%s\n' "${d%/}/HANDOFF.md"
+  done
+}
+[ -n "$repo_root" ] || [ -n "$status_dir" ] || [ -n "$(shelf_handoffs 2>/dev/null)" ] || exit 0
 
 DIR=""; LEGACY=""
 [ -n "$repo_root" ] && { DIR="$repo_root/.claude/handoffs"; LEGACY="$repo_root/.claude/HANDOFF.md"; }
@@ -58,10 +68,16 @@ sid="$(field session_id)"; [ -n "$sid" ] || sid="$(printf '%s' "$cwd" | /usr/bin
 counter="$SESSDIR/$sid.n"
 
 # Every handoff waiting for this session, newest first.
+#
+# shelf_handoffs is defined above the early exit. The walk only looks UP from cwd, which is blind
+# in the case that matters most: he clears a session while sitting in a shelf directory such as
+# ~/Downloads, where each task keeps its own folder, and the briefing is one level DOWN.
+# Added 2026-08-20, the same day the shelf itself was untangled.
 waiting() {
   { [ -n "$LEGACY" ] && [ -s "$LEGACY" ] && printf '%s\n' "$LEGACY"; } 2>/dev/null
   [ -n "$DIR" ] && [ -d "$DIR" ] && /usr/bin/find "$DIR" -maxdepth 1 -type f -name '*.md' -size +0 2>/dev/null
   { [ -n "$DURABLE" ] && [ -s "$DURABLE" ] && printf '%s\n' "$DURABLE"; } 2>/dev/null
+  shelf_handoffs 2>/dev/null
 }
 title_of() { /usr/bin/head -1 "$1" 2>/dev/null | /usr/bin/sed 's/^#[[:space:]]*//' | /usr/bin/cut -c1-110; }
 stamp_of() { /bin/date -r "$(/usr/bin/stat -f %m "$1" 2>/dev/null || echo 0)" '+%Y-%m-%d %H:%M' 2>/dev/null; }
@@ -108,7 +124,8 @@ case "$event" in
       exit 0
     fi
 
-    [ -n "$DIR" ] || exit 0            # no checkout: the skill governs where it goes
+    [ -n "$DIR" ] || exit 0            # no checkout: the skill governs where it goes, and outside
+                                       # a repo the handoff is <task-folder>/HANDOFF.md
     others="$(waiting)"
     cat <<EOF
 handoff-guard: a handoff is written to a file, not printed into the chat. He no longer copies
@@ -185,10 +202,11 @@ except Exception: print("")' 2>/dev/null)"
     n="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
 
     if [ "$n" -gt 1 ]; then
-      echo "handoff-guard: $n handoffs are waiting in this repository, one per task."
+      echo "handoff-guard: $n handoffs are waiting here, one per task."
       echo "Read the one whose title matches the task you have just been asked about, with the Read"
-      echo "tool, before anything else. Leave the others alone: they belong to other live sessions,"
-      echo "and reading one consumes it."
+      echo "tool, before anything else. Leave the others alone: they belong to other tasks, and a"
+      echo "transient one inside .claude/handoffs/ is consumed by being read. A <task>/HANDOFF.md is"
+      echo "part of that task's own archive and stays put."
       echo
       printf '%s\n' "$list" | while read -r f; do
         [ -n "$f" ] && printf '  %s\n     %s  ·  %s\n' "$f" "$(stamp_of "$f")" "$(title_of "$f")"
@@ -205,8 +223,13 @@ handoff-guard: a handoff written $(stamp_of "$f") is waiting at $f.
 It is the briefing from the previous session in this project, addressed to you. Reading it in
 full with the Read tool is the first action of this session — before answering the user, before
 touching the repository, and without telling him you are doing it: from his side he simply
-carried on talking, and the mechanics are not his concern. Reading it also consumes it — this
-hook moves the file out of the repository the moment you do, so it is read once and never again.
+carried on talking, and the mechanics are not his concern.
+
+$(if [ "$f" = "$DURABLE" ] || [ "$(basename "$f")" = "HANDOFF.md" ]; then
+    printf '%s' "This one is part of the task's own archive and stays where it is: it is rewritten by the next wrap-up, not deleted by being read."
+  else
+    printf '%s' "Reading it also consumes it — this hook moves the file out of the repository the moment you do, so it is read once and never again."
+  fi)
 
 It opens like this, and this is only the opening:
 
