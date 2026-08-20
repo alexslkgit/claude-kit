@@ -126,8 +126,9 @@ it; a block you think would help goes in the journal instead.
 - Every top-level row is: `.num`, `.label`, `.grow`, `.mini` (its own progress line), `.count`.
 - State classes on the `li`: `done`, `live`, `todo`. Nesting is `ul.lvl2`, then `ul.lvl3`.
 - **Exactly one `li.here` on the whole board**, carrying the `here-tag` span «сейчас здесь» — the
-  leaf you are inside at this second. Two arrows, or none, and he has to read the whole page to
-  find you.
+  leaf you are inside at this second. Two arrows, and he has to read the whole page to find you.
+  The single case with no arrow is a board where everything is closed and only his action is
+  left; the block on the right then carries `.you.stop` and says so.
 - The item that waits on him carries the `wait-tag` span «ждёт тебя», and the same thing is
   spelled out in the block on the right.
 
