@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<!-- Refresh by background fetch, NEVER <meta http-equiv="refresh">: a page reload makes
-     Chrome steal focus and yank the user's macOS Space to the browser every 30 s. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Live refresh by background fetch, NEVER a page reload: <meta http-equiv="refresh">,
+     location.reload, window.focus, autofocus, alert, Notification and window.open all make
+     Chrome steal focus and yank his macOS Space to the browser. Blocked by hooks/page-guard.sh. -->
 <script>
 setInterval(async () => {
   try {
@@ -15,83 +17,283 @@ setInterval(async () => {
   } catch (e) {}
 }, 15000);
 </script>
-<title>TASK-KEY — human title</title>
+<title>TASK — human title</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap">
 <style>
   :root {
-    --bg: #ffffff; --fg: #16181d; --muted: #8a9099; --line: #e6e8ec;
-    --now-bg: #eef4ff; --now-fg: #0b3d91;
-    --warn-bg: #fff8e6; --warn-fg: #8a5300;
-    --ok-bg: #e7f7ed; --ok-fg: #0a6b32;
+    --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#A09788;
+    --line:#E7E0D0; --line-soft:#EFEADC; --track:#EDE6D6;
+    --done:#9A9385; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
+    --warn-bg:#FBF1DC; --warn-fg:#8A5A0B; --warn-text:#7A6A4C;
+    --btn-bg:#23211E; --btn-fg:#FDFCF9;
+    color-scheme: light;
   }
+  /* Тема идёт за системой, но кнопка в шапке может её зафиксировать. */
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14161a; --fg: #eef0f4; --muted: #878e99; --line: #272b33;
-      --now-bg: #14243f; --now-fg: #9dc0ff;
-      --warn-bg: #2a2213; --warn-fg: #ffcc70;
-      --ok-bg: #102b1a; --ok-fg: #7fdca4;
+    :root:not([data-theme="light"]) {
+      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#7A7367;
+      --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
+      --done:#7A7367; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+      --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
+      --btn-bg:#EDE9E0; --btn-fg:#1A1815;
+      color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#7A7367;
+      --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
+      --done:#7A7367; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+      --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
+      --btn-bg:#EDE9E0; --btn-fg:#1A1815;
+      color-scheme: dark;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 34px 30px 44px; background: var(--bg); color: var(--fg);
-    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; }
-  h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 18px; }
-  /* «Ждёт от тебя» — ALWAYS the first block. .idle when nothing waits on him. */
-  .you { background: var(--warn-bg); color: var(--warn-fg); border-radius: 12px;
-         padding: 18px 20px; font-size: 17px; font-weight: 600; }
-  .you.idle { background: var(--now-bg); color: var(--now-fg); }
-  .you ol { margin: 8px 0 0; padding-left: 22px; font-weight: 400; font-size: 15px; }
-  .you li { margin-bottom: 8px; }
-  .alert { background: var(--warn-bg); color: var(--warn-fg); border-radius: 12px;
-           padding: 14px 18px; margin-top: 14px; font-size: 15px; }
-  .alert b { display: block; text-transform: uppercase; letter-spacing: .04em; }
-  .status { margin: 22px 0 0; }
-  .status .pill { display: inline-block; border-radius: 999px; padding: 2px 11px;
-    font-size: 12.5px; font-weight: 700; background: var(--now-bg); color: var(--now-fg);
-    margin-right: 8px; }
-  .status .pill.done { background: var(--ok-bg); color: var(--ok-fg); }
-  .stages { list-style: none; margin: 20px 0 0; padding: 0; }
-  .stages li { display: flex; align-items: baseline; gap: 10px; font-size: 15px;
-    padding: 7px 0; border-top: 1px solid var(--line); }
-  .stages li:first-child { border-top: 0; }
-  .stages li.done { color: var(--muted); }
-  .chip { flex: none; min-width: 76px; text-align: center; border-radius: 999px;
-    padding: 2px 9px; font-size: 12px; font-weight: 700;
-    background: var(--now-bg); color: var(--now-fg); }
-  .chip.done { background: var(--ok-bg); color: var(--ok-fg); }
-  .chip.wait { background: var(--warn-bg); color: var(--warn-fg); }
-  .chip.todo { background: transparent; color: var(--muted);
-    box-shadow: inset 0 0 0 1px var(--line); }
-  .stamp { color: var(--muted); font-size: 13px; margin-top: 26px; }
+  body { margin:0; padding:34px 32px 48px; background:var(--bg); color:var(--fg);
+    font:15.5px/1.55 Commissioner, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  main { max-width:1040px; margin:0 auto; }
+  a { color:var(--accent); }
+
+  /* ── Шапка: суть задачи наверху, она же играет роль заголовка списка ── */
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--faint); margin-bottom:6px; }
+  h1 { font-family:Literata, Georgia, serif; font-size:32px; font-weight:700;
+    letter-spacing:-.02em; line-height:1.12; margin:0 0 5px; }
+  .sub { font-size:15px; color:var(--muted); margin:0; }
+
+  /* ── Переключатель темы: авто, светлая, тёмная ── */
+  .head { display:flex; align-items:center; justify-content:space-between; gap:16px;
+    margin-bottom:6px; }
+  .theme { display:flex; gap:2px; flex:none; }
+  .theme button { font:inherit; font-size:11.5px; color:var(--faint); background:transparent;
+    border:1px solid transparent; border-radius:3px; padding:3px 8px; cursor:pointer; }
+  .theme button.on { color:var(--fg); border-color:var(--line); }
+
+
+  /* ── Общая шкала: линия, не кольцо ── */
+  .total { margin:22px 0 26px; }
+  .total-meta { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+    font-size:13.5px; color:var(--muted); margin-bottom:8px; }
+  .total-meta .pct { font-family:Literata, Georgia, serif; font-size:22px; font-weight:700;
+    color:var(--fg); line-height:1; }
+  .total-meta .drift { margin-left:auto; color:var(--accent); font-size:12.5px; }
+  .bar { display:flex; height:7px; border-radius:4px; overflow:hidden; background:var(--track); }
+  .bar i { display:block; height:100%; }
+  .bar .f-done { background:var(--ok); }
+  .bar .f-live { background:var(--accent); }
+
+  /* ── Разворот ── */
+  .cols { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:40px;
+    align-items:start; }
+  @media (max-width: 860px) { .cols { grid-template-columns:1fr; gap:28px; } }
+
+  /* ── Дерево: три уровня, не больше. Верхний уровень = задача, у каждой своя шкала ── */
+  ol.tasks, ul.lvl2, ul.lvl3 { list-style:none; margin:0; padding:0; }
+  ol.tasks > li { padding-bottom:14px; }
+  .row { display:flex; align-items:center; gap:12px; }
+  .row .num { font-family:Literata, Georgia, serif; font-size:15px; color:var(--faint);
+    width:16px; flex:none; }
+  .row .label { font-size:15.5px; font-weight:600; }
+  .row .grow { flex:1 1 auto; min-width:12px; }
+  .row .mini { flex:none; width:104px; height:4px; border-radius:3px; background:var(--track);
+    overflow:hidden; }
+  .row .mini i { display:block; height:100%; background:var(--ok); }
+  .row .count { flex:none; font-size:12.5px; color:var(--muted); width:52px; text-align:right; }
+  li.done > .row .label { color:var(--done); text-decoration:line-through; font-weight:400; }
+  li.done > .row .count { color:var(--ok); }
+  li.todo > .row .label { color:var(--muted); font-weight:400; }
+  li.todo > .row .count { color:var(--faint); }
+  li.live > .row .count { color:var(--accent); }
+  li.live > .row .mini i { background:var(--accent); }
+
+  ul.lvl2 { margin:11px 0 0 28px; padding-left:18px; border-left:1px solid var(--line); }
+  ul.lvl3 { margin:8px 0 0 4px; padding-left:16px; border-left:1px solid var(--line-soft); }
+  ul.lvl2 > li { font-size:14px; padding:4px 0; }
+  ul.lvl3 > li { font-size:13px; padding:3px 0; }
+  ul.lvl2 > li.done, ul.lvl3 > li.done { color:var(--done); text-decoration:line-through; }
+  ul.lvl2 > li.todo, ul.lvl3 > li.todo { color:var(--muted); }
+
+  /* ── Стрелка «сейчас здесь»: ровно одна на весь борд ── */
+  li.here { position:relative; font-weight:600; }
+  li.here::before { content:"▸"; position:absolute; left:-17px; color:var(--accent);
+    font-weight:700; }
+  ul.lvl3 > li.here::before { left:-15px; }
+  .here-tag { font-size:11px; font-weight:600; letter-spacing:.04em; color:var(--accent);
+    margin-left:8px; white-space:nowrap; }
+  .wait-tag { font-size:11.5px; font-weight:600; color:var(--warn-fg); background:var(--warn-bg);
+    padding:2px 8px; border-radius:3px; margin-left:8px; white-space:nowrap; }
+
+  /* ── Правая колонка ── */
+  .side { display:flex; flex-direction:column; gap:22px; }
+  .cap { font-size:11.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--faint); }
+
+  /* «Ждёт тебя» — всегда первый блок справа. .you.idle когда от него ничего не нужно,
+     .you.stop когда без него работы не осталось совсем. */
+  .you { background:var(--warn-bg); border-radius:5px; padding:18px 20px;
+    display:flex; flex-direction:column; gap:11px; }
+  .you .cap { color:var(--warn-fg); }
+  .you h2 { font-family:Literata, Georgia, serif; font-size:17px; font-weight:600;
+    line-height:1.3; margin:0; color:var(--fg); }
+  .you p { margin:0; font-size:13.5px; line-height:1.55; color:var(--warn-text); }
+  .you a.btn { align-self:flex-start; font-size:13.5px; font-weight:600; text-decoration:none;
+    color:var(--btn-fg); background:var(--btn-bg); padding:9px 16px; border-radius:3px; }
+  .you.idle { background:transparent; border:1px solid var(--line); }
+  .you.idle .cap { color:var(--faint); }
+  .you.idle p { color:var(--muted); }
+  .you.stop { background:#F3D9D3; }
+  .you.stop .cap { color:#8C3A26; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .you.stop
+    { background:#3A211A; } :root:not([data-theme="light"]) .you.stop .cap { color:#E9A28C; } }
+  :root[data-theme="dark"] .you.stop { background:#3A211A; }
+  :root[data-theme="dark"] .you.stop .cap { color:#E9A28C; }
+
+  .box { border-top:1px solid var(--line); padding-top:18px;
+    display:flex; flex-direction:column; gap:8px; }
+  .box p { margin:0; font-size:14px; line-height:1.5; }
+  .box .dead { color:var(--dead); }
+
+  .stamp { color:var(--faint); font-size:12.5px; margin:34px 0 0;
+    border-top:1px solid var(--line-soft); padding-top:14px; }
 </style>
 </head>
 <body>
 <main>
 
-  <h1>TASK-KEY — human title of the task</h1>
+  <div class="head">
+    <div class="kicker">Борд · обновлено 14:32:07</div>
+    <div class="theme">
+      <button data-theme-set="auto">авто</button>
+      <button data-theme-set="light">светлая</button>
+      <button data-theme-set="dark">тёмная</button>
+    </div>
+  </div>
+  <h1>Суть всей работы в этом чате, одной строкой</h1>
+  <p class="sub">Подзаголовок на одну строку, если без него непонятно.</p>
 
-  <!-- FIRST BLOCK, ALWAYS. Waiting: class="you", exact steps, one action per line.
-       Nothing waiting: class="you idle", one calm line + what appears here next and when. -->
-  <div class="you idle">От тебя пока ничего. Когда X будет готово, здесь появится
-  инструкция на Y (~N минут).</div>
+  <!-- Общая шкала по всем задачам. Проценты считаются ПО ЛИСТЬЯМ дерева: при добавлении
+       работы цифра честно едет назад, и .drift говорит, почему. Цифры здесь обязаны
+       сходиться с суммой по разделам. -->
+  <div class="total">
+    <div class="total-meta">
+      <span class="pct">42%</span>
+      <span>5 из 12 пунктов закрыто, 1 в работе</span>
+      <span class="drift">было 63%, добавилось 4 подпункта</span>
+    </div>
+    <div class="bar"><i class="f-done" style="width:42%"></i><i class="f-live" style="width:8%"></i></div>
+  </div>
 
-  <!-- Optional, max 1, usually absent. -->
-  <!-- <div class="alert"><b>Блокер</b>Одна строка контекста.</div> -->
+  <div class="cols">
 
-  <p class="status"><span class="pill">работает</span>One LINE, never a paragraph: what is
-  happening right now.</p>
+    <!-- ЛЕВО: дерево. Один чат — один борд, но задач может быть несколько: каждая задача это
+         пункт верхнего уровня со своей шкалой прямо в строке. Вложенность максимум три уровня.
+         Заголовка у списка нет намеренно: его роль играет h1 наверху. -->
+    <ol class="tasks">
 
-  <!-- Этапы: 3-5 lines, one per part of the task, each led by its chip, so the colours alone
-       say how far the run is. Three or four words per line. No history, no tables, no paths. -->
-  <ul class="stages">
-    <li class="done"><span class="chip done">готово</span>Три-четыре слова</li>
-    <li><span class="chip">идёт</span>Что происходит сейчас</li>
-    <li><span class="chip wait">ждёт тебя</span>Что нужно от него</li>
-    <li><span class="chip todo">не начато</span>Что дальше</li>
-  </ul>
+      <li class="done">
+        <div class="row">
+          <span class="num">1</span><span class="label">Задача целиком закрыта</span>
+          <span class="grow"></span>
+          <span class="mini"><i style="width:100%"></i></span>
+          <span class="count">2 из 2</span>
+        </div>
+      </li>
 
-  <p class="stamp">Обновлено DD.MM HH:MM. Страница обновляется сама.</p>
+      <li class="live">
+        <div class="row">
+          <span class="num">2</span><span class="label">Задача в работе</span>
+          <span class="grow"></span>
+          <span class="mini"><i style="width:33%"></i></span>
+          <span class="count">1 из 3</span>
+        </div>
+        <ul class="lvl2">
+          <li class="done">Закрытый пункт</li>
+          <li>Пункт, который ждёт его<span class="wait-tag">ждёт тебя</span></li>
+          <li class="todo">Ещё не начатый пункт</li>
+        </ul>
+      </li>
+
+      <li class="live">
+        <div class="row">
+          <span class="num">3</span><span class="label">Ещё одна задача в работе</span>
+          <span class="grow"></span>
+          <span class="mini"><i style="width:50%"></i></span>
+          <span class="count">2 из 4</span>
+        </div>
+        <ul class="lvl2">
+          <li class="done">Закрытый пункт</li>
+          <li>Пункт с третьим уровнем
+            <ul class="lvl3">
+              <li class="done">Закрытый подпункт</li>
+              <li class="here">Ровно один пункт на весь борд помечен стрелкой<span class="here-tag">сейчас здесь</span></li>
+            </ul>
+          </li>
+          <li class="todo">Не начатый пункт</li>
+        </ul>
+      </li>
+
+      <li class="todo">
+        <div class="row">
+          <span class="num">4</span><span class="label">Задача, которая ещё не начата</span>
+          <span class="grow"></span>
+          <span class="mini"><i style="width:0%"></i></span>
+          <span class="count">0 из 3</span>
+        </div>
+      </li>
+
+    </ol>
+
+    <!-- ПРАВО: что ждёт его, что происходит сейчас, что решено. Больше блоков не добавлять. -->
+    <aside class="side">
+
+      <div class="you">
+        <div class="cap">Ждёт от тебя · 1</div>
+        <h2>Одно действие, которое может сделать только он</h2>
+        <p>Всё вокруг уже готово: вкладка открыта, форма заполнена. Дальше я снова работаю сам.</p>
+        <a class="btn" href="#">Открыть вкладку</a>
+      </div>
+
+      <div class="box">
+        <div class="cap">Сейчас</div>
+        <p>Одна строка о том, что я делаю в эту секунду.</p>
+      </div>
+
+      <div class="box">
+        <div class="cap">Решено по дороге</div>
+        <p>Решение и причина в одну строку.</p>
+        <p>Ещё решение и его причина.</p>
+        <p class="dead">Тупик: что не сработало и почему больше не пробуем.</p>
+      </div>
+
+    </aside>
+  </div>
+
+  <p class="stamp">Страница обновляется сама, перезагружать не нужно.</p>
 
 </main>
+<!-- Переключатель темы. Никаких перезагрузок: только атрибут на <html>. -->
+<script>
+(function () {
+  var KEY = 'board-theme';
+  function apply(v) {
+    var r = document.documentElement;
+    if (v === 'light' || v === 'dark') { r.setAttribute('data-theme', v); }
+    else { r.removeAttribute('data-theme'); }
+    var bs = document.querySelectorAll('[data-theme-set]');
+    for (var i = 0; i < bs.length; i++) {
+      bs[i].classList.toggle('on', bs[i].getAttribute('data-theme-set') === (v || 'auto'));
+    }
+  }
+  function current() { try { return localStorage.getItem(KEY) || 'auto'; } catch (e) { return 'auto'; } }
+  apply(current());
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-theme-set]');
+    if (!b) return;
+    var v = b.getAttribute('data-theme-set');
+    try { localStorage.setItem(KEY, v); } catch (e2) {}
+    apply(v);
+  });
+  new MutationObserver(function () { apply(current()); }).observe(document.body, { childList: true });
+})();
+</script>
 </body>
 </html>
