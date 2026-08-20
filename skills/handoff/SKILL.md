@@ -156,7 +156,13 @@ plus each branch's contribution, and every new suite must appear by name in the 
 
 ## Where it goes: a file, not a chat message
 
-**Write the briefing to `<repo>/.claude/HANDOFF.md` with the Write tool.** Not into the chat.
+**Write the briefing to `<repo>/.claude/handoffs/<task-slug>.md` with the Write tool.** Not into
+the chat, and never to the old single `.claude/HANDOFF.md`. The slug names the task this session
+was doing, `cart-34801-animation`, `paywall-entry-points`, whatever the session is called. One file
+per task, because he runs several sessions on one repository and forks a session in two whenever a
+task splits: a shared filename means the second session to be cleared silently destroys the first
+one's briefing, and a fresh session picks up whoever's file happened to be there. Corrected
+2026-08-20 after exactly that nearly happened.
 Agreed 2026-08-13, after months of him copying the block out of the terminal by hand: a copy can
 be partial, a paste can land in the wrong window, and the block dies with the chat that printed
 it. The file survives all three.
@@ -165,13 +171,15 @@ Then say one line to him, and nothing else — the path, and that pasting it int
 is all he has to do:
 
 ```
-.claude/HANDOFF.md
+.claude/handoffs/<task-slug>.md
 ```
 
 The rest is machinery he does not have to think about, and it is a hook rather than an instruction
-here on purpose — `hooks/handoff-guard.sh` states the path when he asks for a handoff, appends the
-file to `.git/info/exclude` when you write it, tells the next session at startup that a briefing is
-waiting, and **moves the file out of the repository the instant that session reads it**. So the
+here on purpose — `hooks/handoff-guard.sh` states the path when he asks for a handoff and lists any
+handoff already waiting from another session, appends the directory to `.git/info/exclude` when you
+write it, tells the next session at startup what is waiting, by title, so it reads the one matching
+its own task rather than the only one it can see, and **moves the file out of the repository the
+instant that session reads it**. So the
 handoff is delivered exactly once and leaves nothing behind. Do not delete the file yourself, do
 not copy it anywhere, and do not also paste its contents into the chat "just in case" — that is the
 duplication this replaced.

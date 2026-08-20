@@ -1,47 +1,24 @@
 #!/usr/bin/env bash
-# handoff-guard.sh — makes the handoff a file instead of a chat message, and makes the
-# clean-up of that file automatic.
+# handoff-guard.sh — makes the handoff a file instead of a chat message, makes the next session
+# read it, and makes it disappear once read.
 #
-# The problem it solves, stated by the user 2026-08-13: a handoff was printed into the chat,
-# he copied it by hand and pasted it into the new session. Nothing in that flow is guaranteed —
-# the copy can be partial, the paste can land in the wrong window, and the prompt is gone the
-# moment the old chat closes. Worse, the fix he tried before (a skill saying "also write a
-# file") is exactly the kind of rule a session forgets, because a skill is text and text is
-# obeyed at the model's discretion.
+# The problem it solves, stated by the user 2026-08-13: a handoff was printed into the chat, he
+# had to copy it by hand, and half of it was lost. So the skill writes a file, this hook enforces
+# where, tells a fresh session it is waiting, and erases it the moment it has been read.
 #
-# So the whole mechanism lives here instead. A hook is a shell command the harness runs itself,
-# at a fixed moment, whatever the model happens to be doing. It cannot be forgotten, skipped or
-# talked out of. What it cannot do is think: it has no agent, it only reads the event payload on
-# stdin and answers with text and an exit code. That division is the design —
+# 2026-08-20, the second problem: he runs several sessions on one repository, and forks one into
+# two whenever a task splits. With a single fixed HANDOFF.md the second session to be cleared
+# overwrites the first one's briefing, and a fresh session picks up whichever file happens to be
+# there — someone else's task. So a handoff is now one file per task under .claude/handoffs/,
+# and a session start lists every waiting handoff rather than assuming there is one.
 #
-#   the skill writes the handoff (thinking), the hook enforces the path and erases the file
-#   afterwards (bookkeeping).
-#
-# Verified against the hook documentation, 2026-08-03 (see status-guard.sh for the full table):
-#   SessionStart      stdout IS injected as a system message
-#   UserPromptSubmit  stdout IS added to the context of that turn
-#   PostToolUse       stdout IS added to the context; payload carries tool_input.file_path
-#
-# The four moments:
-#   1. UserPromptSubmit, prompt looks like a handoff request
-#        -> state the fixed path, so the handoff is written there and not into the chat.
-#   2. PostToolUse on Write to that path
-#        -> hide it from git via .git/info/exclude, and confirm it exists.
-#   3. SessionStart, the file exists
-#        -> tell the new session a handoff is waiting and that reading it comes first.
-#   4. PostToolUse on Read of that path
-#        -> the handoff has been consumed. Move it out of the repo, immediately.
-#
-# Step 4 is the one the user asked for by name: the file must not survive its own delivery,
-# or the next session picks up a stale briefing and the repo slowly fills with dead prompts.
-# It is a move, not a delete — into ~/.claude/handoff-archive, last 5 kept. Deleting outright
-# saves nothing (the file is outside the repo and outside anyone's context either way) and a
-# session that dies mid-read would lose the whole briefing with no way back.
+# Layout:
+#   .claude/handoffs/<task-slug>.md   one per task, named by the session's own task
+#   .claude/HANDOFF.md                the old single slot, still honoured if something writes it
 #
 # Never fails a session: always exits 0.
 
 set -uo pipefail
-
 ARCHIVE="$HOME/.claude/handoff-archive"
 
 payload="$(cat 2>/dev/null || true)"
@@ -50,7 +27,6 @@ field() { printf '%s' "$payload" | /usr/bin/sed -n "s/.*\"$1\"[[:space:]]*:[[:sp
 event="$(field hook_event_name)"; [ -n "$event" ] || event="${1:-SessionStart}"
 cwd="$(field cwd)";              [ -n "$cwd" ]   || cwd="$PWD"
 
-# The repository this session is working in, and the one path a handoff may live at.
 repo_root=""; dir="$cwd"
 for _ in 1 2 3 4 5 6 7 8; do
   [ -d "$dir/.git" ] && { repo_root="$dir"; break; }
@@ -58,38 +34,46 @@ for _ in 1 2 3 4 5 6 7 8; do
   dir="$(dirname "$dir")"
 done
 [ -n "$repo_root" ] || exit 0          # no checkout, no file handoff — the skill says so itself
-HANDOFF="$repo_root/.claude/HANDOFF.md"
+
+DIR="$repo_root/.claude/handoffs"
+LEGACY="$repo_root/.claude/HANDOFF.md"
+
+# Every handoff waiting in this repository, newest first.
+waiting() {
+  { [ -s "$LEGACY" ] && printf '%s\n' "$LEGACY"; } 2>/dev/null
+  [ -d "$DIR" ] && /usr/bin/find "$DIR" -maxdepth 1 -type f -name '*.md' -size +0 2>/dev/null
+}
+title_of() { /usr/bin/head -1 "$1" 2>/dev/null | /usr/bin/sed 's/^#[[:space:]]*//' | /usr/bin/cut -c1-110; }
+stamp_of() { /bin/date -r "$(/usr/bin/stat -f %m "$1" 2>/dev/null || echo 0)" '+%Y-%m-%d %H:%M' 2>/dev/null; }
 
 case "$event" in
 
   UserPromptSubmit)
-    # The context meter that used to live here now lives in context-guard.sh. It had to move:
-    # this script exits early when the cwd is not a git checkout (line ~60), so in ~/Downloads
-    # and every other non-repo directory the meter was silently dead — which is exactly where
-    # the user found himself at 206k with nothing having warned him, 2026-08-17. The new hook
-    # has no repo requirement and also runs on PostToolUse, because a turn is a median of 25
-    # requests and can cross the threshold without ever passing a prompt boundary.
-
-    # --- handoff requested ---------------------------------------------------------------
-    # Match on the raw payload rather than parsing the prompt out of it: prompts are multi-line
-    # and quoted, and a false positive here costs one harmless sentence.
     printf '%s' "$payload" | /usr/bin/grep -qiE \
       'handoff|hand this over|хендоф|хэндоф|хендов|хэндов|архивируйся|заархивируй|перенеси в новый|новый чат|новый диалог' \
       || exit 0
-    [ -f "$HANDOFF" ] && exit 0        # already written this turn, nothing to say
+    others="$(waiting)"
     cat <<EOF
-handoff-guard: this project's handoff file is $HANDOFF — a handoff is written there with Write,
-not printed into the chat. The user has said he no longer copies briefings by hand: he pastes the
-path, the next session reads the file, and this hook moves the file out of the repo the moment it
-is read. A handoff that exists only as chat text is therefore not delivered.
+handoff-guard: a handoff is written to a file, not printed into the chat. He no longer copies
+briefings by hand: he pastes a path, the next session reads that file, and this hook moves it out
+of the repository the moment it is read.
+
+Write it to $DIR/<task-slug>.md, named after THIS session's task, for example
+$DIR/cart-34801-animation.md. The directory is created by the Write itself.
+One file per task is the whole point: he runs several sessions on this repository at once, and a
+shared filename means the second one to finish silently destroys the first one's briefing.
 EOF
+    if [ -n "$others" ]; then
+      echo
+      echo "Handoffs already waiting here, from other sessions. Do not overwrite them:"
+      printf '%s\n' "$others" | while read -r f; do
+        [ -n "$f" ] && printf '  %s  ·  %s  ·  %s\n' "$(basename "$f")" "$(stamp_of "$f")" "$(title_of "$f")"
+      done
+    fi
     exit 0
     ;;
 
   PostToolUse)
-    # Read the path out of tool_input specifically. A regex over the whole payload would also
-    # match a file_path appearing inside the file's own contents, which for the Read branch means
-    # archiving a handoff because some unrelated file mentioned it.
     p=""
     if command -v python3 >/dev/null 2>&1; then
       p="$(printf '%s' "$payload" | python3 -c 'import json,sys
@@ -97,34 +81,37 @@ try: print(json.load(sys.stdin).get("tool_input",{}).get("file_path","") or "")
 except Exception: print("")' 2>/dev/null)"
     fi
     [ -n "$p" ] || p="$(field file_path)"
-    [ "$p" = "$HANDOFF" ] || exit 0
+    case "$p" in
+      "$LEGACY"|"$DIR"/*.md) ;;
+      *) exit 0 ;;
+    esac
     tool="$(field tool_name)"
 
     case "$tool" in
       Write|Edit|MultiEdit)
-        # Keep it out of git without touching .gitignore, which is a tracked, shared file.
+        # Keep handoffs out of git without touching .gitignore, which is tracked and shared.
         ex="$repo_root/.git/info/exclude"
-        if [ -f "$ex" ] && ! /usr/bin/grep -qxF '.claude/HANDOFF.md' "$ex" 2>/dev/null; then
-          printf '.claude/HANDOFF.md\n' >> "$ex" 2>/dev/null || true
+        if [ -f "$ex" ]; then
+          for line in '.claude/HANDOFF.md' '.claude/handoffs/'; do
+            /usr/bin/grep -qxF "$line" "$ex" 2>/dev/null || printf '%s\n' "$line" >> "$ex" 2>/dev/null || true
+          done
         fi
-        [ -s "$HANDOFF" ] || exit 0
-        printf 'handoff-guard: the handoff is on disk at %s (%s lines) and excluded from git. The user pastes that path into the new session; nothing needs to be repeated into the chat.\n' \
-          "$HANDOFF" "$(/usr/bin/wc -l < "$HANDOFF" | tr -d ' ')"
+        [ -s "$p" ] || exit 0
+        printf 'handoff-guard: the handoff is on disk at %s (%s lines) and excluded from git. Give him that path; nothing needs to be repeated into the chat.\n' \
+          "$p" "$(/usr/bin/wc -l < "$p" | tr -d ' ')"
         exit 0
         ;;
 
       Read)
-        [ -s "$HANDOFF" ] || exit 0
+        [ -s "$p" ] || exit 0
         mkdir -p "$ARCHIVE" 2>/dev/null || true
-        # One file per project, overwritten every time — never a growing pile. A handoff is
-        # read once and is worthless the moment it has been; the only reason a copy exists at
-        # all is the session that dies mid-read. Timestamped copies were the first design and
-        # the user killed it 2026-08-13: "склад из 10 тысяч хендоффов, которые больше никому
-        # не нужны". One live file in the project, one dead copy outside it, and that is all.
-        dest="$ARCHIVE/$(basename "$repo_root").md"
-        if mv -f "$HANDOFF" "$dest" 2>/dev/null; then
-          printf 'handoff-guard: that handoff has now been consumed. %s no longer exists — it was moved to %s. Do not write it back, do not re-read it, and do not mention the file to the user: the briefing is in this context now and continuing the work is the next action.\n' \
-            "$HANDOFF" "$dest"
+        # One dead copy per handoff, outside the repository. Timestamped piles were the first
+        # design and he killed it 2026-08-13: "склад из 10 тысяч хендоффов, которые больше
+        # никому не нужны". The copy exists only for the session that dies mid-read.
+        dest="$ARCHIVE/$(basename "$repo_root")-$(basename "$p")"
+        if mv -f "$p" "$dest" 2>/dev/null; then
+          printf 'handoff-guard: that handoff has now been consumed. %s no longer exists, it was moved to %s. Do not write it back, do not re-read it, and do not mention the file to him: the briefing is in this context now and continuing the work is the next action.\n' \
+            "$p" "$dest"
         fi
         exit 0
         ;;
@@ -133,16 +120,27 @@ except Exception: print("")' 2>/dev/null)"
     ;;
 
   SessionStart|*)
-    [ -s "$HANDOFF" ] || exit 0
-    when="$(/bin/date -r "$(/usr/bin/stat -f %m "$HANDOFF" 2>/dev/null || echo 0)" '+%Y-%m-%d %H:%M' 2>/dev/null)"
-    # Do not merely point at the file — quote its opening. A pointer relies on the session
-    # choosing to follow it, and that is the one link in this chain that was still goodwill.
-    # With the first lines already in context the briefing has begun whether or not the model
-    # decided to open it, and the instruction below is then a continuation rather than a
-    # request. Kept short: SessionStart output is capped around 10k characters and the status
-    # guard is speaking in the same breath.
+    list="$(waiting)"
+    [ -n "$list" ] || exit 0
+    n="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
+
+    if [ "$n" -gt 1 ]; then
+      echo "handoff-guard: $n handoffs are waiting in this repository, one per task."
+      echo "Read the one whose title matches the task you have just been asked about, with the Read"
+      echo "tool, before anything else. Leave the others alone: they belong to other live sessions,"
+      echo "and reading one consumes it."
+      echo
+      printf '%s\n' "$list" | while read -r f; do
+        [ -n "$f" ] && printf '  %s\n     %s  ·  %s\n' "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+      done
+      echo
+      echo "If none of them matches, say so in one line and carry on; do not read one at random."
+      exit 0
+    fi
+
+    f="$(printf '%s\n' "$list" | head -1)"
     cat <<EOF
-handoff-guard: a handoff written ${when:-earlier} is waiting at $HANDOFF.
+handoff-guard: a handoff written $(stamp_of "$f") is waiting at $f.
 
 It is the briefing from the previous session in this project, addressed to you. Reading it in
 full with the Read tool is the first action of this session — before answering the user, before
@@ -152,12 +150,11 @@ hook moves the file out of the repository the moment you do, so it is read once 
 
 It opens like this, and this is only the opening:
 
---- $HANDOFF (first lines) ---
-$(/usr/bin/head -c 2500 "$HANDOFF")
+--- $f (first lines) ---
+$(/usr/bin/head -40 "$f" 2>/dev/null)
 --- end of excerpt, the rest is in the file ---
 EOF
     exit 0
     ;;
 esac
-
 exit 0
