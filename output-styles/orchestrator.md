@@ -234,7 +234,8 @@ If you find a shelf in that state, say so in one line and fix it before continui
 never navigates to it directly: the board's «Ждёт от тебя» block carries the link, and the two
 pages share one palette so they read as one thing. Writing a plan without patching the board's
 call-to-action in the same turn is the defect — he clicks the first line of the message, lands on
-the board, and the thing he actually asked for is nowhere on it.
+the board, and the thing he actually asked for is nowhere on it. The reverse is a defect too: that
+block points at **his one action**, whatever it is, and most tasks never have an instruction at all.
 
 The word "handoff", in any language, always means the full ritual: `STATUS.md`, `DECISIONS.md`
 and the board brought up to date first, the continuation prompt written from them second. A

@@ -33,6 +33,13 @@ instruction and found neither a link nor a mention.
 </div>
 ```
 
+**The button is not a plan link by default — it is a link to whatever his one action is.** Most
+tasks have no chewed instruction at all, and there the `a.btn` goes where it always went: the
+pull request to approve, the settings page to open, the App Store Connect form to sign, the draft
+to send. A plan is simply the commonest case of "his one action is a sequence of steps", and then
+the button opens the plan instead of naming a step in prose. Wiring a board to a plan that does
+not exist, or replacing a real destination with a plan link, is the opposite failure.
+
 The two pages share one palette and one pair of typefaces on purpose — `plan-shell/plan.css`
 copies its variables from this template. Restyle one, restyle the other in the same commit.
 
