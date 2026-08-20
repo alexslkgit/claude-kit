@@ -21,9 +21,9 @@ setInterval(async () => {
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap">
 <style>
   :root {
-    --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#A09788;
+    --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#7F776C;
     --line:#E7E0D0; --line-soft:#EFEADC; --track:#EDE6D6;
-    --done:#9A9385; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
+    --done:#7F776C; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
     --warn-bg:#FBF1DC; --warn-fg:#8A5A0B; --warn-text:#7A6A4C;
     --btn-bg:#23211E; --btn-fg:#FDFCF9;
     color-scheme: light;
@@ -31,18 +31,18 @@ setInterval(async () => {
   /* Тема идёт за системой, но кнопка в шапке может её зафиксировать. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#7A7367;
+      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
       --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
-      --done:#7A7367; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+      --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
       --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
       --btn-bg:#EDE9E0; --btn-fg:#1A1815;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#7A7367;
+      --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
       --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
-      --done:#7A7367; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+      --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
       --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
       --btn-bg:#EDE9E0; --btn-fg:#1A1815;
       color-scheme: dark;
