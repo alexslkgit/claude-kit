@@ -98,12 +98,21 @@ setInterval(async () => {
     overflow:hidden; }
   .row .mini i { display:block; height:100%; background:var(--ok); }
   .row .count { flex:none; font-size:12.5px; color:var(--muted); width:52px; text-align:right; }
-  li.done > .row .label { color:var(--done); text-decoration:line-through; font-weight:400; }
-  li.done > .row .count { color:var(--ok); }
-  li.todo > .row .label { color:var(--muted); font-weight:400; }
-  li.todo > .row .count { color:var(--faint); }
-  li.live > .row .count { color:var(--accent); }
-  li.live > .row .mini i { background:var(--accent); }
+  li.done .row .label { color:var(--done); text-decoration:line-through; font-weight:400; }
+  li.done .row .count { color:var(--ok); }
+  li.todo .row .label { color:var(--muted); font-weight:400; }
+  li.todo .row .count { color:var(--faint); }
+  li.live .row .count { color:var(--accent); }
+  li.live .row .mini i { background:var(--accent); }
+
+  /* ── Списки сворачиваются: <details>/<summary>, состояние переживает фоновое обновление ── */
+  summary { list-style:none; cursor:pointer; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"›"; display:inline-block; width:12px; flex:none;
+    color:var(--faint); transition:transform .12s; }
+  details[open] > summary::before { transform:rotate(90deg); }
+  ul.lvl2 > li.branch > details > summary { display:flex; align-items:baseline; }
+  summary:hover::before { color:var(--fg); }
 
   ul.lvl2 { margin:11px 0 0 28px; padding-left:18px; border-left:1px solid var(--line); }
   ul.lvl3 { margin:8px 0 0 4px; padding-left:16px; border-left:1px solid var(--line-soft); }
@@ -152,6 +161,26 @@ setInterval(async () => {
   .box p { margin:0; font-size:14px; line-height:1.5; }
   .box .dead { color:var(--dead); }
 
+  /* ── Ссылки читаются как ссылки, но не кричат ── */
+  .tasks a, .box a, .daily a { color:inherit; text-decoration:underline;
+    text-decoration-color:var(--line); text-underline-offset:2px; }
+  .tasks a:hover, .box a:hover, .daily a:hover { color:var(--accent);
+    text-decoration-color:var(--accent); }
+
+  /* ── С прошлого дейлика: опционально, только если есть трекер, чат и пул-реквесты ── */
+  .daily { border-top:1px solid var(--line); margin-top:30px; padding-top:20px; }
+  .daily-cols { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:40px;
+    align-items:start; }
+  @media (max-width: 860px) { .daily-cols { grid-template-columns:1fr; gap:24px; } }
+  ul.news { list-style:none; margin:12px 0 0; padding:0; }
+  ul.news li { font-size:14px; line-height:1.5; padding:6px 0;
+    border-bottom:1px solid var(--line-soft); display:flex; gap:10px; align-items:baseline; }
+  ul.news li:last-child { border-bottom:0; }
+  .src { flex:none; font-size:10.5px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--faint); width:42px; }
+  ol.say { margin:12px 0 0; padding-left:18px; }
+  ol.say li { font-size:14px; line-height:1.5; padding:3px 0; }
+
   .stamp { color:var(--faint); font-size:12.5px; margin:34px 0 0;
     border-top:1px solid var(--line-soft); padding-top:14px; }
 </style>
@@ -186,7 +215,9 @@ setInterval(async () => {
 
     <!-- ЛЕВО: дерево. Один чат — один борд, но задач может быть несколько: каждая задача это
          пункт верхнего уровня со своей шкалой прямо в строке. Вложенность максимум три уровня.
-         Заголовка у списка нет намеренно: его роль играет h1 наверху. -->
+         Заголовка у списка нет намеренно: его роль играет h1 наверху. Пункт с детьми — это
+         <details>/<summary>, список сворачивается. Любой тикет, пул-реквест, канал или страница,
+         упомянутые на борде, обязаны быть ссылкой, а не голым номером. -->
     <ol class="tasks">
 
       <li class="done">
@@ -198,38 +229,38 @@ setInterval(async () => {
         </div>
       </li>
 
-      <li class="live">
-        <div class="row">
+      <li class="live"><details id="t2" open>
+        <summary class="row">
           <span class="num">2</span><span class="label">Задача в работе</span>
           <span class="grow"></span>
           <span class="mini"><i style="width:33%"></i></span>
           <span class="count">1 из 3</span>
-        </div>
+        </summary>
         <ul class="lvl2">
           <li class="done">Закрытый пункт</li>
           <li>Пункт, который ждёт его<span class="wait-tag">ждёт тебя</span></li>
           <li class="todo">Ещё не начатый пункт</li>
         </ul>
-      </li>
+      </details></li>
 
-      <li class="live">
-        <div class="row">
+      <li class="live"><details id="t3" open>
+        <summary class="row">
           <span class="num">3</span><span class="label">Ещё одна задача в работе</span>
           <span class="grow"></span>
           <span class="mini"><i style="width:50%"></i></span>
           <span class="count">2 из 4</span>
-        </div>
+        </summary>
         <ul class="lvl2">
           <li class="done">Закрытый пункт</li>
-          <li>Пункт с третьим уровнем
+          <li class="branch"><details id="t3-2" open><summary>Пункт с третьим уровнем</summary>
             <ul class="lvl3">
               <li class="done">Закрытый подпункт</li>
               <li class="here">Ровно один пункт на весь борд помечен стрелкой<span class="here-tag">сейчас здесь</span></li>
             </ul>
-          </li>
+          </details></li>
           <li class="todo">Не начатый пункт</li>
         </ul>
-      </li>
+      </details></li>
 
       <li class="todo">
         <div class="row">
@@ -259,13 +290,32 @@ setInterval(async () => {
 
       <div class="box">
         <div class="cap">Решено по дороге</div>
-        <p>Решение и причина в одну строку.</p>
-        <p>Ещё решение и его причина.</p>
-        <p class="dead">Тупик: что не сработало и почему больше не пробуем.</p>
+        <p>Решение и причина в одну строку, детали в <a href="#">PR #12</a>.</p>
+        <p>Ещё решение и его причина, обсуждали в <a href="#">треде Slack</a>.</p>
+        <p class="dead">Тупик: что не сработало и почему больше не пробуем, см. <a href="#">тикет #45</a>.</p>
       </div>
 
     </aside>
   </div>
+
+  <!-- ОПЦИОНАЛЬНО: этот блок нужен только если у проекта есть трекер, чат и пул-реквесты,
+       которые можно перечитать со времени прошлого дейлика. Иначе секцию не добавлять. -->
+  <section class="daily">
+    <div class="daily-cols">
+      <div>
+        <div class="cap">С прошлого дейлика · вчера 10:15</div>
+        <ul class="news">
+          <li><span class="src">PR</span>Строка о пул-реквесте, <a href="#">#31</a>.</li>
+          <li><span class="src">Тикет</span>Строка о тикете, <a href="#">TASK-9</a>.</li>
+          <li><span class="src">Слак</span>Строка о треде, <a href="#">ссылка на тред</a>.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="cap">Что сказать на дейлике</div>
+        <ol class="say"><li>Строка о том, что сдвинулось.</li><li>Строка о том, чем занят сейчас.</li><li>Строка о том, что дальше.</li></ol>
+      </div>
+    </div>
+  </section>
 
   <p class="stamp">Страница обновляется сама, перезагружать не нужно.</p>
 
@@ -284,7 +334,20 @@ setInterval(async () => {
     }
   }
   function current() { try { return localStorage.getItem(KEY) || 'auto'; } catch (e) { return 'auto'; } }
+  var OKEY = 'board-open';
+  function readOpen() { try { return JSON.parse(localStorage.getItem(OKEY) || '{}'); } catch (e) { return {}; } }
+  function applyOpen() {
+    var st = readOpen(), ds = document.querySelectorAll('details[id]');
+    for (var i = 0; i < ds.length; i++) { var v = st[ds[i].id]; if (v !== undefined) { ds[i].open = !!v; } }
+  }
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d.id || d.tagName !== 'DETAILS') return;
+    var st = readOpen(); st[d.id] = d.open;
+    try { localStorage.setItem(OKEY, JSON.stringify(st)); } catch (e2) {}
+  }, true);
   apply(current());
+  applyOpen();
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-theme-set]');
     if (!b) return;
@@ -292,7 +355,7 @@ setInterval(async () => {
     try { localStorage.setItem(KEY, v); } catch (e2) {}
     apply(v);
   });
-  new MutationObserver(function () { apply(current()); }).observe(document.body, { childList: true });
+  new MutationObserver(function () { apply(current()); applyOpen(); }).observe(document.body, { childList: true });
 })();
 </script>
 </body>

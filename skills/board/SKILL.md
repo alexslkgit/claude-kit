@@ -132,6 +132,40 @@ it; a block you think would help goes in the journal instead.
 - The item that waits on him carries the `wait-tag` span «ждёт тебя», and the same thing is
   spelled out in the block on the right.
 
+### Everything with children folds
+
+Any item that has children is a `<details>` with a `<summary>`; an item without children stays a
+plain row. Every `<details>` carries a **stable id** (`t2`, `t3-2`), because the open/closed state
+is kept in `localStorage` and reapplied after each background refresh, and a renumbered id loses
+his folds.
+
+- Write finished tasks **closed** and running tasks **open**. The branch holding the
+  «сейчас здесь» item is always open.
+- Folding is what keeps the ten-second budget when a task has thirty items: he opens the one
+  branch he cares about and the rest stays one line each.
+
+### Every name on the board is a link
+
+⭐ **His standing rule.** A ticket key, a pull request number, a build, a Slack thread, a channel,
+a page, a repository: if it has a URL, it is an `<a>`, never bare text. A bare number costs him a
+search to remember what it even is. The URL shapes per project live in that project's
+`CLAUDE.local.md`; look them up instead of guessing.
+
+### The standup section, when the project has one
+
+Optional, full width, under the two columns: `section.daily`. It exists only where there is
+something to read (a tracker, a team chat, pull requests) and is **deleted entirely** where there
+is not. Never invent its content to fill the space.
+
+He opens the chat ten minutes before the standup and asks for fresh data. The subagents read
+Slack, the tracker and the pull requests, and this section is where the answer lands:
+
+- **«С прошлого дейлика»** — what actually changed, one line each, with the source in `.src`
+  (`PR`, `JIRA`, `SLACK`) and every identifier linked. What is drafted but not sent is said
+  plainly, because sending is his click.
+- **«Что сказать на дейлике»** — exactly three lines: what moved, what he is on now, what is
+  next. Тезисы, not a script to read aloud. No causes, no test counts, no build numbers.
+
 ### The percent is counted over the LEAVES
 
 Count the deepest items only, never the sections. Done leaves ÷ all leaves.
