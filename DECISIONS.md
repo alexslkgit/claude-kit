@@ -81,3 +81,23 @@ run drew its own layout minutes before an interview.
 **Урок из этой же сессии, стоил доверия к странице.** Первый макет писал в шапке «7 из 33
 закрыто», а сумма по разделам давала 5 из 12. Цифры в шапке обязаны быть посчитаны из дерева, а
 не написаны рядом с ним.
+
+## company-brief: six blocks, and a fit block he decides from — 2026-08-20
+
+Second pass over the same page, from his review of the Obox brief.
+
+1. **In-page anchors are banned in this template.** The nav chips were `<a href="#s1">`. Rendered
+   inside the app's sandboxed viewer, that turned into an "open external link" prompt to
+   claudeusercontent.com and a blank page. They are `<button>` plus `scrollIntoView` now.
+2. **Eleven collapsed sections is a scroll, not a dashboard.** The ten research sections now group
+   into six page blocks: подходит-ли-тебе (fit + culture), компания (2+3), проект и приложение
+   (4+5), деньги, на звонок (9+8+10), трекер и источники (1 + sources, last).
+3. **New first block: "Подходит ли тебе"** — за/против against his standing criteria, with the
+   criteria written into the skill so they stop being re-derived. The one he supplied and that was
+   missing entirely: **outstaff is usually a plus, because the real employer is the client, and the
+   client can be large.** The size of the consultancy is the secondary number.
+4. **Theme is switchable by hand**, three states: auto, light, dark. `prefers-color-scheme` alone
+   was not enough — he asked to be able to force either.
+
+**Cost of not doing it earlier:** he read the first brief on a phone, tapped the first chip, and
+landed on a blank external page.

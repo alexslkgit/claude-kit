@@ -11,20 +11,30 @@
     --mb-bg:#e9f0ff; --mb-fg:#0b3d91;
     --gs-bg:#eceef1; --gs-fg:#5c626b;
     --warn-bg:#fff4d9; --warn-fg:#7a4a00; --warn-line:#f0d089;
+    --bad-bg:#fdecec; --bad-fg:#8d1f1f; --bad-line:#f2c9c9;
     --accent:#0b3d91;
   }
+  :root[data-theme="dark"] {
+    --bg:#0f1114; --card:#191c21; --fg:#eef0f4; --muted:#949aa4; --line:#272b33;
+    --ok-bg:#0f2c1c; --ok-fg:#7fdca4;
+    --mb-bg:#14243f; --mb-fg:#9dc0ff;
+    --gs-bg:#23262c; --gs-fg:#a3a9b3;
+    --warn-bg:#2c2312; --warn-fg:#ffcf7a; --warn-line:#4d3c15;
+    --bad-bg:#2e1618; --bad-fg:#ffa4a4; --bad-line:#4d2426;
+    --accent:#9dc0ff;
+  }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg:#0f1114; --card:#191c21; --fg:#eef0f4; --muted:#949aa4; --line:#272b33;
       --ok-bg:#0f2c1c; --ok-fg:#7fdca4;
       --mb-bg:#14243f; --mb-fg:#9dc0ff;
       --gs-bg:#23262c; --gs-fg:#a3a9b3;
       --warn-bg:#2c2312; --warn-fg:#ffcf7a; --warn-line:#4d3c15;
+      --bad-bg:#2e1618; --bad-fg:#ffa4a4; --bad-line:#4d2426;
       --accent:#9dc0ff;
     }
   }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html { scroll-behavior:smooth; scroll-padding-top:92px; }
   body { margin:0; background:var(--bg); color:var(--fg);
     font:17px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
     -webkit-text-size-adjust:100%; padding-bottom:56px; }
@@ -32,13 +42,16 @@
 
   header { position:sticky; top:0; z-index:20; background:var(--bg);
     border-bottom:1px solid var(--line); padding:12px 14px 10px; }
-  .hd { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:14px; }
+  .hd { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:12px; }
   .hd h1 { font-size:19px; font-weight:750; letter-spacing:-.02em; margin:0; line-height:1.2; }
   .hd .meta { color:var(--muted); font-size:12.5px; margin-top:2px; }
   .hd .money { margin-left:auto; text-align:right; flex:none; }
   .hd .money b { display:block; font-size:19px; font-weight:750; letter-spacing:-.02em;
     color:var(--ok-fg); white-space:nowrap; }
   .hd .money span { display:block; color:var(--muted); font-size:11.5px; }
+  #theme { flex:none; width:34px; height:34px; border-radius:999px; cursor:pointer;
+    border:1px solid var(--line); background:var(--card); color:var(--fg); font-size:15px;
+    line-height:1; padding:0; }
 
   .top { margin:16px 0 10px; display:grid; gap:10px; }
   .box { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
@@ -47,25 +60,22 @@
   .box.flag { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn-fg); }
   .box.flag .lbl { color:var(--warn-fg); opacity:.85; }
 
-  /* One scrollable row, not five stacked ones: the chips are navigation, not content. */
   nav { display:flex; gap:7px; margin:14px 0 6px; overflow-x:auto; scrollbar-width:none;
     padding-bottom:2px; }
   nav::-webkit-scrollbar { display:none; }
-  nav a, nav button { flex:none; white-space:nowrap; }
-  nav a, nav button { font:inherit; font-size:13px; font-weight:600; text-decoration:none;
+  nav button { flex:none; white-space:nowrap; font:inherit; font-size:13px; font-weight:600;
     background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:999px;
     padding:7px 13px; cursor:pointer; }
-  nav button { color:var(--accent); }
+  nav button.all { color:var(--accent); }
 
   details.sec { background:var(--card); border:1px solid var(--line); border-radius:14px;
-    margin:10px 0; overflow:hidden; }
+    margin:10px 0; overflow:hidden; scroll-margin-top:92px; }
   details.sec > summary { list-style:none; cursor:pointer; padding:14px 16px;
     display:flex; align-items:baseline; gap:10px; min-height:52px; }
   details.sec > summary::-webkit-details-marker { display:none; }
-  summary .n { flex:none; width:22px; color:var(--muted); font-size:13px; font-weight:700; }
   summary .t { font-size:16.5px; font-weight:700; letter-spacing:-.01em; }
   summary .s { color:var(--muted); font-size:13.5px; margin-left:auto; text-align:right;
-    max-width:52%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    max-width:56%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   details[open] > summary .s { display:none; }
   details[open] > summary { border-bottom:1px solid var(--line); }
   .body { padding:12px 16px 18px; }
@@ -77,14 +87,27 @@
   @media (max-width:560px) {
     .row { grid-template-columns:1fr; gap:2px; }
     .hd .money b { font-size:17px; }
+    .hd h1 { font-size:17px; }
   }
   .body > p { margin:12px 0 0; }
   .body > p:first-child { margin-top:0; }
   .body ul, .body ol { margin:8px 0 0; padding-left:21px; }
   .body li { margin-bottom:7px; }
   h3 { font-size:13px; font-weight:750; letter-spacing:.05em; text-transform:uppercase;
-    color:var(--muted); margin:20px 0 6px; }
+    color:var(--muted); margin:22px 0 6px; }
+  h3:first-child { margin-top:0; }
   a { color:var(--accent); }
+
+  /* fit: what makes this company right or wrong for him, side by side */
+  .fit { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  @media (max-width:560px) { .fit { grid-template-columns:1fr; } }
+  .fit > div { border-radius:12px; padding:12px 14px 12px 14px; }
+  .fit .pro { background:var(--ok-bg); color:var(--ok-fg); }
+  .fit .con { background:var(--bad-bg); color:var(--bad-fg); }
+  .fit h4 { margin:0 0 6px; font-size:11.5px; font-weight:750; letter-spacing:.06em;
+    text-transform:uppercase; opacity:.85; }
+  .fit ul { margin:0; padding-left:18px; font-size:15px; }
+  .fit li { margin-bottom:5px; }
 
   .tag { display:inline-block; border-radius:999px; padding:1px 8px; margin-right:7px;
     font-size:11px; font-weight:750; letter-spacing:.02em; vertical-align:1.5px; white-space:nowrap; }
@@ -92,8 +115,6 @@
   .tag.maybe { background:var(--mb-bg); color:var(--mb-fg); }
   .tag.guess { background:var(--gs-bg); color:var(--gs-fg); }
 
-  .warn { background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn-fg);
-    border-radius:12px; padding:12px 14px; margin:14px 0 0; font-size:15px; }
   .note { background:var(--mb-bg); color:var(--mb-fg); border-radius:12px; padding:12px 14px;
     margin:14px 0 0; font-size:15px; }
 
@@ -112,7 +133,7 @@
   @media print {
     body { background:#fff; padding:0; }
     header { position:static; }
-    nav, .say button { display:none; }
+    nav, .say button, #theme { display:none; }
     details.sec { break-inside:avoid; }
     details.sec > summary .s { display:none; }
   }
@@ -130,6 +151,7 @@
       <b>{{RANGE}}</b>
       <span>пол {{RANGE_FLOOR}}</span>
     </div>
+    <button id="theme" type="button" title="тема">◐</button>
   </div>
 </header>
 
@@ -142,31 +164,32 @@
 
   <nav id="nav"></nav>
 
-  <details class="sec" id="s1">
-    <summary><span class="n">1</span><span class="t">Трекер</span><span class="s">{{SUM_1}}</span></summary>
+  <details class="sec" id="fit" open>
+    <summary><span class="t">Подходит ли тебе</span><span class="s">{{SUM_FIT}}</span></summary>
     <div class="body">
-      <div class="row opt"><b>Статус</b><span>{{TRACKER_STATUS}}</span></div>
-      <div class="row opt"><b>Следующий шаг</b><span>{{TRACKER_NEXT_STEP}}</span></div>
-      <div class="row opt"><b>Зарплата в таблице</b><span>{{TRACKER_SALARY_GROSS}}</span></div>
-      <div class="row opt"><b>Комментарий</b><span>{{TRACKER_COMMENT}}</span></div>
-      <div class="row"><b>Тир</b><span>{{TIER}} — {{TIER_VERDICT}}</span></div>
+      <p>{{FIT_VERDICT}}</p>
+      <div class="fit">
+        <div class="pro"><h4>За</h4><ul>{{FIT_PROS}}</ul></div>
+        <div class="con"><h4>Против</h4><ul>{{FIT_CONS}}</ul></div>
+      </div>
+      <h3>Как у них живётся</h3>
+      <div class="row opt"><b>Процессы</b><span>{{AXIS_PROCESS}}</span></div>
+      <div class="row opt"><b>Часы</b><span>{{AXIS_HOURS}}</span></div>
+      <div class="row opt"><b>Автономность</b><span>{{AXIS_AUTONOMY}}</span></div>
+      <div class="row opt"><b>Remote</b><span>{{AXIS_REMOTE}}</span></div>
+      <p class="opt">{{CULTURE_VERDICT}}</p>
+      <p class="src opt">Источники: <span>{{CULTURE_SOURCES}}</span></p>
     </div>
   </details>
 
-  <details class="sec" id="s2">
-    <summary><span class="n">2</span><span class="t">Чья компания</span><span class="s">{{SUM_2}}</span></summary>
+  <details class="sec" id="company">
+    <summary><span class="t">Компания</span><span class="s">{{SUM_COMPANY}}</span></summary>
     <div class="body">
       <p>{{OWNERSHIP_VERDICT}}</p>
       <div class="row opt"><b>Владение</b><span>{{OWNERSHIP_CHAIN}}</span></div>
       <div class="row opt"><b>Где инженеры</b><span>{{ENGINEERS_LOCATION}}</span></div>
       <div class="row opt"><b>Где менеджмент</b><span>{{MANAGEMENT_LOCATION}}</span></div>
       <div class="row opt"><b>Часовой пояс</b><span>{{TIMEZONE_IMPACT}}</span></div>
-    </div>
-  </details>
-
-  <details class="sec" id="s3">
-    <summary><span class="n">3</span><span class="t">Размер и деньги</span><span class="s">{{SUM_3}}</span></summary>
-    <div class="body">
       <div class="row opt"><b>Людей</b><span>{{HEADCOUNT}} <span class="src">— {{HEADCOUNT_SOURCE}}</span></span></div>
       <div class="row opt"><b>За год</b><span>{{HEADCOUNT_TREND}} <span class="src">— {{HEADCOUNT_TREND_SOURCE}}</span></span></div>
       <div class="row opt"><b>Оборот</b><span>{{REVENUE}} <span class="src">— {{REVENUE_SOURCE}}</span></span></div>
@@ -175,8 +198,8 @@
     </div>
   </details>
 
-  <details class="sec" id="s4">
-    <summary><span class="n">4</span><span class="t">Что продают</span><span class="s">{{SUM_4}}</span></summary>
+  <details class="sec" id="project">
+    <summary><span class="t">Проект и приложение</span><span class="s">{{SUM_PROJECT}}</span></summary>
     <div class="body">
       <div class="row"><b>Модель</b><span>{{BUSINESS_MODEL}}</span></div>
       <div class="row opt"><b>Клиент</b><span>{{CLIENT}}</span></div>
@@ -185,18 +208,12 @@
       <div class="row opt"><b>Стек</b><span>{{PRODUCT_STACK}}</span></div>
       <div class="row opt"><b>Команда</b><span>{{TEAM_SHAPE}}</span></div>
       <p class="opt">{{PROJECT_NOTE}}</p>
-    </div>
-  </details>
-
-  <details class="sec" id="s5">
-    <summary><span class="n">5</span><span class="t">Их приложение</span><span class="s">{{SUM_5}}</span></summary>
-    <div class="body">
+      <h3>Приложение</h3>
       <div class="row"><b>Приложение</b><span>{{APP_NAME}}</span></div>
       <div class="row opt"><b>App Store</b><span>{{APP_STORE_URL}}</span></div>
       <div class="row opt"><b>Обновлено</b><span>{{APP_LAST_UPDATE}}</span></div>
       <div class="row opt"><b>Мин. iOS</b><span>{{APP_MIN_IOS}}</span></div>
       <div class="row opt"><b>Оценка</b><span>{{APP_RATING}}</span></div>
-      <h3 class="opt">Что сказать вслух</h3>
       <ul>
         <li class="opt">{{APP_OBS_1}}</li>
         <li class="opt">{{APP_OBS_2}}</li>
@@ -207,8 +224,8 @@
     </div>
   </details>
 
-  <details class="sec" id="s6" open>
-    <summary><span class="n">6</span><span class="t">Деньги</span><span class="s">{{SUM_6}}</span></summary>
+  <details class="sec" id="money" open>
+    <summary><span class="t">Деньги</span><span class="s">{{SUM_MONEY}}</span></summary>
     <div class="body">
       <div class="row"><b>Твоя вилка</b><span><b>{{RANGE}}</b>, пол {{RANGE_FLOOR}}</span></div>
       <div class="row"><b>Кто первый</b><span>{{WHO_NAMES_FIRST}}</span></div>
@@ -227,21 +244,14 @@
     </div>
   </details>
 
-  <details class="sec" id="s7">
-    <summary><span class="n">7</span><span class="t">Культура</span><span class="s">{{SUM_7}}</span></summary>
+  <details class="sec" id="call" open>
+    <summary><span class="t">На звонок</span><span class="s">{{SUM_CALL}}</span></summary>
     <div class="body">
-      <p>{{CULTURE_VERDICT}}</p>
-      <div class="row opt"><b>Процессы</b><span>{{AXIS_PROCESS}}</span></div>
-      <div class="row opt"><b>Часы</b><span>{{AXIS_HOURS}}</span></div>
-      <div class="row opt"><b>Автономность</b><span>{{AXIS_AUTONOMY}}</span></div>
-      <div class="row opt"><b>Remote</b><span>{{AXIS_REMOTE}}</span></div>
-      <p class="src opt">Источники: <span>{{CULTURE_SOURCES}}</span></p>
-    </div>
-  </details>
-
-  <details class="sec" id="s8" open>
-    <summary><span class="n">8</span><span class="t">Пять тезисов</span><span class="s">{{SUM_8}}</span></summary>
-    <div class="body">
+      <h3>Первые десять минут</h3>
+      <div class="row"><b>{{Q_CRITICAL_1}}</b><span>{{Q_CRITICAL_1_MEANING}}</span></div>
+      <div class="row"><b>{{Q_CRITICAL_2}}</b><span>{{Q_CRITICAL_2_MEANING}}</span></div>
+      <div class="row"><b>{{Q_CRITICAL_3}}</b><span>{{Q_CRITICAL_3_MEANING}}</span></div>
+      <h3>Пять тезисов о себе</h3>
       <ol>
         <li>{{THESIS_1_RU}}</li>
         <li>{{THESIS_2_RU}}</li>
@@ -249,33 +259,26 @@
         <li>{{THESIS_4_RU}}</li>
         <li>{{THESIS_5_RU}}</li>
       </ol>
-      <h3>Как это сказать</h3>
       <div class="say"><button type="button">копировать</button><pre>{{THESES_EN}}</pre></div>
-    </div>
-  </details>
-
-  <details class="sec" id="s9" open>
-    <summary><span class="n">9</span><span class="t">Вопросы</span><span class="s">{{SUM_9}}</span></summary>
-    <div class="body">
-      <h3>Первые десять минут</h3>
-      <div class="row"><b>{{Q_CRITICAL_1}}</b><span>{{Q_CRITICAL_1_MEANING}}</span></div>
-      <div class="row"><b>{{Q_CRITICAL_2}}</b><span>{{Q_CRITICAL_2_MEANING}}</span></div>
-      <div class="row"><b>{{Q_CRITICAL_3}}</b><span>{{Q_CRITICAL_3_MEANING}}</span></div>
-      <h3>Остальные</h3>
+      <h3>Остальные вопросы</h3>
       <ul>{{QUESTIONS_REST}}</ul>
-      <h3>Как спросить</h3>
       <div class="say"><button type="button">копировать</button><pre>{{QUESTIONS_EN}}</pre></div>
+      <h3>Чего не говорить</h3>
+      <ul>{{DONT_SAY}}</ul>
     </div>
   </details>
 
-  <details class="sec" id="s10">
-    <summary><span class="n">10</span><span class="t">Чего не говорить</span><span class="s">{{SUM_10}}</span></summary>
-    <div class="body"><ul>{{DONT_SAY}}</ul></div>
-  </details>
-
-  <details class="sec" id="s11">
-    <summary><span class="n">·</span><span class="t">Источники</span><span class="s"></span></summary>
-    <div class="body"><ul class="src">{{SOURCES}}</ul></div>
+  <details class="sec" id="meta">
+    <summary><span class="t">Трекер и источники</span><span class="s">{{SUM_META}}</span></summary>
+    <div class="body">
+      <div class="row opt"><b>Статус</b><span>{{TRACKER_STATUS}}</span></div>
+      <div class="row opt"><b>Следующий шаг</b><span>{{TRACKER_NEXT_STEP}}</span></div>
+      <div class="row opt"><b>Зарплата в таблице</b><span>{{TRACKER_SALARY_GROSS}}</span></div>
+      <div class="row opt"><b>Комментарий</b><span>{{TRACKER_COMMENT}}</span></div>
+      <div class="row"><b>Тир</b><span>{{TIER}} — {{TIER_VERDICT}}</span></div>
+      <h3>Источники</h3>
+      <ul class="src">{{SOURCES}}</ul>
+    </div>
   </details>
 
   <footer>Бриф собран {{DATE}}</footer>
@@ -283,13 +286,14 @@
 
 <script>
 (function () {
-  // A value is "missing" once the placeholder words and punctuation are stripped from it.
+  var TAGS = { '+': ['ok', 'подтверждено'], '~': ['maybe', 'правдоподобно'], '?': ['guess', 'догадка'] };
+
+  // A value counts as missing once the placeholder words and punctuation are stripped out.
   function missing(txt) {
     return !txt.replace(/не нашёл|не нашел|нет данных/gi, '')
                .replace(/подтверждено|правдоподобно|догадка/g, '')
                .replace(/[—–\-·:,.\s]/g, '');
   }
-  var TAGS = { '+': ['ok', 'подтверждено'], '~': ['maybe', 'правдоподобно'], '?': ['guess', 'догадка'] };
 
   // A "+ ", "~ " or "? " prefix on a filled value becomes the confidence pill.
   document.querySelectorAll('.row > span, .body > p, .body li, .box').forEach(function (el) {
@@ -315,22 +319,30 @@
     if (missing(txt)) el.remove();
   });
 
-  // A section left with nothing in it disappears too.
+  // An empty list, then an empty section, goes the same way.
+  document.querySelectorAll('.body ul, .body ol').forEach(function (u) {
+    if (!u.children.length) u.remove();
+  });
   document.querySelectorAll('details.sec').forEach(function (d) {
     if (!d.querySelector('.body').textContent.replace(/\s+/g, '')) d.remove();
   });
 
-  // The chips are built from whatever survived.
+  // Chips scroll to their section. They are buttons, not links: an in-page href turns into
+  // an "open external link" prompt when the brief is viewed inside a host that sandboxes it.
   var nav = document.getElementById('nav');
   document.querySelectorAll('details.sec').forEach(function (d) {
-    var a = document.createElement('a');
-    a.href = '#' + d.id;
-    a.textContent = d.querySelector('.t').textContent;
-    a.addEventListener('click', function () { d.open = true; });
-    nav.appendChild(a);
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = d.querySelector('.t').textContent;
+    b.addEventListener('click', function () {
+      d.open = true;
+      d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    nav.appendChild(b);
   });
   var all = document.createElement('button');
   all.type = 'button';
+  all.className = 'all';
   all.textContent = 'развернуть всё';
   all.addEventListener('click', function () {
     var open = all.textContent === 'развернуть всё';
@@ -338,6 +350,14 @@
     all.textContent = open ? 'свернуть всё' : 'развернуть всё';
   });
   nav.appendChild(all);
+
+  // Theme: auto, then forced light, then forced dark. No storage — one page, one session.
+  var root = document.documentElement, modes = ['', 'light', 'dark'], icons = ['◐', '☀', '☾'], i = 0;
+  document.getElementById('theme').addEventListener('click', function () {
+    i = (i + 1) % 3;
+    if (modes[i]) root.setAttribute('data-theme', modes[i]); else root.removeAttribute('data-theme');
+    this.textContent = icons[i];
+  });
 
   // Copying the English wording by hand on a phone is the thing this avoids.
   document.querySelectorAll('.say button').forEach(function (b) {

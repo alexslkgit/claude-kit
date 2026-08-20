@@ -78,6 +78,44 @@ No preamble, no restating the question, no closing summary. Numbers carry their 
 date inline. English wording he will say out loud goes in a monospace block, separate from the
 Russian explanation.
 
+## The page has six blocks, not ten
+
+The ten numbered sections below are the **research checklist** — what has to be found. The page
+groups them, because eleven collapsed blocks is a scroll, not a dashboard:
+
+| Block on the page | Covers |
+|---|---|
+| Вердикт + Красный флаг, above the fold | the one-paragraph read and the single thing that could kill the process |
+| **Подходит ли тебе** | the fit verdict, за/против against his standing criteria, and section 7 (culture) |
+| Компания | sections 2 and 3 — ownership, where the engineers sit, size, money |
+| Проект и приложение | sections 4 and 5 |
+| Деньги | section 6 |
+| На звонок | sections 9, 8 and 10 — critical questions first, then the theses, then what not to say |
+| Трекер и источники | section 1 and the source list, at the bottom, because he reads them last |
+
+## Подходит ли тебе — the block he actually decides from
+
+His criteria are standing, not per-company. Judge every company against these, and never invert
+them because they sound unflattering:
+
+- **A large company with heavy process and no overtime is a plus, not a minus.** Boring and
+  predictable is the goal of the current strategy.
+- **Outstaff is usually a plus, and the reason is specific:** he does not work at the consultancy,
+  he works inside the client. A twenty-person shop placing him into a large stable client is a
+  better outcome than a twenty-person product company. So **the size and stability of the client
+  outweigh the size of the employer** — and when the client is unknown, say that the plus is
+  unconfirmed rather than assuming it.
+- **A small company on its own is a stability risk**: the role lives or dies with one contract.
+- Startups, crypto and CIS product companies are tier 3 — say so and stop.
+- Overtime, on-call and night releases are a minus, every time.
+- Full remote and a B2B contract under recibos verdes are conditions, not preferences. Their
+  absence goes in `{{FIT_CONS}}` at the top.
+- Being the only iOS engineer with nobody to review the code is a minus, even when the autonomy
+  is a plus.
+
+Three to five items on each side, one line each, concrete to this company. `{{FIT_VERDICT}}` is
+one or two sentences: does this fit the strategy, and what is the condition on that answer.
+
 ## What the layout does for him
 
 He reads this on a phone, ten minutes before a call, and he does not read pages that look like
@@ -102,7 +140,8 @@ Every token in `assets/brief-template.html`. No data → `не нашёл`, neve
 |---|---|
 | `{{COMPANY}}` `{{ROLE}}` `{{CALL_AT}}` `{{DATE}}` | header: name, vacancy with link, when the call is, when the brief was built |
 | `{{VERDICT_10SEC}}` | the whole company in one or two sentences, above the fold |
-| `{{SUM_1}}`…`{{SUM_10}}` | the one-line summary of each section, shown while it is collapsed, six words max |
+| `{{SUM_FIT}}` `{{SUM_COMPANY}}` `{{SUM_PROJECT}}` `{{SUM_MONEY}}` `{{SUM_CALL}}` `{{SUM_META}}` | the one-line summary shown while a block is collapsed, six words max, the finding and not the topic |
+| `{{FIT_VERDICT}}` `{{FIT_PROS}}` `{{FIT_CONS}}` | the fit block; pros and cons are `<li>` items, three to five each |
 | `{{TRACKER_STATUS}}` `{{TRACKER_NEXT_STEP}}` `{{TRACKER_SALARY_GROSS}}` `{{TRACKER_COMMENT}}` | the sheet row, copied |
 | `{{TIER}}` `{{TIER_VERDICT}}` | 1/2/3 and the one fact that decides whether this is worth his time |
 | `{{OWNERSHIP_CHAIN}}` `{{ENGINEERS_LOCATION}}` `{{MANAGEMENT_LOCATION}}` `{{TIMEZONE_IMPACT}}` `{{OWNERSHIP_VERDICT}}` | section 2, verdict in his terms, one sentence |
