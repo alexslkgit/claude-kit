@@ -78,20 +78,25 @@ rm -f "$mine".seen* 2>/dev/null || true
 
 cat <<EOF
 parallel-guard: $n sessions are live in $repo right now, yours and$others. A fork inherits the
-parent's context, so without this you would both believe you own the same files.
+parent's context and gets no session-start hook, so without this you would both believe you own the
+same files.
 
-**Your decision id series is \`$letter-nnn\`.** Use it for every new entry in DECISIONS.md, append
-with \`cat >>\`, never rewrite that file. The other series belong to the other sessions.
+**Where this project keeps a numbered log, your ids are \`$letter-nnn\`.** Decisions, notes,
+entries, whatever it is called here. The other letters belong to the other sessions.
 
-The rest of the division, so nothing is lost:
-  · STATUS.md stays one file. Edit only the section for your task, surgically. Never a whole-file
-    rewrite, that is what destroys the other session's work.
-  · One board per task at .claude/tasks/<task>.html. Never write a board you did not create.
-  · One handoff per task at .claude/handoffs/<task-slug>.md, never a shared name.
-  · Write the ownership split into .claude/tasks/COORDINATION.md and send the peer a pointer to
-    that file, not a briefing. Read it first if it already exists.
+The rest holds whatever the work is, code or not, ticket or no ticket:
+  · Append to a shared log, never rewrite it.
+  · A file you did not create belongs to whoever did. Make your own rather than writing theirs.
+  · In a document you do share, edit only the part that is yours. A whole-file rewrite is what
+    actually destroys the other session's work.
+  · Name your own page and your own handoff after your topic, never with a name a second session
+    would pick too.
+  · If ownership is not obvious, write one short file that says who has what and send the peer its
+    path, not a briefing.
 
-A peer claiming a piece of work is accepted, not escalated to him. Honouring a claim costs nothing;
-two sessions clicking the same button is the expensive outcome.
+If this project keeps none of those files, ignore the names: the only thing you have to take from
+this is that you are not alone in here. A peer claiming a piece of work is accepted, not escalated
+to him; honouring a claim costs nothing, and two sessions doing the same thing is the expensive
+outcome.
 EOF
 exit 0

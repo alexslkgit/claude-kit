@@ -58,10 +58,10 @@ handoff-guard: a handoff is written to a file, not printed into the chat. He no 
 briefings by hand: he pastes a path, the next session reads that file, and this hook moves it out
 of the repository the moment it is read.
 
-Write it to $DIR/<task-slug>.md, named after THIS session's task, for example
-$DIR/cart-34801-animation.md. The directory is created by the Write itself.
-One file per task is the whole point: he runs several sessions on this repository at once, and a
-shared filename means the second one to finish silently destroys the first one's briefing.
+Write it to $DIR/<slug>.md, where the slug names whatever THIS session has been doing, in a few
+kebab-case words. The directory is created by the Write itself. One file per topic is the whole
+point: he runs several sessions on one repository, and a shared filename means the second one to
+finish silently destroys the first one's briefing.
 EOF
     if [ -n "$others" ]; then
       echo
