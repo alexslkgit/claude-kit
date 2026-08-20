@@ -35,3 +35,29 @@ second round of his time to report it.
 **Dead end considered and rejected.** Rewriting `location.reload()` and `alert()` automatically
 across all 4875 files. Both are legitimate when a human clicks a button, and 45 pages use them
 that way, including his finance dashboards. The tool reports those and touches nothing.
+
+## company-brief: the brief page is a dashboard, not a document — 2026-08-20
+
+The first real brief (Out of the Box Systems) printed `не нашёл` five times in a row in the app
+section, on a company that has no app at all, and rendered every value as a full-width table row.
+He read it and named the defects: dead rows he has to skip, prose where a line would do, and no way
+to get to the part he needs.
+
+**Decided.**
+
+1. **Missing data deletes its own row.** The filler still writes `не нашёл`; the page removes the
+   row, then removes any section left empty, then rebuilds the top navigation from what survived.
+   Hiding is the template's job, not the filler's, so a brief can never again be padded with
+   absences.
+2. **Sections collapse.** Only деньги, тезисы and вопросы open on load. A collapsed section shows a
+   six-word `{{SUM_n}}` finding, so the whole brief is scannable without opening anything.
+3. **The range and the floor live in a sticky header.** The one number he must never hunt for.
+4. **Confidence is a one-character prefix** (`+`, `~`, `?`) turned into a pill by the page. The old
+   way had the filler writing `<span class="tag ok">` by hand, which is both noisy in the source and
+   easy to break.
+5. **The template is fetched from GitHub raw on every run**, with the packaged copy as the fallback.
+   Otherwise a layout fix has to be re-uploaded to claude.ai before Cowork sees it, and the two
+   copies drift.
+
+**Cost of not doing it earlier:** the template did not exist at all until today, so the first live
+run drew its own layout minutes before an interview.

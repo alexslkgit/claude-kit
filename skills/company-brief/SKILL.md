@@ -26,17 +26,32 @@ to say and things to ask. A brief that is only facts about the company has faile
 
 Two things, always both:
 
-1. **The HTML brief.** Fill `assets/brief-template.html` from this skill's own directory. Copy it,
-   replace the `{{TOKENS}}`, change nothing else — the template is fixed on purpose so every brief
-   looks the same and he does not have to re-learn the layout. Never regenerate the markup, never
-   restyle it. If a token has no data, write `не нашёл` rather than deleting the row. The complete
-   token list is the table in **Template tokens** below; template and table are edited together or
-   not at all.
+1. **The HTML brief.** The template is versioned in the kit repository and is fetched fresh on
+   every run, so a fix to the layout reaches every surface at once — Claude Code, Cowork, a cloud
+   session — without re-uploading the skill:
 
-   The confidence label is markup, not a word in the sentence. Open the claim with one of
-   `<span class="tag ok">подтверждено</span>`, `<span class="tag maybe">правдоподобно</span>`,
-   `<span class="tag guess">догадка</span>`. The template also carries `.warn` for red flags and
-   `.note` for an explanation, and a `<pre>` for every English line he says out loud.
+   ```bash
+   curl -fsSL -o /tmp/brief-template.html \
+     https://raw.githubusercontent.com/alexslkgit/claude-kit/main/skills/company-brief/assets/brief-template.html
+   ```
+
+   If the fetch fails, fall back to `assets/brief-template.html` in this skill's own directory and
+   say in the read-out which one was used. Copy it, replace the `{{TOKENS}}`, change nothing else.
+   **Never regenerate the markup and never restyle it** — the shape is fixed so he does not
+   re-learn the layout every time. Layout complaints are fixed in the repository file, never in
+   one brief.
+
+   Three mechanics the template gives you, so the filling stays plain text:
+
+   | You write | The page does |
+   |---|---|
+   | `+ текст` / `~ текст` / `? текст` at the start of a value | turns the prefix into the pill `подтверждено` / `правдоподобно` / `догадка` |
+   | `не нашёл` as the whole value | **deletes the row.** A section whose rows all go away deletes itself, and so does its chip in the top navigation |
+   | anything else | prints as written; inner HTML such as `<a>` is allowed |
+
+   So write `не нашёл` freely — it is the instruction to hide, not text he will read. Never delete
+   a row from the markup by hand.
+
 2. **A short read-out in the chat** — the row, the verdict, the pay line, and anything that must be
    decided before the call. Five lines, not the whole brief.
 
@@ -63,6 +78,22 @@ No preamble, no restating the question, no closing summary. Numbers carry their 
 date inline. English wording he will say out loud goes in a monospace block, separate from the
 Russian explanation.
 
+## What the layout does for him
+
+He reads this on a phone, ten minutes before a call, and he does not read pages that look like
+walls. The template is built around that and the filling has to respect it.
+
+- **Sections are collapsed by default.** Only 6 (деньги), 8 (тезисы) and 9 (вопросы) open on load —
+  the three he acts from. Everything else is one tap away.
+- **A collapsed section shows only its `{{SUM_n}}` line**, so the whole brief is scannable without
+  opening anything. Keep every `{{SUM_n}}` to **six words or fewer** and make it the finding, not
+  the topic: `18 человек, Rust, iOS нет` beats `информация о компании`.
+- **The header carries the range and the floor** and stays on screen while he scrolls. That is the
+  one number he must never hunt for.
+- **`{{VERDICT_10SEC}}` and `{{RED_FLAGS}}` are the only things above the fold.** One or two
+  sentences each. When there is no red flag, write `не нашёл` and the block disappears.
+- Everything else obeys the sentence and paragraph limits below.
+
 ## Template tokens
 
 Every token in `assets/brief-template.html`. No data → `не нашёл`, never a deleted row.
@@ -70,6 +101,8 @@ Every token in `assets/brief-template.html`. No data → `не нашёл`, neve
 | Token | What goes in |
 |---|---|
 | `{{COMPANY}}` `{{ROLE}}` `{{CALL_AT}}` `{{DATE}}` | header: name, vacancy with link, when the call is, when the brief was built |
+| `{{VERDICT_10SEC}}` | the whole company in one or two sentences, above the fold |
+| `{{SUM_1}}`…`{{SUM_10}}` | the one-line summary of each section, shown while it is collapsed, six words max |
 | `{{TRACKER_STATUS}}` `{{TRACKER_NEXT_STEP}}` `{{TRACKER_SALARY_GROSS}}` `{{TRACKER_COMMENT}}` | the sheet row, copied |
 | `{{TIER}}` `{{TIER_VERDICT}}` | 1/2/3 and the one fact that decides whether this is worth his time |
 | `{{OWNERSHIP_CHAIN}}` `{{ENGINEERS_LOCATION}}` `{{MANAGEMENT_LOCATION}}` `{{TIMEZONE_IMPACT}}` `{{OWNERSHIP_VERDICT}}` | section 2, verdict in his terms, one sentence |
@@ -84,7 +117,7 @@ Every token in `assets/brief-template.html`. No data → `не нашёл`, neve
 | `{{ANCHOR_PROFILE}}` `{{POSTING_RANGE}}` `{{MARKET_DATA}}` `{{CONTRACTOR_RATE}}` | the four money signals, in the order of section 6 |
 | `{{RANGE}}` `{{RANGE_FLOOR}}` `{{RANGE_BASIS}}` `{{UNIT_CONVERSION}}` `{{WHO_NAMES_FIRST}}` `{{SHEET_DISAGREEMENT}}` | the range, the walk-away floor, how it was derived, the unit maths, who names a number first |
 | `{{AXIS_PROCESS}}` `{{AXIS_HOURS}}` `{{AXIS_AUTONOMY}}` `{{AXIS_REMOTE}}` `{{CULTURE_VERDICT}}` `{{CULTURE_SOURCES}}` | section 7 |
-| `{{RED_FLAGS}}` | goes into the `.warn` block; `нет` when there are none |
+| `{{RED_FLAGS}}` | the second block above the fold; `не нашёл` when there are none, and it disappears |
 | `{{THESIS_1_RU}}`…`{{THESIS_5_RU}}` | exactly five, one sentence each |
 | `{{THESES_EN}}` | the same five in English, inside `<pre>`, the way he will say them |
 | `{{Q_CRITICAL_1}}`…`{{Q_CRITICAL_3}}` + `{{Q_CRITICAL_1_MEANING}}`…`{{Q_CRITICAL_3_MEANING}}` | the three that must be asked in the first ten minutes, and what each answer would mean |
