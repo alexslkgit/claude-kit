@@ -6,6 +6,32 @@ allowed-tools: Read, Grep, Glob, Bash
 
 # Handoff: continuing this conversation in a fresh chat
 
+## Before anything else: which direction is this?
+
+The word names both ends of the same ritual, and the wrong end is a real failure, not a nuance.
+
+**Check your own transcript first.** Is there work of yours in this conversation — files read,
+decisions taken, a task you have been running?
+
+- **No.** The conversation begins at his message and everything you know about the task came
+  from a hook. Then he has just pressed `/clear`, and "handoff" means *here is the briefing,
+  pick it up*. There is nothing to hand over — you have not done anything yet. **Stop here and
+  read the briefing**: `<status-dir>/HANDOFF.md`, `<repo>/.claude/HANDOFF.md`, or the newest file
+  in `~/.claude/handoff-archive/`, then `STATUS.md`. Open your answer with one line naming where
+  you are picking up, and continue the work. Do not run `wrap-up`, do not write a handoff, do not
+  tell him to clear, and above all do not ask him what the task was — pressing that button is
+  exactly what spared him from repeating it. Recorded 2026-08-20, after a session answered
+  "handoff" by writing a second one on top of the first: «Hand-off не составить надо было, а
+  считать… когда я говорю handoff и ты понимаешь, что до того истории у тебя нету, значит, это
+  был clear, и тебе нужно его подтянуть».
+- **Yes.** He is closing this conversation. That is the rest of this file.
+
+The `handoff-guard` hook says which case it thinks this is, on the first prompt of a session.
+It counts prompts and nothing more; the transcript is the authority, and where they disagree the
+transcript wins.
+
+---
+
 The user is not asking for a summary. They are asking you to **write the system briefing for
 your own successor**, who will wake up with zero memory and must carry on mid-stride without
 asking them to repeat anything.

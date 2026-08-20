@@ -27,21 +27,41 @@ field() { printf '%s' "$payload" | /usr/bin/sed -n "s/.*\"$1\"[[:space:]]*:[[:sp
 event="$(field hook_event_name)"; [ -n "$event" ] || event="${1:-SessionStart}"
 cwd="$(field cwd)";              [ -n "$cwd" ]   || cwd="$PWD"
 
-repo_root=""; dir="$cwd"
+# Two markers, two different artefacts, and the walk looks for both:
+#   .git                → $DIR / $LEGACY, transient handoffs, consumed the moment they are read.
+#   .claude/status-dir  → $DURABLE, <status-dir>/HANDOFF.md: part of the project archive,
+#                         rewritten by the wrap-up, read as often as needed, never moved.
+# The status-dir branch is what makes this hook work outside a git checkout. It exited here
+# 2026-08-20 with the user in ~/Downloads (not a repo), which is exactly the session that then
+# answered "handoff" by writing a second briefing over the first.
+repo_root=""; status_dir=""; dir="$cwd"
 for _ in 1 2 3 4 5 6 7 8; do
-  [ -d "$dir/.git" ] && { repo_root="$dir"; break; }
+  [ -z "$repo_root" ] && [ -d "$dir/.git" ] && repo_root="$dir"
+  if [ -z "$status_dir" ] && [ -f "$dir/.claude/status-dir" ]; then
+    status_dir="$(head -1 "$dir/.claude/status-dir" | /usr/bin/sed 's/[[:space:]]*$//')"
+    case "$status_dir" in "~"*) status_dir="$HOME${status_dir#\~}" ;; esac
+  fi
+  [ -n "$repo_root" ] && [ -n "$status_dir" ] && break
   [ "$dir" = "/" ] && break
   dir="$(dirname "$dir")"
 done
-[ -n "$repo_root" ] || exit 0          # no checkout, no file handoff — the skill says so itself
+[ -n "$repo_root" ] || [ -n "$status_dir" ] || exit 0
 
-DIR="$repo_root/.claude/handoffs"
-LEGACY="$repo_root/.claude/HANDOFF.md"
+DIR=""; LEGACY=""
+[ -n "$repo_root" ] && { DIR="$repo_root/.claude/handoffs"; LEGACY="$repo_root/.claude/HANDOFF.md"; }
+DURABLE=""; [ -n "$status_dir" ] && DURABLE="$status_dir/HANDOFF.md"
 
-# Every handoff waiting in this repository, newest first.
+# Per-session prompt counter. The pickup branch turns on the FIRST prompt of a session and
+# nothing else, so the count is the whole mechanism.
+SESSDIR="$HOME/.claude/.handoff-guard"
+sid="$(field session_id)"; [ -n "$sid" ] || sid="$(printf '%s' "$cwd" | /usr/bin/tr -cd 'A-Za-z0-9')"
+counter="$SESSDIR/$sid.n"
+
+# Every handoff waiting for this session, newest first.
 waiting() {
-  { [ -s "$LEGACY" ] && printf '%s\n' "$LEGACY"; } 2>/dev/null
-  [ -d "$DIR" ] && /usr/bin/find "$DIR" -maxdepth 1 -type f -name '*.md' -size +0 2>/dev/null
+  { [ -n "$LEGACY" ] && [ -s "$LEGACY" ] && printf '%s\n' "$LEGACY"; } 2>/dev/null
+  [ -n "$DIR" ] && [ -d "$DIR" ] && /usr/bin/find "$DIR" -maxdepth 1 -type f -name '*.md' -size +0 2>/dev/null
+  { [ -n "$DURABLE" ] && [ -s "$DURABLE" ] && printf '%s\n' "$DURABLE"; } 2>/dev/null
 }
 title_of() { /usr/bin/head -1 "$1" 2>/dev/null | /usr/bin/sed 's/^#[[:space:]]*//' | /usr/bin/cut -c1-110; }
 stamp_of() { /bin/date -r "$(/usr/bin/stat -f %m "$1" 2>/dev/null || echo 0)" '+%Y-%m-%d %H:%M' 2>/dev/null; }
@@ -49,9 +69,46 @@ stamp_of() { /bin/date -r "$(/usr/bin/stat -f %m "$1" 2>/dev/null || echo 0)" '+
 case "$event" in
 
   UserPromptSubmit)
+    mkdir -p "$SESSDIR" 2>/dev/null || true
+    n="$(cat "$counter" 2>/dev/null || echo 0)"; n=$((n + 1)); printf '%s' "$n" > "$counter" 2>/dev/null || true
+    /usr/bin/find "$SESSDIR" -type f -mtime +2 -delete 2>/dev/null || true
+
     printf '%s' "$payload" | /usr/bin/grep -qiE \
-      'handoff|hand this over|хендоф|хэндоф|хендов|хэндов|архивируйся|заархивируй|перенеси в новый|новый чат|новый диалог' \
+      'handoff|hand ?off|hand this over|хендоф|хэндоф|хендов|хэндов|архивируйся|заархивируй|перенеси в новый|новый чат|новый диалог' \
       || exit 0
+
+    # --- the word arrived on the FIRST prompt of the session ------------------------------
+    # Then it cannot be a request to write one: no conversation exists yet to hand over. It is
+    # the other end of the same ritual — he has pressed /clear and is handing the briefing back.
+    # Recorded 2026-08-20, after a session answered "handoff" by writing a second one over the
+    # top of the first and telling him to clear a context he had cleared thirty seconds earlier.
+    if [ "$n" -le 1 ]; then
+      list="$(waiting)"
+      echo "handoff-guard: this is the FIRST prompt of this session and it says handoff. Nothing has"
+      echo "happened here yet, so there is nothing to hand over — this is a PICKUP. He has just pressed"
+      echo "/clear and is handing you the briefing the previous session left. Read it, then carry on from"
+      echo "where it stops. Do NOT write a handoff, do NOT run wrap-up, do NOT tell him to clear a context"
+      echo "he has already cleared, and do NOT ask him what the task was — that button is what spared him"
+      echo "from saying it twice."
+      echo
+      if [ -n "$list" ]; then
+        echo "Briefings on disk right now:"
+        printf '%s\n' "$list" | while read -r f; do
+          [ -n "$f" ] && printf '  %s\n     %s  ·  %s\n' "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+        done
+        echo
+        echo "Read the one whose title matches what he is asking about, then STATUS.md beside it."
+      else
+        echo "None found here. Read STATUS.md in the project status directory, start from its cold-start"
+        echo "section, and open with one line saying where you are picking up."
+      fi
+      echo
+      echo "If you genuinely do have this conversation's history in front of you, ignore this: the"
+      echo "transcript is the authority and this hook only counts prompts."
+      exit 0
+    fi
+
+    [ -n "$DIR" ] || exit 0            # no checkout: the skill governs where it goes
     others="$(waiting)"
     cat <<EOF
 handoff-guard: a handoff is written to a file, not printed into the chat. He no longer copies
@@ -81,8 +138,10 @@ try: print(json.load(sys.stdin).get("tool_input",{}).get("file_path","") or "")
 except Exception: print("")' 2>/dev/null)"
     fi
     [ -n "$p" ] || p="$(field file_path)"
+    [ -n "$p" ] || exit 0
+    [ -n "$DIR" ] || exit 0            # nothing transient to police in a non-repo cwd
     case "$p" in
-      "$LEGACY"|"$DIR"/*.md) ;;
+      "$LEGACY"|"$DIR"/*.md) ;;        # $DURABLE is deliberately absent: it is never consumed
       *) exit 0 ;;
     esac
     tool="$(field tool_name)"
@@ -120,6 +179,7 @@ except Exception: print("")' 2>/dev/null)"
     ;;
 
   SessionStart|*)
+    rm -f "$counter" 2>/dev/null || true
     list="$(waiting)"
     [ -n "$list" ] || exit 0
     n="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"

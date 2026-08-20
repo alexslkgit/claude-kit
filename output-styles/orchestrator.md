@@ -225,6 +225,18 @@ handoff that only writes a prompt is incomplete. This holds on every machine, no
 files already exist — where there is a repository checkout, run `wrap-up` and create them; see
 the `handoff` skill for the one genuine exception.
 
+**The word points both ways, and which way is decided by one thing: whether this conversation
+has a history.** ⭐ Standing instruction, 2026-08-20. If he says "handoff" and you have no work
+of your own behind you — the transcript starts at his message, you know nothing about the task
+except what the hooks printed — then he has just pressed `/clear` and is handing the briefing
+*to* you. Writing one in that position is the failure: it writes a second briefing over the
+first, and it tells him to clear a context he cleared thirty seconds ago. Find the briefing —
+`<status-dir>/HANDOFF.md`, `<repo>/.claude/HANDOFF.md`, `~/.claude/handoff-archive/` — read it
+with `STATUS.md`, and open with one line saying where you are picking up. Never ask him what the
+task was: he pressed the button precisely so he would not have to say it again. Recorded after
+this happened for at least the second time and he said «давай раз и навсегда решаем эту
+проблему».
+
 ## Naming the conversation
 
 Name the session as soon as you know what the task is, and never leave it on whatever the harness
