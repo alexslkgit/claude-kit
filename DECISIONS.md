@@ -131,3 +131,30 @@ landed on a blank external page.
 **Тупик:** прочитать опубликованный канвас через `WebFetch` стоит около 30k токенов — голова
 страницы это код редактора. Сверять правки нужно по рабочим файлам в
 `.claude/design/board/`, а не по опубликованной странице.
+
+## company-brief: his page, not a report — 2026-08-20 (third pass)
+
+From his review of the second version. Every item below is his wording turned into a rule.
+
+1. **Collapsed by default, all of it.** He opens what he wants. The chip row is deleted entirely —
+   tapping a chip scrolled the page and he disliked it. One `развернуть всё` control remains.
+2. **Lines are strikeable.** Tap a pro, a con, a question or a thesis he disagrees with: it greys
+   out, strikes through and moves to the bottom of its own list, and the choice survives a reload
+   via localStorage. His edit of the brief has to outlive the brief.
+3. **A stage bar, but only when a process is running.** `{{STAGES}}` left as `не нашёл` on a first
+   contact removes the block. Note: the block must NOT carry the `.opt` class — the empty-row sweep
+   runs before the bar is built and would delete it every time.
+4. **Fit score, 0–100.** He asked whether it was worth the tokens; it is one number and one
+   sentence, and it is the thing he reads first.
+5. **Field priority is his, not the abstraction's.** Where the engineers are, where management is,
+   timezone, headcount and registration are first class and live in an always-visible block. Growth
+   is second, revenue second-to-third, funding fourth. The App Store link is the first row of the
+   project block, not a line inside it. Team size and seniority mix are first class.
+6. **Deleted from the page for good:** «чего не говорить», the banned-word list, and any reminder
+   about his legend or parallel work. He knows; printing it back is noise. It stays as a constraint
+   on how the brief is written.
+7. **No scripts to read aloud.** Theses are one line each and the English wording sits in a nested
+   collapsed block. Questions must be specific to the company — generic ones are cut, not shortened.
+8. **Earlier call transcripts are a research source** (`~/Developer/meeting-listener/live/*.txt`),
+   because he already asks about team size and seniority on the first call.
+9. `Тир` carries a hover explanation. He asked what it meant, which means the page never said.

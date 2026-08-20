@@ -78,20 +78,44 @@ No preamble, no restating the question, no closing summary. Numbers carry their 
 date inline. English wording he will say out loud goes in a monospace block, separate from the
 Russian explanation.
 
-## The page has six blocks, not ten
+## What the page shows, and in what order
 
-The ten numbered sections below are the **research checklist** — what has to be found. The page
-groups them, because eleven collapsed blocks is a scroll, not a dashboard:
+**Everything below the fold is collapsed on load.** He opens what he wants. The chips row is gone:
+one `развернуть всё` control, nothing else.
 
-| Block on the page | Covers |
+Always visible, in this order:
+
+| Block | Rule |
 |---|---|
-| Вердикт + Красный флаг, above the fold | the one-paragraph read and the single thing that could kill the process |
-| **Подходит ли тебе** | the fit verdict, за/против against his standing criteria, and section 7 (culture) |
-| Компания | sections 2 and 3 — ownership, where the engineers sit, size, money |
-| Проект и приложение | sections 4 and 5 |
-| Деньги | section 6 |
-| На звонок | sections 9, 8 and 10 — critical questions first, then the theses, then what not to say |
-| Трекер и источники | section 1 and the source list, at the bottom, because he reads them last |
+| Шапка | company, role, call time, **the range and its floor** |
+| Этап | the stage bar. `{{STAGES}}` is a `\|`-separated list and `{{STAGE_NOW}}` the 1-based current one. **On a first contact leave `{{STAGES}}` as `не нашёл` — the whole block disappears.** Only fill it when a process is genuinely under way |
+| Насколько подходит | `{{FIT_SCORE}}` 0–100 plus one sentence. Score the fit to his strategy, not the company's quality |
+| Вердикт | the one-paragraph read |
+| Красный флаг | only when there is one |
+| **Где они и сколько их** | where the engineers sit · where management sits · timezone · headcount · where it is registered. **This is what he wants to see first and it never goes into a collapsed block** |
+
+Collapsed, in this order: подходит ли тебе · проект и команда · деньги · вопросы им · тезисы о себе ·
+компания-прочее · трекер и источники.
+
+**Field priority, decided by him on 2026-08-20 and not to be re-ordered by feel.** First class:
+where the engineers are, where management is, timezone, headcount, the App Store link, the team
+(size, seniority mix, project size). Second: growth over the year, revenue. Fourth, and near the
+bottom: funding and ownership changes. Turnover and investor history are not what decides whether
+he takes the call.
+
+## What never goes in the brief
+
+He named these on 2026-08-20 and they are permanent:
+
+- **Никаких напоминаний про его легенду и параллельные работы.** He knows. The old раздел «чего не
+  говорить» is deleted from the page. The legend still governs how the theses are written — it is
+  your constraint, never his reminder.
+- **Никакого списка запрещённых слов.** Same reason: it constrains your writing, it is not content.
+- **Никаких общих вопросов.** «Сколько этапов», «какая команда» he remembers himself. A question
+  earns its place only if it is specific to this company: a contradiction you found, an unnamed
+  client, a stack mismatch, a number that does not add up.
+- **Никаких простыней текста, который он должен зачитывать.** The five theses are one line each.
+  The English wording lives inside a nested collapsed block and is never open on load.
 
 ## Подходит ли тебе — the block he actually decides from
 
@@ -118,19 +142,19 @@ one or two sentences: does this fit the strategy, and what is the condition on t
 
 ## What the layout does for him
 
-He reads this on a phone, ten minutes before a call, and he does not read pages that look like
-walls. The template is built around that and the filling has to respect it.
+He reads this on a phone and he does not read pages that look like walls.
 
-- **Sections are collapsed by default.** Only 6 (деньги), 8 (тезисы) and 9 (вопросы) open on load —
-  the three he acts from. Everything else is one tap away.
-- **A collapsed section shows only its `{{SUM_n}}` line**, so the whole brief is scannable without
-  opening anything. Keep every `{{SUM_n}}` to **six words or fewer** and make it the finding, not
-  the topic: `18 человек, Rust, iOS нет` beats `информация о компании`.
-- **The header carries the range and the floor** and stays on screen while he scrolls. That is the
-  one number he must never hunt for.
-- **`{{VERDICT_10SEC}}` and `{{RED_FLAGS}}` are the only things above the fold.** One or two
-  sentences each. When there is no red flag, write `не нашёл` and the block disappears.
-- Everything else obeys the sentence and paragraph limits below.
+- **Nothing is expanded on load.** He opens blocks himself. One `развернуть всё` control, no chips.
+- **A collapsed block shows only its `{{SUM_…}}` line.** Six words or fewer, the finding and not the
+  topic: `18 человек, Rust, iOS нет` beats `информация о компании`.
+- **`не нашёл` deletes the row**, then the block if it emptied. Never delete markup by hand.
+- **Every list in `за`, `против`, вопросы and тезисы is strikeable.** He taps a line he disagrees
+  with, it greys out and moves to the bottom of its own list, and the choice survives a reload. That
+  is his edit, not yours: never pre-strike anything.
+- **In-page anchors are banned.** A viewer that sandboxes the page turns `href="#id"` into an
+  external-link prompt and a blank tab. Scrolling is done with buttons and `scrollIntoView`.
+- **The theme button gives auto, light and dark.** Do not remove it and do not rely on
+  `prefers-color-scheme` alone.
 
 ## Template tokens
 
@@ -139,28 +163,25 @@ Every token in `assets/brief-template.html`. No data → `не нашёл`, neve
 | Token | What goes in |
 |---|---|
 | `{{COMPANY}}` `{{ROLE}}` `{{CALL_AT}}` `{{DATE}}` | header: name, vacancy with link, when the call is, when the brief was built |
-| `{{VERDICT_10SEC}}` | the whole company in one or two sentences, above the fold |
-| `{{SUM_FIT}}` `{{SUM_COMPANY}}` `{{SUM_PROJECT}}` `{{SUM_MONEY}}` `{{SUM_CALL}}` `{{SUM_META}}` | the one-line summary shown while a block is collapsed, six words max, the finding and not the topic |
-| `{{FIT_VERDICT}}` `{{FIT_PROS}}` `{{FIT_CONS}}` | the fit block; pros and cons are `<li>` items, three to five each |
-| `{{TRACKER_STATUS}}` `{{TRACKER_NEXT_STEP}}` `{{TRACKER_SALARY_GROSS}}` `{{TRACKER_COMMENT}}` | the sheet row, copied |
-| `{{TIER}}` `{{TIER_VERDICT}}` | 1/2/3 and the one fact that decides whether this is worth his time |
-| `{{OWNERSHIP_CHAIN}}` `{{ENGINEERS_LOCATION}}` `{{MANAGEMENT_LOCATION}}` `{{TIMEZONE_IMPACT}}` `{{OWNERSHIP_VERDICT}}` | section 2, verdict in his terms, one sentence |
-| `{{HEADCOUNT}}` `{{HEADCOUNT_SOURCE}}` `{{HEADCOUNT_TREND}}` `{{HEADCOUNT_TREND_SOURCE}}` | with a date every time |
-| `{{REVENUE}}` `{{REVENUE_SOURCE}}` `{{OWNERSHIP_CHANGE}}` `{{OWNERSHIP_CHANGE_SOURCE}}` `{{SIZE_MEANING}}` | `не раскрывается` is the honest answer for a private consultancy |
-| `{{BUSINESS_MODEL}}` | `аутстафф` or `продукт`, one word, then the rest of section 4 follows from it |
-| `{{CLIENT}}` `{{CLIENT_CANDIDATES}}` `{{ENGAGEMENT_TYPES}}` `{{PRODUCT_STACK}}` `{{TEAM_SHAPE}}` `{{PROJECT_NOTE}}` | section 4 |
-| `{{APP_NAME}}` `{{APP_STORE_URL}}` `{{APP_LAST_UPDATE}}` `{{APP_MIN_IOS}}` `{{APP_RATING}}` | straight off the listing |
-| `{{APP_OBS_1}}` `{{APP_OBS_2}}` `{{APP_OBS_3}}` | one observation each, every one labelled and pointable-at |
-| `{{APP_IMPROVEMENT}}` `{{APP_CANDIDATES}}` | what he would improve; the candidate apps when the client is unknown |
-| `{{NUMBER_ALREADY_NAMED}}` `{{NUMBER_SOURCE}}` `{{EMPLOYER_KNEW}}` | the figure they have already seen, where from, and whether they saw it before writing to him |
-| `{{ANCHOR_PROFILE}}` `{{POSTING_RANGE}}` `{{MARKET_DATA}}` `{{CONTRACTOR_RATE}}` | the four money signals, in the order of section 6 |
-| `{{RANGE}}` `{{RANGE_FLOOR}}` `{{RANGE_BASIS}}` `{{UNIT_CONVERSION}}` `{{WHO_NAMES_FIRST}}` `{{SHEET_DISAGREEMENT}}` | the range, the walk-away floor, how it was derived, the unit maths, who names a number first |
-| `{{AXIS_PROCESS}}` `{{AXIS_HOURS}}` `{{AXIS_AUTONOMY}}` `{{AXIS_REMOTE}}` `{{CULTURE_VERDICT}}` `{{CULTURE_SOURCES}}` | section 7 |
-| `{{RED_FLAGS}}` | the second block above the fold; `не нашёл` when there are none, and it disappears |
-| `{{THESIS_1_RU}}`…`{{THESIS_5_RU}}` | exactly five, one sentence each |
-| `{{THESES_EN}}` | the same five in English, inside `<pre>`, the way he will say them |
-| `{{Q_CRITICAL_1}}`…`{{Q_CRITICAL_3}}` + `{{Q_CRITICAL_1_MEANING}}`…`{{Q_CRITICAL_3_MEANING}}` | the three that must be asked in the first ten minutes, and what each answer would mean |
-| `{{QUESTIONS_REST}}` `{{QUESTIONS_EN}}` `{{DONT_SAY}}` `{{SOURCES}}` | `<li>` items; `{{QUESTIONS_EN}}` is plain text inside `<pre>` |
+| `{{RANGE}}` `{{RANGE_FLOOR}}` | shown in the sticky header and again in the money block |
+| `{{STAGES}}` `{{STAGE_NOW}}` | `Скрининг\|Техническое\|Финал` and `2`. `не нашёл` on a first contact, and the bar disappears |
+| `{{FIT_SCORE}}` `{{FIT_SCORE_WHY}}` | 0–100 against his strategy, and one sentence saying what the number rests on |
+| `{{VERDICT_10SEC}}` `{{RED_FLAGS}}` | the paragraph read, and the one thing that could end the process |
+| `{{ENGINEERS_LOCATION}}` `{{MANAGEMENT_LOCATION}}` `{{TIMEZONE_IMPACT}}` `{{HEADCOUNT}}` `{{HEADCOUNT_SOURCE}}` `{{REGISTERED}}` | the always-visible «где они и сколько их» block |
+| `{{SUM_FIT}}` `{{SUM_PROJECT}}` `{{SUM_MONEY}}` `{{SUM_QUESTIONS}}` `{{SUM_THESES}}` `{{SUM_COMPANY}}` `{{SUM_META}}` | the line shown while a block is collapsed, six words max, the finding and not the topic |
+| `{{FIT_VERDICT}}` `{{FIT_PROS}}` `{{FIT_CONS}}` | fit block; pros and cons are `<li>` items, three to five each. He can strike any of them out on the page |
+| `{{AXIS_PROCESS}}` `{{AXIS_HOURS}}` `{{AXIS_AUTONOMY}}` `{{AXIS_REMOTE}}` `{{CULTURE_VERDICT}}` `{{CULTURE_SOURCES}}` | how it is to work there, inside the fit block |
+| `{{APP_STORE_URL}}` | **first row of проект и команда.** A link, not a name |
+| `{{CLIENT}}` `{{TEAM_SHAPE}}` `{{TEAM_SENIORITY}}` `{{PROJECT_SIZE}}` | what the project is, how many people, the seniority mix, how big the codebase or the product is |
+| `{{BUSINESS_MODEL}}` `{{PRODUCT_STACK}}` `{{CLIENT_CANDIDATES}}` `{{PROJECT_NOTE}}` | the rest of the project block |
+| `{{APP_LAST_UPDATE}}` `{{APP_MIN_IOS}}` `{{APP_RATING}}` `{{APP_OBS_1}}`…`{{APP_OBS_3}}` `{{APP_IMPROVEMENT}}` | the listing, then observations he can point at, then his opening move |
+| `{{MONEY_NAMED_WHERE}}` | **first row of the money block.** Whether a figure has already gone to them and through which channel: the profile, the application form, an email, or nowhere |
+| `{{WHO_NAMES_FIRST}}` `{{ANCHOR_PROFILE}}` `{{POSTING_RANGE}}` `{{MARKET_DATA}}` `{{CONTRACTOR_RATE}}` `{{RANGE_BASIS}}` `{{UNIT_CONVERSION}}` `{{SHEET_DISAGREEMENT}}` | the four signals in weight order, then the reasoning and the unit maths |
+| `{{Q_CRITICAL_1}}`…`{{Q_CRITICAL_3}}` + `{{Q_CRITICAL_1_MEANING}}`…`{{Q_CRITICAL_3_MEANING}}` | the three that must be asked in the first ten minutes, each specific to this company |
+| `{{QUESTIONS_REST}}` | `<li>` items, still company-specific. `не нашёл` if there are none, and the block disappears |
+| `{{THESIS_1_RU}}`…`{{THESIS_5_RU}}` `{{THESES_EN}}` | one line each; the English version sits in a nested collapsed block |
+| `{{OWNERSHIP_VERDICT}}` `{{OWNERSHIP_CHAIN}}` `{{HEADCOUNT_TREND}}` `{{HEADCOUNT_TREND_SOURCE}}` `{{REVENUE}}` `{{REVENUE_SOURCE}}` `{{OWNERSHIP_CHANGE}}` `{{OWNERSHIP_CHANGE_SOURCE}}` `{{SIZE_MEANING}}` | компания-прочее, the low-priority block |
+| `{{TRACKER_STATUS}}` `{{TRACKER_NEXT_STEP}}` `{{TRACKER_SALARY_GROSS}}` `{{TRACKER_COMMENT}}` `{{TIER}}` `{{TIER_VERDICT}}` `{{SOURCES}}` | трекер и источники, at the bottom. The word «Тир» carries its own hover explanation in the template |
 
 ## The tracking sheet
 
@@ -214,6 +235,7 @@ it comes out different each run and half of it gets found by accident.
 | Local job boards (happymonday.ua, dou.ua) | often a different headcount and founding year than the English site |
 | App Store | whether the app exists at all, then version history and 1–2★ reviews |
 | A recent salary report for that market | the range for this seniority, with its publication date |
+| Transcripts of earlier calls with this company, `~/Developer/meeting-listener/live/*.txt` | **only when a process is already under way.** grep by company name: he asks about team size, seniority mix and project size on the first call, so the answers to `{{TEAM_SHAPE}}`, `{{TEAM_SENIORITY}}` and `{{PROJECT_SIZE}}` are usually already there |
 
 Two failure modes, both seen:
 
@@ -382,35 +404,35 @@ no overtime is a good outcome under this strategy, not a downside.
 
 ## 8. Five theses for the call
 
-A separate block, exactly five, one sentence each: what he should be saying about himself **at this
-company**. Not skills — narrative. Broad generalist or narrow specialist. High-load consumer app or
-enterprise correctness. Owning a platform long-term or shipping fast. Process discipline or
-autonomy.
+Exactly five, **one line each**, what he should be saying about himself at this company. Not skills
+— narrative. Broad generalist or narrow specialist. High-load consumer app or enterprise
+correctness. Owning a platform long-term or shipping fast.
 
-- **Derive them from this company's culture, never from the last interview's.** The same words get
-  him hired at one company and cut at another: breadth reads as ownership in one place and as no
-  focus in the next. Re-derive every time.
-- **Match the aspirational culture, not the observed one.** Where the honest read is a slow
-  bureaucracy, the theses still speak to reliability, ownership and predictable delivery. Nobody is
-  hired for describing how little the job demands.
-- Stay inside the standing legend for external HR — building his own product on the side, looking
-  for one stable enterprise role without overtime. Never surface the parallel jobs.
-
-Give the wording in English, the way he will say it.
+- **Derive them from this company, never from the last interview's.** Breadth reads as ownership in
+  one place and as no focus in the next.
+- **Match the aspirational culture, not the observed one.** Nobody is hired for describing how
+  little the job demands.
+- The English wording goes in `{{THESES_EN}}`, inside the nested collapsed block. It is there if he
+  wants it, never in his face — a script he is expected to read out loud is the thing he objected to.
 
 ## 9. Critical questions
 
-A separate block, his questions to them, disqualifying ones first: which client and which product ·
-fully remote or onsite days and where · B2B through recibos verdes or CLT only · contract length and
-renewal · existing iOS team or solo · on-call and out-of-hours releases · what the next step is.
+**Only questions that could not have been asked at any other company.** He remembers the generic
+ones himself, and a generic list is what makes him stop reading. Every question has to come out of
+something you actually found: a client that is not named, a stack that contradicts the vacancy, a
+seniority band that does not match the money, a review that says something the site does not.
 
-Mark the two or three that must be asked in the first ten minutes because a wrong answer ends the
-process, and say what each answer would mean.
+Three of them are marked as first-ten-minutes, because a wrong answer ends the process, and each
+carries what the answer would mean. `{{QUESTIONS_REST}}` holds anything else specific to this
+company — `не нашёл` when there is nothing, and the block disappears rather than filling with
+filler.
 
 ## 10. What not to say
 
-Short and specific to this company: the parallel jobs, whatever in his history conflicts with the
-legend, the current employer as a target, the banned vocabulary.
+**Research-only. This never becomes a block on the page** — see «What never goes in the brief».
+Use it to constrain how sections 8 and 9 are written: keep the standing legend intact, keep the
+current employer out of it, keep the banned vocabulary out of the wording. Do not print any of it
+back to him.
 
 ## Sources
 
