@@ -27,8 +27,14 @@ body is written once, here, and never enters the main context at all.
   variables and its tone rather than inventing a new look.
 - Language follows the brief. For this user's boards and plan pages that means **Russian prose**,
   English in code, paths, identifiers and commit messages.
-- Self-contained HTML: inline the CSS, no external fonts or scripts, works in light and dark, and
-  a board carries `<meta http-equiv="refresh" content="30">` so it updates itself while he watches.
+- Self-contained HTML: inline the CSS, no external fonts or scripts, works in light and dark.
+- **A page you write NEVER reloads itself.** No `<meta http-equiv="refresh">`, no
+  `location.reload()`, no `window.focus()`, no `autofocus`, no `alert()`, no `Notification`.
+  Any of those yanks his macOS Space over to Chrome while he is working in another app, and he
+  has had to chase this across dozens of pages. A board that must stay live copies the
+  background-fetch script from `templates/board.html`, which re-fetches the file and swaps the
+  DOM in place without a reload. A finished page carries no refresh at all.
+  `hooks/page-guard.sh` refuses the `Write` if any of it is present, so this is checked, not trusted.
 - Never commit, push, or touch anything outside the files you were asked to write.
 
 ## Output format (English, always)

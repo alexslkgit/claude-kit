@@ -82,7 +82,11 @@ def render(data):
     add = out.append
 
     add('<!doctype html><html lang="ru"><head><meta charset="utf-8">')
-    add(f'<meta http-equiv="refresh" content="{refresh}">')
+    # Never a page reload: it yanks his macOS Space over to Chrome. Background fetch only.
+    add('<script>setInterval(async()=>{try{const r=await fetch(location.href,{cache:"no-store"});'
+        'const d=new DOMParser().parseFromString(await r.text(),"text/html");'
+        'if(d.body&&d.body.innerHTML!==document.body.innerHTML)document.body.innerHTML=d.body.innerHTML;'
+        '}catch(e){}}, %d);</script>' % (max(5, refresh) * 1000))
     add('<meta name="viewport" content="width=device-width,initial-scale=1">')
     add(f'<title>{esc(data.get("meeting", "Meeting"))}</title>')
     add(f"<style>{CSS}</style></head><body><div class=\"wrap\">")

@@ -228,6 +228,33 @@ print(f"  hooks: dash guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the page guard. A generated page that reloads itself, or focuses its own window,
+# drags his macOS Space over to Chrome while he is working somewhere else. The ban was written
+# into skills/board/SKILL.md on 2026-08-16 and kept coming back, because page-writer-sonnet, the
+# chew template, the meeting-live renderer and README still taught the old way. So the check sits
+# at the Write instead, and it fires inside subagents too.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/page-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PreToolUse", [])
+matcher = "Write|Edit"
+added = 0
+if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added = 1
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the parallel guard. A fork inherits the parent's context and receives no SessionStart
 # hook, so it believes it owns the parent's id series, board and handoff. This assigns each live
 # session its own series and states the division, on UserPromptSubmit because that is the only

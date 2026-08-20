@@ -103,6 +103,12 @@ endlessly, until he closes the tab. Measured 2026-08-16 — three such pages had
 to Chrome every 10–60 s while he worked. When a page is finished and will not change again,
 strip the refresh script too: a retired page is static.
 
+This is enforced, not trusted. `hooks/page-guard.sh` refuses any `Write` of a page carrying a
+meta refresh, `location.reload()`, `window.focus()`, `autofocus`, `alert()`, a `Notification`
+or a `window.open()`, in subagents as well as here, because the 2026-08-16 fix reached the
+template and about twenty existing pages while every generator kept emitting the old markup.
+`tools/strip-page-refresh.py --apply ~` sweeps whatever is already on disk and is idempotent.
+
 ### Hard size caps — the 10-second budget
 
 ⭐ **Standing instruction, 2026-08-16: as simple as possible, his action always on top.** He said

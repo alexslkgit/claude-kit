@@ -109,7 +109,7 @@ Lives in each repository, not here:
 | `CLAUDE.local.md` | personal policy — start from `templates/CLAUDE.local.md` | gitignored |
 | `.claude/tasks/<task>.md` | per-task journal: STATE header, open questions, log | gitignored |
 | `.claude/tasks/<task>.html` | the board — **for you**, self-refreshing | gitignored |
-| `.claude/tasks/<task>.plan.html` | a chewed step-by-step plan — **for you**, self-refreshing | gitignored |
+| `.claude/tasks/<task>.plan.html` | a chewed step-by-step plan — **for you**, static | gitignored |
 
 Project-level files win over user-level ones of the same name, so a repo can override any
 agent from this kit by putting its own `.claude/agents/<same-name>.md` in place.
@@ -118,9 +118,10 @@ agent from this kit by putting its own `.claude/agents/<same-name>.md` in place.
 
 While a task runs you can open `.claude/tasks/<task>.html` in a browser tab and see where the
 work stands: the checklist with finished stages struck through, the current stage highlighted,
-anything waiting on you in heavy red, and the decisions taken. The board carries
-`<meta http-equiv="refresh" content="10">`, so a tab left open keeps itself current — open it
-once when a task starts, then just look at it whenever you want.
+anything waiting on you in heavy red, and the decisions taken. The board keeps itself current
+by re-fetching its own file in the background and swapping the DOM, so a tab left open stays
+fresh without ever reloading: open it once when a task starts, then just look at it whenever you
+want. No page here reloads itself, because a reload drags the macOS Space over to Chrome.
 
 Two files per task, same basename: `<task>.md` is the journal you never read, `<task>.html` is
 the board written for you, in Russian, capped at one screen and rewritten in full at every stage

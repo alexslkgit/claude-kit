@@ -132,7 +132,8 @@ The whole file is this — a JSON block plus two relative includes. If you find 
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="60">
+<!-- No auto-refresh: a reload yanks his macOS Space to the browser. A plan is static;
+     after editing it, tell him to reload the tab. Enforced by hooks/page-guard.sh. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="_shell/plan.css">
 </head>
