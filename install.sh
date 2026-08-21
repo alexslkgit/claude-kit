@@ -32,6 +32,12 @@ copy_tree hooks
 # The plan renderer the chew skill copies into a repo's .claude/tasks/_shell/. Installed here so
 # the skill finds it at a fixed path whatever the machine's clone location is.
 copy_tree plan-shell
+# The board's shell: board.css + board.js. The board skill copies these next to the page it
+# writes, so an instance board is markup and data only and never re-emits 12 KB of styling.
+copy_tree board-shell
+# Small helpers the skills call by absolute path, e.g. tools/inline-shell.py, which folds a
+# page's shell back in when the page has to travel on its own.
+copy_tree tools
 copy_tree templates
 chmod +x "${CLAUDE_DIR}/hooks/"*.sh 2>/dev/null || true
 
@@ -255,6 +261,35 @@ if added:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
 print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'ies'})")
 PY
+fi
+
+# Register the shell guard. Until 2026-08-21 every board rewrite re-emitted 9.5 KB of CSS and
+# 2.7 KB of JS that had not changed since the file was created, into a context that is re-sent on
+# every later request. The shells (board-shell/, plan-shell/, company-brief assets) fixed the
+# templates; this keeps styling from creeping back into a page one convenient inline block at a
+# time, in subagents as well as here. It also runs standalone: hooks/shell-guard.sh --check
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/shell-guard.sh" <<'SHELLGUARDPY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+for matcher in ("Write|Edit", "Bash"):
+    if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+        continue
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: shell guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+SHELLGUARDPY
 fi
 
 # Register the parallel guard. A fork inherits the parent's context and receives no SessionStart

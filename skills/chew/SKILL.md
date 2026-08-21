@@ -166,6 +166,10 @@ from a `file://` URL, with no MIME surprises. **Never point a plan at raw.github
 
 ## The plan file: data, never markup
 
+**The instance file contains only data. Styling and behaviour are never emitted into it — not
+once, not "just this bit". The shell is edited in `plan-shell/` in the kit and re-copied.**
+`hooks/shell-guard.sh` refuses any page whose inline `<style>` or `<script>` runs over 500 bytes.
+
 The whole file is this — a JSON block plus two relative includes. If you find yourself writing a
 `<div>`, stop: the renderer owns the markup, you own the data.
 

@@ -40,8 +40,9 @@ to send. A plan is simply the commonest case of "his one action is a sequence of
 the button opens the plan instead of naming a step in prose. Wiring a board to a plan that does
 not exist, or replacing a real destination with a plan link, is the opposite failure.
 
-The two pages share one palette and one pair of typefaces on purpose — `plan-shell/plan.css`
-copies its variables from this template. Restyle one, restyle the other in the same commit.
+The two pages share one palette and one pair of typefaces on purpose — `board-shell/board.css`
+and `plan-shell/plan.css` hold the same variables. Restyle one, restyle the other in the same
+commit; never restyle inside a page.
 
 ## Two files per task, two different readers
 
@@ -103,7 +104,6 @@ Create it as the **first action of the task**, before any research, while it sti
 Then rewrite it in full at every one of these:
 
 - a stage starts or finishes
-- a subagent is dispatched, and again when it returns
 - a decision is taken
 - something blocks, or something starts waiting on the user
 - **before anything that will run longer than about two minutes** — so the board explains the
@@ -122,8 +122,110 @@ are never narrated, never become a message, and never count against the three-se
 
 ## How to write it
 
-Copy `templates/board.html` and fill it in. **Always replace the whole file** — never append.
-Growth is the failure mode.
+### The board file is DATA ONLY. The shell is never emitted twice.
+
+The look lives in `board-shell/board.css` and the behaviour in `board-shell/board.js`, copied
+once into `_shell/` next to the page. **The board file itself carries markup and data and
+nothing else: no `<style>`, no `<script>`, ever, not even "just this once".** A board is
+rewritten in full at every stage change, decision and blocker, so anything inline is re-emitted
+every time — into a context that is re-sent on every later request of the session. Measured
+2026-08-21: 9.5 KB of CSS and 2.7 KB of JS per rewrite, none of it ever changing.
+
+Restyling the board, adding a state, fixing a colour: edit the shell file **in the kit**, then
+re-copy it. Never patch a page's appearance in the page. `hooks/shell-guard.sh` refuses any page
+whose inline `<style>` or `<script>` runs over 500 bytes.
+
+Install the shell once per repo or task folder, before the first board:
+
+```bash
+SRC="${HOME}/.claude/board-shell"
+[ -d "$SRC" ] || SRC="${HOME}/Developer/claude-kit/board-shell"
+mkdir -p .claude/tasks/_shell            # outside a checkout: <task>/_shell
+for f in board.css board.js; do
+  if [ ! -f ".claude/tasks/_shell/$f" ] || [ "$SRC/$f" -nt ".claude/tasks/_shell/$f" ]; then
+    cp "$SRC/$f" ".claude/tasks/_shell/$f"
+  fi
+done
+```
+
+Copied, not linked: a relative path works from a `file://` URL with no server, on all three of
+his Macs whatever the username, and the task folder can be moved or zipped whole. A symlink into
+`~/.claude` breaks the moment the folder is copied, and an absolute path breaks on the next
+machine. **Never point a page at raw.githubusercontent.com.**
+
+If a finished page has to travel on its own — mail, a Cowork artifact, someone without the
+folder — fold the shell back in for that copy only:
+
+```bash
+python3 ~/.claude/tools/inline-shell.py .claude/tasks/<task>.html
+```
+
+### The page is JSON. You never write board markup.
+
+`_shell/board.js` draws the page. The board file is one `<script type="application/json"
+id="board">` block inside an eight-line skeleton, and **that block is the only thing you ever
+write**. No `<div>`, no `<li>`, no percentages computed by hand: the renderer counts the leaves,
+fills the bars and prints the counts, so the header can never disagree with the list below it.
+
+```json
+{
+  "stamp": "14:32:07",
+  "title": "всё, что делает этот чат, одной строкой",
+  "sub": "одна строка, если без неё непонятно; поле можно опустить",
+  "drift": "было 63%, добавилось 4 подпункта",
+  "tasks": [
+    { "t": "закрытая задача", "state": "done", "count": [2, 2] },
+    { "t": "задача в работе", "state": "live", "items": [
+      { "t": "закрытый пункт", "state": "done" },
+      { "t": "пункт, который ждёт его", "state": "wait" },
+      { "t": "ветка с третьим уровнем", "items": [
+        { "t": "пункт, в котором я сейчас", "state": "here" }
+      ] }
+    ] }
+  ],
+  "you": { "cap": "Ждёт от тебя · 1", "h": "одно его действие", "p": "что уже готово вокруг",
+           "btn": { "href": "plan.html", "label": "Открыть инструкцию" }, "stop": false },
+  "now": "одна строка о том, что я делаю в эту секунду",
+  "decided": [ { "t": "решение и причина, детали в <a href=\"…\">PR #12</a>" },
+               { "t": "тупик и почему больше не пробуем", "dead": true } ],
+  "daily": { "since": "вчера 10:15",
+             "news": [ { "src": "PR", "t": "строка со <a href=\"…\">ссылкой</a>" } ],
+             "say":  [ "что сдвинулось", "чем занят", "что дальше" ] }
+}
+```
+
+Values print as written, so `<a>`, `<b>` and `<span class="pill">` inside them work. `state` is
+`done` / `live` / `todo` on a task, and `done` / `todo` / `wait` / `here` on an item. A task with
+no children listed carries `count: [сделано, всего]`; a task with children needs no count at all.
+`you`, `now`, `decided`, `daily` are each optional and are simply absent when there is nothing to
+say. `open: false` starts a branch folded.
+
+The skeleton around the block is fixed and is copied from `templates/board.html` once:
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>…</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&display=swap">
+<link rel="stylesheet" href="_shell/board.css">
+<script src="_shell/board.js" defer></script>
+</head>
+<body>
+<script type="application/json" id="board">
+{ … }
+</script>
+</body>
+</html>
+```
+
+**Always replace the whole file** — never append. Growth is the failure mode, and it is a
+different failure from the shell one: the whole-file rule is about the data, the shell rule is
+about the styling. Measured 2026-08-21 over 30 days of real sessions: 189 board writes carried
+649 KB of CSS and JS and 1 143 KB of markup, all of it re-sent on every later request of those
+sessions. The same 189 boards as JSON are about a third of the markup and none of the styling.
 
 **If nothing changed, do not rewrite it.** Compare what you are about to write with what is on
 disk; identical means skip the write entirely. A board rewritten for the sake of the timestamp
@@ -131,8 +233,9 @@ burns tokens and tells him nothing.
 
 ### The structure is fixed. Do not invent another one.
 
-He has watched ten sessions draw ten different boards. The template is the answer, and these are
-its parts in page order. Nothing is added, nothing is reordered, nothing is renamed.
+He has watched ten sessions draw ten different boards. The renderer is the answer: it emits these
+parts in this order and no others, so the shape is not yours to change. Field names below are the
+JSON keys, class names are what the renderer produces — you never type the classes.
 
 1. `.kicker` — `Борд · обновлено ЧЧ:ММ:СС`. **Seconds are mandatory**: without them he cannot
    tell a board that updated ten seconds ago from one that froze half an hour ago.
@@ -154,24 +257,24 @@ it; a block you think would help goes in the journal instead.
 - **A top-level item is a TASK.** One chat is one board, but a chat may hold several tasks, and
   then each is its own top-level item with its own bar in its own row. The overall bar at the top
   stays and covers all of them.
-- Every top-level row is: `.num`, `.label`, `.grow`, `.mini` (its own progress line), `.count`.
-- State classes on the `li`: `done`, `live`, `todo`. Nesting is `ul.lvl2`, then `ul.lvl3`.
-- **Exactly one `li.here` on the whole board**, carrying the `here-tag` span «сейчас здесь» — the
+- A top-level row (number, label, its own progress line, its count) is drawn from the task's `t`,
+  its position and its leaves. You write `t`, `state` and `items`, nothing else.
+- `state` on a task: `done`, `live`, `todo`. On an item: `done`, `todo`, `wait`, `here`.
+- **Exactly one item with `"state": "here"` on the whole board** — it prints «сейчас здесь» — the
   leaf you are inside at this second. Two arrows, and he has to read the whole page to find you.
   The single case with no arrow is a board where everything is closed and only his action is
   left; the block on the right then carries `.you.stop` and says so.
-- The item that waits on him carries the `wait-tag` span «ждёт тебя», and the same thing is
-  spelled out in the block on the right.
+- The item that waits on him carries `"state": "wait"` — it prints «ждёт тебя» — and the same
+  thing is spelled out in the block on the right.
 
 ### Everything with children folds
 
-Any item that has children is a `<details>` with a `<summary>`; an item without children stays a
-plain row. Every `<details>` carries a **stable id** (`t2`, `t3-2`), because the open/closed state
-is kept in `localStorage` and reapplied after each background refresh, and a renumbered id loses
-his folds.
+Any item with `items` folds, and the renderer gives it a stable id from its position (`t2`,
+`t3-2`) so the open/closed state survives in `localStorage` across refreshes. Reordering the tree
+loses his folds, so append rather than reshuffle when you can.
 
-- Write finished tasks **closed** and running tasks **open**. The branch holding the
-  «сейчас здесь» item is always open.
+- Write finished tasks with `"open": false` and running tasks open (the default). The branch
+  holding the «сейчас здесь» item is always open.
 - Folding is what keeps the ten-second budget when a task has thirty items: he opens the one
   branch he cares about and the rest stays one line each.
 
@@ -197,24 +300,25 @@ Slack, the tracker and the pull requests, and this section is where the answer l
 - **«Что сказать на дейлике»** — exactly three lines: what moved, what he is on now, what is
   next. Тезисы, not a script to read aloud. No causes, no test counts, no build numbers.
 
-### The percent is counted over the LEAVES
+### The percent is counted over the LEAVES, by the renderer
 
-Count the deepest items only, never the sections. Done leaves ÷ all leaves.
+Done leaves ÷ all leaves, deepest items only, never the sections. **You never write a percentage
+or a count**: the renderer computes both, so the header can no longer disagree with the list. That
+disagreement used to happen and he caught it on a shipped board.
 
 - **It is allowed to go backwards, and it must.** Adding four subitems to a 63% board makes it
-  42%, and that is the honest number. Say so in `.drift`: `было 63%, добавилось 4 подпункта`.
-- **The header must add up to the sections.** `12 из 19` in the total has to equal the sum of the
-  `count` cells below it. An earlier board shipped with numbers that disagreed and he caught it
-  immediately; check the arithmetic before every write.
-- `.f-done` is the closed share, `.f-live` is a thin slice for what is running right now.
+  42%, and that is the honest number. The only manual part is saying why, in `drift`:
+  `было 63%, добавилось 4 подпункта`.
+- A task with no children listed is the one place a number is written by hand: `count: [5, 12]`.
+  Prefer real items over a count whenever there are real items.
 
 ### Three states of the block on the right
 
 | Class | When | What he reads |
 |---|---|---|
-| `.you` | there is a click of his, and I keep working meanwhile | yellow, one action, and that the work goes on |
-| `.you.idle` | nothing is waiting on him | a calm frame: what will appear here and roughly when |
-| `.you.stop` | there is no work left at all without him | red, and I have stopped |
+| `you` present | there is a click of his, and I keep working meanwhile | yellow, one action, and that the work goes on |
+| `you` absent | nothing is waiting on him | the column starts with «Сейчас» instead |
+| `you.stop: true` | there is no work left at all without him | red, and I have stopped |
 
 **Only what he can physically do gets in there**: a click, a sign-in, a one-time code, a
 signature, something judged by eye. A question you could answer from the repository, the ticket,
@@ -232,7 +336,10 @@ button carries the exact link, already opened in his browser where that is possi
 
 ### Live refresh, and the reload ban
 
-The template refreshes by background `fetch` with a `document.body` swap, every 15 seconds. These
+The refresh is a background `fetch` with a `document.body` swap every 15 seconds, and it lives
+in `_shell/board.js` — not in the page. Under `file://` Chrome refuses the fetch and the page
+simply stays static, which is why a board served over http updates by itself and one opened from
+disk updates when he reloads. These
 are **forbidden and blocked by `hooks/page-guard.sh`**: <code>&lt;meta http-equiv="refresh"&gt;</code>,
 `location.reload`, `window.focus`, <code>autofocus</code>, `alert`, `Notification`,
 `window.open`. Each of them makes Chrome steal focus and drag his macOS Space to the browser
@@ -256,6 +363,8 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 - One board per task, and a board another session created is never rewritten by you.
 - Russian on the page, English everywhere else in the kit.
 - Rewrite in full or not at all. Never append, never grow.
+- The page is data. Styling and behaviour live in `_shell/`, are linked, and are never written
+  into the page — fix them in `board-shell/` in the kit instead.
 - Never more than one stage behind reality. If you are about to do something the board does not
   mention, write the board first.
 - Never narrate an update. The link on the first line is the whole announcement.

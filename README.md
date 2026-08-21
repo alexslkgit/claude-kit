@@ -100,6 +100,10 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | `skills/` | procedures loaded on demand — `board`, `chew`, `record-demo`, `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update` |
 | `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
 | `plan-shell/` | `plan.css` + `plan.js`, the renderer the `chew` skill copies into a repo's `.claude/tasks/_shell/` |
+| `board-shell/` | `board.css` + `board.js`, the board's look and its renderer. A board page is one JSON block; the renderer draws the markup and counts the percentages |
+| `tools/kit-sync.sh` | gets a kit file from the clone, or from a cache checked at most every 3 h with a conditional request. Prints one line; the file is read only when it says CHANGED |
+| `tools/inline-shell.py` | folds a shell back into one portable file, for a page that has to travel by mail or as an artifact |
+| `hooks/shell-guard.sh` | refuses a page with an inline `<style>`/`<script>` over 500 bytes; `--check` scans the kit's own templates |
 
 Lives in each repository, not here:
 

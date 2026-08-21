@@ -1,0 +1,169 @@
+/* board.css — the whole look of the board. One file, every board on this machine.
+   Instance pages (<task>.html / board.html) carry DATA ONLY: they link this file and
+   never re-emit styling. Restyle here, and every board changes at once.
+   The board and the chewed plan share one palette on purpose: plan-shell/plan.css
+   copies these variables. Restyle one, restyle the other in the same commit. */
+
+:root {
+  --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#7F776C;
+  --line:#E7E0D0; --line-soft:#EFEADC; --track:#EDE6D6;
+  --done:#7F776C; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
+  --warn-bg:#FBF1DC; --warn-fg:#8A5A0B; --warn-text:#7A6A4C;
+  --btn-bg:#23211E; --btn-fg:#FDFCF9;
+  color-scheme: light;
+}
+/* Тема идёт за системой, но кнопка в шапке может её зафиксировать. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
+    --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
+    --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+    --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
+    --btn-bg:#EDE9E0; --btn-fg:#1A1815;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+    --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
+    --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
+    --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+    --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
+    --btn-bg:#EDE9E0; --btn-fg:#1A1815;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:34px 32px 48px; background:var(--bg); color:var(--fg);
+  font:15.5px/1.55 Commissioner, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+main { max-width:1040px; margin:0 auto; }
+a { color:var(--accent); }
+
+/* ── Шапка: суть задачи наверху, она же играет роль заголовка списка ── */
+.kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--faint); margin-bottom:6px; }
+h1 { font-family:Literata, Georgia, serif; font-size:32px; font-weight:700;
+  letter-spacing:-.02em; line-height:1.12; margin:0 0 5px; }
+.sub { font-size:15px; color:var(--muted); margin:0; }
+
+/* ── Переключатель темы: авто, светлая, тёмная ── */
+.head { display:flex; align-items:center; justify-content:space-between; gap:16px;
+  margin-bottom:6px; }
+.theme { display:flex; gap:2px; flex:none; }
+.theme button { font:inherit; font-size:11.5px; color:var(--faint); background:transparent;
+  border:1px solid transparent; border-radius:3px; padding:3px 8px; cursor:pointer; }
+.theme button.on { color:var(--fg); border-color:var(--line); }
+
+
+/* ── Общая шкала: линия, не кольцо ── */
+.total { margin:22px 0 26px; }
+.total-meta { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  font-size:13.5px; color:var(--muted); margin-bottom:8px; }
+.total-meta .pct { font-family:Literata, Georgia, serif; font-size:22px; font-weight:700;
+  color:var(--fg); line-height:1; }
+.total-meta .drift { margin-left:auto; color:var(--accent); font-size:12.5px; }
+.bar { display:flex; height:7px; border-radius:4px; overflow:hidden; background:var(--track); }
+.bar i { display:block; height:100%; }
+.bar .f-done { background:var(--ok); }
+.bar .f-live { background:var(--accent); }
+
+/* ── Разворот ── */
+.cols { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:40px;
+  align-items:start; }
+@media (max-width: 860px) { .cols { grid-template-columns:1fr; gap:28px; } }
+
+/* ── Дерево: три уровня, не больше. Верхний уровень = задача, у каждой своя шкала ── */
+ol.tasks, ul.lvl2, ul.lvl3 { list-style:none; margin:0; padding:0; }
+ol.tasks > li { padding-bottom:14px; }
+.row { display:flex; align-items:center; gap:12px; }
+.row .num { font-family:Literata, Georgia, serif; font-size:15px; color:var(--faint);
+  width:16px; flex:none; }
+.row .label { font-size:15.5px; font-weight:600; }
+.row .grow { flex:1 1 auto; min-width:12px; }
+.row .mini { flex:none; width:104px; height:4px; border-radius:3px; background:var(--track);
+  overflow:hidden; }
+.row .mini i { display:block; height:100%; background:var(--ok); }
+.row .count { flex:none; font-size:12.5px; color:var(--muted); width:52px; text-align:right; }
+li.done .row .label { color:var(--done); text-decoration:line-through; font-weight:400; }
+li.done .row .count { color:var(--ok); }
+li.todo .row .label { color:var(--muted); font-weight:400; }
+li.todo .row .count { color:var(--faint); }
+li.live .row .count { color:var(--accent); }
+li.live .row .mini i { background:var(--accent); }
+
+/* ── Списки сворачиваются: <details>/<summary>, состояние переживает фоновое обновление ── */
+summary { list-style:none; cursor:pointer; }
+summary::-webkit-details-marker { display:none; }
+summary::before { content:"›"; display:inline-block; width:12px; flex:none;
+  color:var(--faint); transition:transform .12s; }
+details[open] > summary::before { transform:rotate(90deg); }
+ul.lvl2 > li.branch > details > summary { display:flex; align-items:baseline; }
+summary:hover::before { color:var(--fg); }
+
+ul.lvl2 { margin:11px 0 0 28px; padding-left:18px; border-left:1px solid var(--line); }
+ul.lvl3 { margin:8px 0 0 4px; padding-left:16px; border-left:1px solid var(--line-soft); }
+ul.lvl2 > li { font-size:14px; padding:4px 0; }
+ul.lvl3 > li { font-size:13px; padding:3px 0; }
+ul.lvl2 > li.done, ul.lvl3 > li.done { color:var(--done); text-decoration:line-through; }
+ul.lvl2 > li.todo, ul.lvl3 > li.todo { color:var(--muted); }
+
+/* ── Стрелка «сейчас здесь»: ровно одна на весь борд ── */
+li.here { position:relative; font-weight:600; }
+li.here::before { content:"▸"; position:absolute; left:-17px; color:var(--accent);
+  font-weight:700; }
+ul.lvl3 > li.here::before { left:-15px; }
+.here-tag { font-size:11px; font-weight:600; letter-spacing:.04em; color:var(--accent);
+  margin-left:8px; white-space:nowrap; }
+.wait-tag { font-size:11.5px; font-weight:600; color:var(--warn-fg); background:var(--warn-bg);
+  padding:2px 8px; border-radius:3px; margin-left:8px; white-space:nowrap; }
+
+/* ── Правая колонка ── */
+.side { display:flex; flex-direction:column; gap:22px; }
+.cap { font-size:11.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--faint); }
+
+/* «Ждёт тебя» — всегда первый блок справа. .you.idle когда от него ничего не нужно,
+   .you.stop когда без него работы не осталось совсем. */
+.you { background:var(--warn-bg); border-radius:5px; padding:18px 20px;
+  display:flex; flex-direction:column; gap:11px; }
+.you .cap { color:var(--warn-fg); }
+.you h2 { font-family:Literata, Georgia, serif; font-size:17px; font-weight:600;
+  line-height:1.3; margin:0; color:var(--fg); }
+.you p { margin:0; font-size:13.5px; line-height:1.55; color:var(--warn-text); }
+.you a.btn { align-self:flex-start; font-size:13.5px; font-weight:600; text-decoration:none;
+  color:var(--btn-fg); background:var(--btn-bg); padding:9px 16px; border-radius:3px; }
+.you.idle { background:transparent; border:1px solid var(--line); }
+.you.idle .cap { color:var(--faint); }
+.you.idle p { color:var(--muted); }
+.you.stop { background:#F3D9D3; }
+.you.stop .cap { color:#8C3A26; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .you.stop
+  { background:#3A211A; } :root:not([data-theme="light"]) .you.stop .cap { color:#E9A28C; } }
+:root[data-theme="dark"] .you.stop { background:#3A211A; }
+:root[data-theme="dark"] .you.stop .cap { color:#E9A28C; }
+
+.box { border-top:1px solid var(--line); padding-top:18px;
+  display:flex; flex-direction:column; gap:8px; }
+.box p { margin:0; font-size:14px; line-height:1.5; }
+.box .dead { color:var(--dead); }
+
+/* ── Ссылки читаются как ссылки, но не кричат ── */
+.tasks a, .box a, .daily a { color:inherit; text-decoration:underline;
+  text-decoration-color:var(--line); text-underline-offset:2px; }
+.tasks a:hover, .box a:hover, .daily a:hover { color:var(--accent);
+  text-decoration-color:var(--accent); }
+
+/* ── С прошлого дейлика: опционально, только если есть трекер, чат и пул-реквесты ── */
+.daily { border-top:1px solid var(--line); margin-top:30px; padding-top:20px; }
+.daily-cols { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:40px;
+  align-items:start; }
+@media (max-width: 860px) { .daily-cols { grid-template-columns:1fr; gap:24px; } }
+ul.news { list-style:none; margin:12px 0 0; padding:0; }
+ul.news li { font-size:14px; line-height:1.5; padding:6px 0;
+  border-bottom:1px solid var(--line-soft); display:flex; gap:10px; align-items:baseline; }
+ul.news li:last-child { border-bottom:0; }
+.src { flex:none; font-size:10.5px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--faint); width:42px; }
+ol.say { margin:12px 0 0; padding-left:18px; }
+ol.say li { font-size:14px; line-height:1.5; padding:3px 0; }
+
+.stamp { color:var(--faint); font-size:12.5px; margin:34px 0 0;
+  border-top:1px solid var(--line-soft); padding-top:14px; }

@@ -1,9 +1,8 @@
 import re, pathlib
 
 kit = pathlib.Path.home() / "Developer/claude-kit"
-tpl = (kit / "templates/board.html").read_text()
-
-css = re.search(r"<style>(.*?)</style>", tpl, re.S).group(1)
+# The board's look lives in the shell, not in the template: templates/board.html is data only.
+css = (kit / "board-shell/board.css").read_text()
 
 # drop every theme-switching block; each artboard is one fixed snapshot
 def cut_blocks(text, starts):
@@ -27,16 +26,16 @@ def cut_blocks(text, starts):
 
 css = cut_blocks(css, ["@media (prefers-color-scheme: dark)", ':root[data-theme="dark"]'])
 
-LIGHT = """    --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#7F776C;
-    --line:#E7E0D0; --line-soft:#EFEADC; --track:#EDE6D6;
-    --done:#7F776C; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
-    --warn-bg:#FBF1DC; --warn-fg:#8A5A0B; --warn-text:#7A6A4C;
-    --btn-bg:#23211E; --btn-fg:#FDFCF9;"""
-DARK = """    --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
-    --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
-    --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
-    --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
-    --btn-bg:#EDE9E0; --btn-fg:#1A1815;"""
+LIGHT = """  --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#7F776C;
+  --line:#E7E0D0; --line-soft:#EFEADC; --track:#EDE6D6;
+  --done:#7F776C; --ok:#4B7A57; --accent:#9A6207; --dead:#8C6A6A;
+  --warn-bg:#FBF1DC; --warn-fg:#8A5A0B; --warn-text:#7A6A4C;
+  --btn-bg:#23211E; --btn-fg:#FDFCF9;"""
+DARK = """  --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
+  --line:#332F28; --line-soft:#2A2721; --track:#2E2A23;
+  --done:#8A8276; --ok:#7FBF92; --accent:#D9A441; --dead:#C99A9A;
+  --warn-bg:#2E2415; --warn-fg:#E8B45C; --warn-text:#C4B08A;
+  --btn-bg:#EDE9E0; --btn-fg:#1A1815;"""
 
 def scoped(palette, stop_bg, stop_fg):
     c = css.replace(LIGHT, palette)
@@ -45,10 +44,10 @@ def scoped(palette, stop_bg, stop_fg):
     c = c.replace(":root {", ".brd {").replace("body {", ".brd {")
     c = c.replace("main { max-width:1040px; margin:0 auto; }",
                   "main { max-width:none; margin:0; }")
-    c = c.replace("  .you.stop { background:#F3D9D3; }",
-                  "  .you.stop { background:%s; }" % stop_bg)
-    c = c.replace("  .you.stop .cap { color:#8C3A26; }",
-                  "  .you.stop .cap { color:%s; }" % stop_fg)
+    c = c.replace(".you.stop { background:#F3D9D3; }",
+                  ".you.stop { background:%s; }" % stop_bg)
+    c = c.replace(".you.stop .cap { color:#8C3A26; }",
+                  ".you.stop .cap { color:%s; }" % stop_fg)
     return c + "\n  .brd { width:1040px; }\n"
 
 BODY = """

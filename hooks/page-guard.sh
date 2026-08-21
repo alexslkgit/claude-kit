@@ -21,7 +21,7 @@
 #   · Notification / requestPermission       ditto, plus a permission prompt
 #   · window.open(                           a new tab is a Space switch
 #
-# The way to keep a page live is the background fetch in templates/board.html: re-fetch the file
+# The way to keep a page live is the background fetch in board-shell/board.js: re-fetch the file
 # and swap document.body.innerHTML. No reload, no focus, no Space switch.
 #
 # Escape hatch: put PAGE-GUARD-EXEMPT in the file (in a comment) when a page genuinely needs one
@@ -89,7 +89,7 @@ Every one of those can drag his macOS Space over to Chrome while he is working s
 He has chased this across dozens of generated pages and asked, on 2026-08-20, never to see it
 again: «надо было не 20 затронуть, абсолютно все».
 
-If the page must stay live, use the background fetch from templates/board.html instead — it
+If the page must stay live, link board-shell/board.js — its background fetch
 re-fetches its own file and swaps the DOM, with no reload and no focus change:
 
   <script>
