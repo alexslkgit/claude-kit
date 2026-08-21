@@ -114,9 +114,18 @@ the page links, and are never emitted again:
   plan    ->  _shell/plan.css  + _shell/plan.js    (kit: plan-shell/)
   brief   ->  _shell/brief.css + _shell/brief.js   (kit: skills/company-brief/assets/)
 
-Copy the shell next to the page once, link it with a relative path, and write only the markup
-that changed. Every board rewrite used to re-emit 12 KB of unchanged CSS and JS into the
-context, and that context is re-sent on every later request of the session.
+Copy the shell next to the page once, link it with a relative path, and write only the data.
+Every board rewrite used to re-emit 12 KB of unchanged CSS and JS into the context, and that
+context is re-sent on every later request of the session.
+
+A BOARD IS NOT MARKUP EITHER. It is one <script type="application/json" id="board"> block that
+_shell/board.js draws, and the renderer computes every percentage and count from the tree, so
+you never write .row, .mini or a percent by hand. If your instructions still describe board
+markup, they are out of date: re-read skills/board/SKILL.md (it is on disk at
+~/.claude/skills/board/SKILL.md) and copy the skeleton from ~/.claude/templates/board.html.
+Install the shell beside the page first, where DIR is the folder holding the board:
+
+  mkdir -p DIR/_shell && cp ~/.claude/board-shell/board.css ~/.claude/board-shell/board.js DIR/_shell/
 
 Restyling? Edit the shell file in the kit, not the page.
 Need one portable file to send someone? tools/inline-shell.py folds the shell back in.
