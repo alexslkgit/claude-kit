@@ -60,6 +60,8 @@ bad=[]
 for p in sorted(pathlib.Path(root).rglob("*.html")):
     s=str(p)
     if "/.git/" in s or "/hooks/" in s or "/.claude/" in s or "/archive/" in s: continue
+    # A verbatim mirror of an external artefact is evidence, not a page we serve him.
+    if "-mirror/" in s: continue
     try: body=p.read_text(errors="ignore")
     except Exception: continue
     if "SHELL-GUARD-EXEMPT" in body: continue
@@ -98,6 +100,9 @@ elif tool in ('Write','Edit'):
 else: raise SystemExit
 if not body or 'SHELL-GUARD-EXEMPT' in body: raise SystemExit
 if 'shell-guard' in path or 'inline-shell' in path or '/hooks/' in path: raise SystemExit
+# Same exemption as the repo scan: a byte-for-byte mirror of someone else's file may not be edited
+# to satisfy our rule, and it is never the page he opens.
+if '-mirror/' in path: raise SystemExit
 hits=blocks(body)
 if hits: print(' · '.join(f'an inline {k} of {n} bytes' for k,n in hits))
 " "$LIMIT" 2>/dev/null)"
