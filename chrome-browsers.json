@@ -7,7 +7,9 @@
     "so treat an entry as a recommendation and confirm it with one probe round before acting.",
     "probe.sh does NOT work on OMT-GHHD91424H-LDH (2026-08-17): the local server cannot answer its own loopback request, with or without dangerouslyDisableSandbox. Fall back to the reconnect fingerprint — call list_connected_browsers before and after switch_browser and watch which deviceId's connectedAt changes.",
     "Do NOT navigate to a vssps.dev.azure.com API URL to work around CORS (2026-08-17, OMT-GHHD91424H-LDH): that host bounces to an AAD account picker offering only the aubay.pt account, which is not in the Lufthansa Group tenant, and the attempt also dropped the live dev.azure.com session in that profile. ADO then needed a fresh switch_browser confirmation before it would load again.",
-    "DNS record editing at a registrar is blocked by the auto-mode classifier (2026-08-19, Porkbun): form_input on the Add Record form returns \"Permission for this action was denied\". Reading the DNS panel is fine. Do not try to type around it — write the clicks into a chewed plan and let him do them."
+    "DNS record editing at a registrar is blocked by the auto-mode classifier (2026-08-19, Porkbun): form_input on the Add Record form returns \"Permission for this action was denied\". Reading the DNS panel is fine. Do not try to type around it — write the clicks into a chewed plan and let him do them.",
+    "A hidden tab silently swallows synthetic typing (2026-08-24): document.hasFocus() is true, the type call reports success, and the field stays empty because document.visibilityState is \"hidden\". Bringing Chrome to the front is not enough, the tab must be the active tab of its window. Fix: osascript, tell application \"Google Chrome\" to set active tab index of front window to <n>, after listing tabs to find n. Read visibilityState before trusting any typing.",
+    "Teams (2026-08-24): a click on a chat row in the left rail does not land, and a JavaScript .click() on it switches the app to Calendar. Open a conversation with the deep link https://teams.microsoft.com/v2/#/l/chat/0/0?users=<email> instead; without the /v2/# it lands on the \"Join conversation\" launcher. document.title can stay stale after that navigation, so prove the conversation from the pane header, the visible history and the composer ancestry."
   ],
   "browsers": [
     {
@@ -36,18 +38,20 @@
       "signedInTo": "Lufthansa work surfaces (dev.azure.com/lhg-ddl, trackspace.lhsystems.com, outlook.office.com, teams.microsoft.com, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN)) AND personal accounts (alexslkmain@gmail.com, Porkbun, GitHub alexslkgit, FamilySearch Oleksandr7170) — both were observed through this same deviceId on 2026-08-17",
       "verified": "2026-08-19",
       "method": "localhost-probe, second independent run",
-      "note": "RESOLVED 2026-08-19 in favour of the personal MacBook. A second localhost-probe, run from Slobodianiuks-MacBook-Pro.local, was answered by this deviceId (probe-alexslkmain reached the local server), which is the same result as the 2026-08-17 probe. The user then clicked Connect in switch_browser and named it \"Alex slk mainpp\", and through it the session read his Porkbun account as alexslkmain and completed a gcloud OAuth flow whose redirect_uri was http://localhost:8085 on THIS Mac — a redirect that cannot succeed from another machine. That last point is the decisive one: it is locality proved by the work itself, not by a probe. The competing 2026-08-17 attribution to OMT-GHHD91424H-LDH used the weaker reconnect-fingerprint method; treat it as superseded. The Lufthansa web sessions are real and live in a profile on this same personal MacBook.",
+      "note": "RESOLVED 2026-08-19 in favour of the personal MacBook. A second localhost-probe, run from Slobodianiuks-MacBook-Pro.local, was answered by this deviceId (probe-alexslkmain reached the local server), which is the same result as the 2026-08-17 probe. The user then clicked Connect in switch_browser and named it \"Alex slk mainpp\", and through it the session read his Porkbun account as alexslkmain and completed a gcloud OAuth flow whose redirect_uri was http://localhost:8085 on THIS Mac — a redirect that cannot succeed from another machine. That last point is the decisive one: it is locality proved by the work itself, not by a probe. The competing 2026-08-17 attribution to OMT-GHHD91424H-LDH used the weaker reconnect-fingerprint method; treat it as superseded. The Lufthansa web sessions are real and live in a profile on this same personal MacBook. 2026-08-24, from OMT-GHHD91424H-LDH: driving this deviceId reaches a Chrome whose Microsoft identity is oleksandr.slobodianiuk@aubay.pt. Teams there answers \"you do not have the required permissions to access this organization\" and dev.azure.com bounces to an account picker. It is not the browser for anything Lufthansa.",
       "userGivenName": "Alex slk mainpp",
       "chromeProfileDir": "Profile 1",
       "chromeProfileName": "Alex slk mainpp (Lufthansa web apps signed in here too)"
     },
     {
       "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
-      "hostname": null,
-      "signedInTo": "unknown — another Mac",
-      "verified": "2026-08-17",
-      "method": "probe-negative",
-      "note": "Proven NOT to be on C12239: could not reach its loopback."
+      "hostname": "OMT-GHHD91424H-LDH",
+      "signedInTo": "Lufthansa work surfaces, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN): teams.microsoft.com, dev.azure.com/lhg-ddl, trackspace.lhsystems.com, figma",
+      "verified": "2026-08-24",
+      "method": "applescript-tab-match: osascript listed the same tabs the extension was driving, and Teams there is signed in as the work account",
+      "note": "CORRECTED 2026-08-24 on OMT-GHHD91424H-LDH. The 2026-08-17 line \"unknown Mac, probe-negative\" was about C12239, not about this machine. select_browser with this id works directly and lands in the work Chrome. STATUS.md of lh-group-app-ios said so all along. Two browser-scout runs were wasted on 2026-08-24 by pointing them at 2a3a86cf instead.",
+      "chromeProfileDir": null,
+      "chromeProfileName": "work profile, Lufthansa SSO"
     }
   ]
 }
