@@ -1,6 +1,6 @@
 ---
 name: meeting-live
-description: Sit through a live call with him and keep him from looking lost — listen to the room, tell him in two lines what is being discussed and when the topic changes, warn him when a question is heading his way, and hand him the exact words to say when he is asked directly. Works on any Mac, any job, any meeting. Use whenever he says «подключись к встрече», «слушай созвон», «я на митинге», «я на рефайнменте», «что сейчас обсуждают», «о чём говорят», «инструктируй по ходу», «подсказывай», "join the call", "listen to the meeting", "what are they talking about", "prompt me", or asks whether you can follow a meeting in real time. Also use to read a meeting that already happened.
+description: Sit through a live call with him and keep him from looking lost — listen to the room, tell him in two lines what is being discussed and when the topic changes, warn him when a question is heading his way, and put short sourced facts in front of him so he can answer in his own words. Works on any Mac, any job, any meeting. Use whenever he says «подключись к встрече», «слушай созвон», «я на митинге», «я на рефайнменте», «что сейчас обсуждают», «о чём говорят», «инструктируй по ходу», «подсказывай», "join the call", "listen to the meeting", "what are they talking about", "prompt me", or asks whether you can follow a meeting in real time. Also use to read a meeting that already happened.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Monitor, TaskStop
 ---
 
@@ -33,6 +33,18 @@ from a file you opened twenty minutes ago.
 Never invent. A wrong sentence said out loud is far more expensive than a vague one. When you are
 not sure, give him a line that buys time instead of a line that commits him:
 *"Let me check that and come back to you today."*
+
+**A note from an earlier session is a lead, not a fact.** Status files, handoffs, a previous
+session's board — they were true when written and they are written in your own confident voice,
+which is exactly what makes them dangerous. Anything that claims what a ticket, a design or a
+document *says* must be re-read from the source before it goes into a line he speaks. If you cannot
+open the source in time, either leave it out or hand it to him as a question about his own note, not
+as a fact about the ticket.
+
+Cost of learning this, 2026-08-20: a briefing said the ticket description asked to separate the
+iOS 26 glass navigation. He raised it in the refinement, the room opened the description together
+with him, and it was not there. Nobody had opened that ticket in the live session, and the browser
+was available the whole time.
 
 ## 1. Preflight, once per Mac
 
@@ -119,14 +131,17 @@ call. Most heartbeats end in you saying nothing at all, and that is correct.
 Chat scrolls and he loses it. The board is one page he keeps open on a second screen, and it is
 where everything lands. Build it as the first action of the meeting, before the first briefing.
 
-Write a small JSON and let the renderer make the page:
+**There is one board design and it lives in one file**, `~/.claude/templates/meeting-board.html`.
+It is never regenerated, never rewritten per meeting and never composed in a chat turn. The renderer
+only swaps the JSON block inside it:
 
 ```bash
 python3 ~/.claude/skills/meeting-live/board/render.py <board.json> -o <board.html>
 ```
 
-The JSON shape is documented at the top of `render.py`. Rewriting a fifteen-line JSON costs
-nothing, which is the point: rewrite it every time the room moves, and never hand-write the HTML.
+The JSON shape is documented at the top of `render.py`. Rewriting a fifteen-line JSON costs nothing,
+which is the point: rewrite it every time the room moves. To change how the board *looks*, edit the
+template by hand, once, and every future meeting inherits it.
 
 **Where the file goes.** Inside the project the work belongs to, if there is one
 (`<repo>/.claude/tasks/meeting-<topic>-<date>.html`), otherwise beside the transcript in
@@ -159,35 +174,39 @@ Rules that make it readable at a glance:
   without reading the rest.
 - **Names as the room says them**, so he can address a person back.
 
-Above the timeline sit the three things he might need this second, and they are empty most of the
-time: the sentence to say out loud, the warning that a question is coming, and one or two sentences
-on what is happening right now. Below it, what he owes someone.
+### Facts, not a script — this is the rule everything else serves
 
-## 5. What you send him
+The top of the board is **at most four facts, five words each, and every one carries its source in
+one word**: `код`, `он сказал 10:44`, `тикет`, `дизайн`.
 
-Never more than a glance. Pick exactly one of these shapes.
+He does not read a prepared sentence out loud, and he is right not to. Reading someone else's
+sentence means adopting a claim he has not checked, in front of people, and validating a paragraph
+takes ten seconds he does not have. Validating a source word takes one. So hand him the raw
+material and let him build the sentence himself — he is the one who knows the room.
 
-**Topic changed** — two sentences, no preamble:
-> Перешли на X. Спорят о Y, склоняются к Z.
+Two hard consequences:
 
-**A question is heading his way** — the moment someone says "and on the mobile side" or looks for an
-owner, before he is actually asked:
-> Сейчас спросят тебя про X. Скажи: *"..."*
+- **Anything you have not read from its own source this session goes in `dont`, never in `facts`.**
+  The red block exists so an old note cannot get spoken.
+- **Never put a claim inside a question.** "Is the new navigation in scope?" is safe even if the
+  answer is no. "The description asks to split the new navigation, is that in scope?" is a claim
+  wearing a question mark, and when the room opens the description, he is the one holding it.
 
-**He was asked directly** — the shortest thing that works, in the language of the room, in quotes,
-and nothing around it:
-> *"We already have the membership status in the app, so it is the same mechanism as the tab title.
-> Three points."*
+A full sentence appears on the board only when **he asks for one** ("дай фразу"). Then it goes in
+the yellow block and nowhere else.
 
-**A number is wanted.** This is the one moment he cannot improvise, so front-load it: what the item
-was already sized at and by whom, what the number becomes if the bigger scope is folded in, and the
-one sentence that makes the split out loud.
+## 5. What you send him in chat
 
-**He asks «сейчас о чём»** — `tail -n 25`, then the topic in two sentences plus one line he could
-say if pulled in. Twenty five lines is about eight minutes and is enough.
+Chat is a pointer to the board, never a second copy of it. Two lines at most.
 
-Never send the transcript. Never send a list of everything said. Never explain the mechanism while
-he is in the call. Never send two messages where one would do.
+- **Topic changed:** «Перешли на X, тебя не касается.» Nothing else.
+- **His topic:** «Твоя тема. Факты на борде.» He looks, he speaks in his own words.
+- **He was named:** «Спросили тебя про X.» plus the single fact that answers it, with its source.
+- **He asks «дай фразу»:** then, and only then, one sentence he can read.
+
+Never a paragraph. Never a list of everything said. Never a sentence to read out loud that he did
+not ask for. If you catch yourself writing a second sentence of explanation, it belongs on the board
+as a fact or nowhere.
 
 ## 6. Stay until it ends
 

@@ -50,6 +50,56 @@ short loops, otherwise capture the window.
 Drive the UI with the simulator control tools between start and stop, and **screenshot after
 every step that can fail** — a tap that missed is invisible until you watch the take back.
 
+## The raw take has broken timestamps. Normalise it before you do anything else
+
+`simctl io recordVideo` writes a **variable-frame-rate** file: it emits a frame only when the
+screen changes, and it routinely emits a decode timestamp that runs backwards. A 41 second take
+measured on 2026-08-24 held its first frame for **9.76 seconds** and printed hundreds of
+`non monotonically increasing dts` warnings in the middle. Nothing looks wrong in QuickTime, and
+that is the trap.
+
+**What this costs:** a player that re-derives frame times from such a stream can swallow an entire
+short transition. The user watched a take of four 0.25 s animations and reported that the *first*
+one did not animate at all. It did — every frame was in the file. `ffmpeg -vf fps=60` on the same
+file destroyed the *second* one instead, straight from closed to open with zero intermediate
+frames. Which transition disappears depends on the player, so "it plays fine here" proves nothing.
+
+So the first command after the take is never a trim:
+
+```bash
+ffprobe -v error -select_streams v:0 -show_entries frame=pts_time -of csv=p=0 raw.mov | head
+```
+
+Two frames more than a few hundred milliseconds apart at the start, or a jump backwards anywhere,
+means the file is in this state.
+
+**Do not fix it by re-encoding the stream** — `fps=60` is exactly what loses the transition.
+Rebuild from the frames, where you control the timing:
+
+```bash
+ffmpeg -i raw.mov -vf scale=540:-2 -vsync 0 full/p_%04d.png     # frames, in order
+ffprobe -v error -select_streams v:0 -show_entries frame=pts_time -of csv=p=0 raw.mov > pts.csv
+```
+
+Then, in a few lines of Python, walk a fixed 60 fps timeline and for each output slot take the last
+frame whose `pts` is at or before it. Encode the result with `-framerate 60 -i f_%05d.png`. That
+also gives you slow motion for free: step the timeline by `1/(60*slow)` instead.
+
+## An animation is not a demo, and a flat take will not show it
+
+A 300 ms transition inside a 40 second recording is 1% of the file. Handing that over is handing
+over a still image with a flicker in it. When the subject is the animation:
+
+- Cut to the transitions only, with about 0.4 s of context on each side, and drop everything else.
+- Slow to **a third of real speed** and caption each one with its elapsed milliseconds.
+- Ship a **filmstrip PNG** beside the clip: one row per transition, six frames across it, cropped
+  to the part of the screen that moves. It proves the movement in a way a video never can, because
+  he can look at it for as long as he likes, and it goes into a pull request or a ticket unchanged.
+
+Find the transitions numerically rather than by scrubbing: take a known before-frame and a known
+after-frame, and classify every frame by mean absolute difference against both. The runs of
+"neither" are your transitions, with their exact start, end and frame count.
+
 ## Cutting: one flat speed is always wrong
 
 The take is a mix of things that must be read and things that are dead air. A single rate
