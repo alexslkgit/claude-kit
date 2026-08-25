@@ -190,7 +190,7 @@ can do here, and it is nearly always avoidable.
 - **The correction loop belongs to a subagent, never to a peer.** A finished subagent resumes by name
   with its context intact, so "no, redo that part" costs one sentence instead of a fresh brief. Rounds
   of review are cheap there and ruinous between two sessions.
-- **Past half the handoff threshold (~100k), the channel narrows — it does not close.** Three kinds
+- **Past half the handoff threshold (~75k), the channel narrows — it does not close.** Three kinds
   of message survive: a blocker, a claim on the same file, and "landed as sha X". Silence is the worse
   failure; an unreported file conflict costs more than any exchange.
 - **Two sessions on one checkout share every project file, and that is the whole hazard.** He forks
@@ -391,25 +391,42 @@ truly repeats belongs in a flow file instead), and cropping screenshots instead 
 ones (0.3%, and it adds a decision to every picture).
 
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
-- **Watch the context. Past ~250k, stop at the next natural boundary** — a finished sub-task, never
+- **Watch the context. Past ~150k, stop at the next natural boundary** — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
   place within ~20 turns. The one exception: fewer than ~10 requests of work left in the whole task,
   where the handoff cannot pay for itself — finish instead.
-- 250k, not the token optimum. Measured 2026-08-17: a session starts at a **65k floor** and grows
-  **26k per user message** (p90 84k), so 160k — where the pure token maths points — arrives after
-  3.7 messages and would mean a full wrap-up ritual every three messages. That buys 16%. Crossing
-  250k is where it actually starts hurting: 350k costs 19% more per request than 250k, 400k costs
-  29% more. Below 250k the threshold is not the lever; what enters the context per message is.
-- **Never count messages when deciding to clear; count requests.** Re-measured 2026-08-17 over 173
-  real sessions (`TOKEN-AUDIT-2026-08-17.md`): the median user message costs **25 requests**, each
-  one re-sending the whole context, and 64% of all spend is that re-sending. A block of two messages
-  can be fifty requests and 200k of context, so "we have barely talked" is never a reason to keep a
-  fat session. The break-even for a handoff is 11 requests — under half of one ordinary message.
-- The cost curve is flat to ~130k and then bends hard: 21k per request below 150k, 33k at 200–250k,
-  46k at 300–400k, 94k past 500k. Raising the threshold is measurably worse, not neutral — sessions
-  capped under 150k cost 20.7k a request, sessions past 400k cost 39.3k for the same work. 160k is
-  the measured optimum against a ~90k floor, not a round number.
+- **150k, re-measured 2026-08-25, and this supersedes the 250k rule.** A full month priced from
+  `usage` with subagents counted for the first time — every earlier number in this file was computed
+  on 58% of the spend, because subagent rows were never in the data. $8 145 at API list over 31 days,
+  71 281 requests, 270 sessions. Simulating the same month cut at each threshold: 100k saves 22.0%,
+  **150k saves 22.4%**, 200k 17.3%, 250k 12.0%, 300k 7.9%. The old rule was leaving about $500 a
+  month on the table. Below 100k it collapses, because a fresh session already starts at a 72 641
+  token floor and would thrash. 150k sits in the flat bottom under doubled handoff cost and under a
+  90k floor, and means about twenty cuts a day.
+- **A request costs $0.105, whatever tool it runs.** Bash $0.105, Edit $0.106, Read $0.101, the
+  simulator $0.105 — flat across everything, because the price is the context re-sent underneath it
+  and not the payload. So the bill is the request count times ten cents, and shrinking what is
+  *inside* a call is close to worthless next to making fewer calls. Every rule above follows from
+  this one line.
+- **Bash is the largest single item in the bill: 37 286 calls, 42%, $3 425 a month**, at a median of
+  325 characters of input. Nothing is big; there are simply thirty-seven thousand of them. Batch
+  independent commands into one call, put related ones in one script, trim output at the source.
+- **Delegation moves cost, it does not remove it: subagents are 42% of the bill**, $3 394 over 1 447
+  runs. Delegate to isolate one verbose task, whose material would otherwise ride along in this
+  context for the rest of the session. Do NOT fan out small tasks: measured elsewhere at 2.6–5.9x a
+  sequential run, and never faster on wall clock. Pin the tier hard, and prefer `/workflows` over raw
+  parallel spawns, because only a workflow staggers siblings so they share a cached prefix.
+- **The tail is where the money is: the top 5% of sessions are 27% of the dollars**, the worst one
+  $639 at 4 171 requests and a 527k peak. A hard cap beats average discipline.
+- **Never count messages when deciding to clear; count requests.** A user message is now a median of
+  9.9 requests and costs $2.74. A handoff pays for itself in about a dozen requests, so "we have
+  barely talked" is never a reason to keep a fat session.
+- **A mid-session switch throws the whole cache away.** Changing model or `/effort`, the first
+  fast-mode turn, connecting or disconnecting a non-deferred MCP server, and resuming after an
+  upgrade all re-read the conversation uncached: about $1.56 at 250k. Choose the tier at the start.
+  `/compact` is a full-history request of its own and is cold on resume; `/clear` costs nothing and
+  `/rewind` truncates to an already cached prefix. This is why the handoff ritual beats compaction.
 - **Each phase of a task is its own session.** Implementation, every round of review comments, and
   every returned bug start fresh from the status files and the diff — never as a continuation of the
   session before them. Most of a ticket's calendar life is after the PR opens, and carrying the
@@ -439,7 +456,7 @@ a session. Read every such ceiling that way.
   blocked on something only a human can do (a click, a login, a one-time code, a decision that is
   his) · a hard limit he set himself. Anything else — an awkward result, an unclear next step, a
   subagent that failed, a channel that 403'd — is a reason to *change approach*, not to stop.
-- Context pressure is the one soft brake: past ~250k, finish the sub-task, write the handoff, and
+- Context pressure is the one soft brake: past ~150k, finish the sub-task, write the handoff, and
   **tell him to press `/clear`** — that is a stop with a stated reason and a next action, which is
   exactly what this section asks for. Never just fall silent instead.
 - In a routine with nothing left to do, the closing message still says so explicitly, with the

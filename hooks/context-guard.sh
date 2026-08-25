@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# context-guard.sh — makes the clear-at-250k rule fire by itself.
+# context-guard.sh — makes the clear-at-150k rule fire by itself.
 #
 # Why this exists as a hook and not as a line in the output style: the line was there, and
 # measured 2026-08-17 across 173 real transcripts it was ignored for a month. 101 sessions ran
@@ -13,15 +13,20 @@
 # instead, with no repo requirement, and handoff-guard keeps only the file mechanics.
 #
 # The numbers, from TOKEN-AUDIT-2026-08-17.md:
-#   a session starts at a 65k floor and grows ~26k per user message (p90 84k)
-#   cost per request: 21k below 150k · 33k at 200–250k · 46k at 300–400k · 94k past 500k
+#   RE-MEASURED 2026-08-25 over a full month priced from usage, subagents included for the first
+#   time (every earlier number in this file was computed on 58% of the spend):
+#     a request costs $0.105 whatever tool it runs — Bash .105, Edit .106, Read .101, simulator .105
+#     a fresh session already starts at a 72 641 token floor
+#     simulating the month at each threshold: 100k saves 22.0%, 150k saves 22.4%, 200k 17.3%,
+#     250k 12.0%, 300k 7.9% — so the old 250k rule left about $500 a month on the table, and
+#     below 100k it collapses because the floor makes it thrash
+#   150k is the pick: flat bottom in all three sensitivity runs, 1.9x the floor, 656 cuts a month
 #   a handoff costs ~200k units and breaks even after 11 requests — the median user message
-#   is 25 requests, so past 250k the clear pays for itself inside one message of work
-#   250k, not the 160k token optimum: 160k arrives after 3.7 messages and buys only 16%
+#   is now 9.9 requests at $2.74, so a cut at 150k pays for itself well inside one message
 #
 # Two bands, and the difference between them matters:
 #   220k  soft — do not start anything large, finish what is open. Said once.
-#   250k  hard — wrap up at the next boundary and tell him to press /clear. Repeats.
+#   150k  hard — wrap up at the next boundary and tell him to press /clear. Repeats.
 #
 # Two events, because one is not enough. UserPromptSubmit catches the start of a turn, but a
 # turn is a median of 25 requests and can be 71, so a session can enter at 150k and leave at
@@ -33,8 +38,8 @@
 
 set -uo pipefail
 
-SOFT=220000
-HARD=250000
+SOFT=130000
+HARD=150000
 STATE_DIR="$HOME/.claude/context-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -87,7 +92,7 @@ if [ "$band" = "hard" ]; then
   cat <<EOF
 context-guard: this conversation is at ${k}k tokens. Every further request re-sends all of it —
 about ${per_req}k units each, against 21k at 150k and 24k in a fresh session. The user's standing
-rule, measured and set 2026-08-17, is to stop past 250k at the next natural boundary — a finished
+rule, re-measured 2026-08-25, is to stop past 150k at the next natural boundary — a finished
 sub-task, never mid-step — run the wrap-up skill so STATUS.md, DECISIONS.md and the board are
 current, write the handoff, and then tell him in plain words to press /clear. You cannot clear it
 yourself and /compact is the wrong tool: it costs a full-context request and the context regrows
@@ -110,7 +115,7 @@ whether he wants it.
 EOF
 else
   cat <<EOF
-context-guard: this conversation is at ${k}k tokens, ~${per_req}k units per request. Past 250k the
+context-guard: this conversation is at ${k}k tokens, ~${per_req}k units per request. Past 150k the
 standing rule is to wrap up at the next finished sub-task, so finish what is open and do not start
 anything large. If something big is genuinely next, hand it over now instead of half-doing it.
 Heavy reads, test runs and screenshot loops belong to a subagent from here on — measured, tool
