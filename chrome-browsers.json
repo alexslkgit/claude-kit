@@ -9,7 +9,8 @@
     "Do NOT navigate to a vssps.dev.azure.com API URL to work around CORS (2026-08-17, OMT-GHHD91424H-LDH): that host bounces to an AAD account picker offering only the aubay.pt account, which is not in the Lufthansa Group tenant, and the attempt also dropped the live dev.azure.com session in that profile. ADO then needed a fresh switch_browser confirmation before it would load again.",
     "DNS record editing at a registrar is blocked by the auto-mode classifier (2026-08-19, Porkbun): form_input on the Add Record form returns \"Permission for this action was denied\". Reading the DNS panel is fine. Do not try to type around it — write the clicks into a chewed plan and let him do them.",
     "A hidden tab silently swallows synthetic typing (2026-08-24): document.hasFocus() is true, the type call reports success, and the field stays empty because document.visibilityState is \"hidden\". Bringing Chrome to the front is not enough, the tab must be the active tab of its window. Fix: osascript, tell application \"Google Chrome\" to set active tab index of front window to <n>, after listing tabs to find n. Read visibilityState before trusting any typing.",
-    "Teams (2026-08-24): a click on a chat row in the left rail does not land, and a JavaScript .click() on it switches the app to Calendar. Open a conversation with the deep link https://teams.microsoft.com/v2/#/l/chat/0/0?users=<email> instead; without the /v2/# it lands on the \"Join conversation\" launcher. document.title can stay stale after that navigation, so prove the conversation from the pane header, the visible history and the composer ancestry."
+    "Teams (2026-08-24): a click on a chat row in the left rail does not land, and a JavaScript .click() on it switches the app to Calendar. Open a conversation with the deep link https://teams.microsoft.com/v2/#/l/chat/0/0?users=<email> instead; without the /v2/# it lands on the \"Join conversation\" launcher. document.title can stay stale after that navigation, so prove the conversation from the pane header, the visible history and the composer ancestry.",
+    "Two Chromes signed in on THIS Mac at once (2026-08-25): 2a3a86cf and 0c78e979, both isLocal:true, both named positionally as \"Browser 1\"/\"Browser 2\". A second Chrome was opened deliberately so another agent could work in it, on an unrelated account. select_browser with the recorded 2a3a86cf, then tabs_context_mcp + navigate, still put a tab where he did not want it, and he was angry. When more than one Chrome is connected on the same machine, do NOT trust the recorded deviceId: call switch_browser and let him click Connect in the right window. He clicked and it came back \"Alex slk mainpp\", confirming 2a3a86cf is still the right id for his own work. Cause of the misplaced tab is NOT established, so do not repeat the select_browser shortcut on the assumption it was a one-off."
   ],
   "browsers": [
     {
@@ -36,12 +37,12 @@
       "deviceId": "2a3a86cf-655f-4ac9-b81c-f527aa07f3aa",
       "hostname": "Slobodianiuks-MacBook-Pro.local",
       "signedInTo": "Lufthansa work surfaces (dev.azure.com/lhg-ddl, trackspace.lhsystems.com, outlook.office.com, teams.microsoft.com, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN)) AND personal accounts (alexslkmain@gmail.com, Porkbun, GitHub alexslkgit, FamilySearch Oleksandr7170) — both were observed through this same deviceId on 2026-08-17",
-      "verified": "2026-08-19",
-      "method": "localhost-probe, second independent run",
-      "note": "RESOLVED 2026-08-19 in favour of the personal MacBook. A second localhost-probe, run from Slobodianiuks-MacBook-Pro.local, was answered by this deviceId (probe-alexslkmain reached the local server), which is the same result as the 2026-08-17 probe. The user then clicked Connect in switch_browser and named it \"Alex slk mainpp\", and through it the session read his Porkbun account as alexslkmain and completed a gcloud OAuth flow whose redirect_uri was http://localhost:8085 on THIS Mac — a redirect that cannot succeed from another machine. That last point is the decisive one: it is locality proved by the work itself, not by a probe. The competing 2026-08-17 attribution to OMT-GHHD91424H-LDH used the weaker reconnect-fingerprint method; treat it as superseded. The Lufthansa web sessions are real and live in a profile on this same personal MacBook. 2026-08-24, from OMT-GHHD91424H-LDH: driving this deviceId reaches a Chrome whose Microsoft identity is oleksandr.slobodianiuk@aubay.pt. Teams there answers \"you do not have the required permissions to access this organization\" and dev.azure.com bounces to an account picker. It is not the browser for anything Lufthansa.",
+      "verified": "2026-08-25",
+      "method": "user stated it directly, after two agents were sent into it by mistake",
+      "note": "2026-08-25, CORRECTED BY THE USER HIMSELF: this deviceId now resolves to the NEW \"JOB SEARCH Oleksandr\" Chrome profile he opened for a single dedicated agent. He said in as many words to get out of it: it is reserved for that agent and holds none of the sessions this work needs. It IS signed into the same Google account, at slot /u/1, which is exactly why it looks right from inside. Do not use it for anything unless the task is the job search. His personal main profile is 0c78e979. Older note kept below.\n\nRESOLVED 2026-08-19 in favour of the personal MacBook. A second localhost-probe, run from Slobodianiuks-MacBook-Pro.local, was answered by this deviceId (probe-alexslkmain reached the local server), which is the same result as the 2026-08-17 probe. The user then clicked Connect in switch_browser and named it \"Alex slk mainpp\", and through it the session read his Porkbun account as alexslkmain and completed a gcloud OAuth flow whose redirect_uri was http://localhost:8085 on THIS Mac — a redirect that cannot succeed from another machine. That last point is the decisive one: it is locality proved by the work itself, not by a probe. The competing 2026-08-17 attribution to OMT-GHHD91424H-LDH used the weaker reconnect-fingerprint method; treat it as superseded. The Lufthansa web sessions are real and live in a profile on this same personal MacBook. 2026-08-24, from OMT-GHHD91424H-LDH: driving this deviceId reaches a Chrome whose Microsoft identity is oleksandr.slobodianiuk@aubay.pt. Teams there answers \"you do not have the required permissions to access this organization\" and dev.azure.com bounces to an account picker. It is not the browser for anything Lufthansa.",
       "userGivenName": "Alex slk mainpp",
       "chromeProfileDir": "Profile 1",
-      "chromeProfileName": "Alex slk mainpp (Lufthansa web apps signed in here too)"
+      "chromeProfileName": "JOB SEARCH Oleksandr (as of 2026-08-25)"
     },
     {
       "deviceId": "c6e75d27-6080-4255-b2d2-ea9e7ad6bbf6",
@@ -52,6 +53,26 @@
       "note": "CORRECTED 2026-08-24 on OMT-GHHD91424H-LDH. The 2026-08-17 line \"unknown Mac, probe-negative\" was about C12239, not about this machine. select_browser with this id works directly and lands in the work Chrome. STATUS.md of lh-group-app-ios said so all along. Two browser-scout runs were wasted on 2026-08-24 by pointing them at 2a3a86cf instead.",
       "chromeProfileDir": null,
       "chromeProfileName": "work profile, Lufthansa SSO"
+    },
+    {
+      "deviceId": "0c78e979-7e0c-40e8-b883-f0ac4d02f735",
+      "hostname": "Slobodianiuks-MacBook-Pro.local (assumed, isLocal:true)",
+      "chromeProfileDir": null,
+      "chromeProfileName": null,
+      "signedInTo": "an unrelated account, deliberately NOT his working one. He stated 2026-08-25: no logins and no passwords in it.",
+      "verified": "2026-08-25",
+      "method": "declared by him",
+      "note": "DO NOT TOUCH. He opened this Chrome on purpose so a different agent could work in it in isolation. Never open, move or close a tab here. If it is the only browser connected, ask him rather than using it."
+    },
+    {
+      "deviceId": "0c78e979-7e0c-40e8-b883-f0ac4d02f735",
+      "hostname": "Slobodianiuks-MacBook-Pro.local",
+      "chromeProfileDir": null,
+      "chromeProfileName": "personal main profile",
+      "signedInTo": "alexslkmain@gmail.com at slot /u/0 (Gmail read directly on 2026-08-25), his everyday tabs",
+      "verified": "2026-08-25",
+      "method": "opened Gmail through this deviceId and read the account button: Oleksandr Slobodianiuk (alexslkmain@gmail.com), /u/0",
+      "note": "This is the browser to use on his personal Mac from 2026-08-25 onwards. Two hazards seen the same day: (1) a tab driven through the extension can sit at document.visibilityState \"hidden\" while document.hasFocus() is true, and every synthetic click is silently swallowed, the a11y tree still shows the buttons; fix by making it the active tab of its window with osascript AND activating Chrome, then re-check visibilityState before clicking. (2) clicks by element ref work here, unlike in the JOB SEARCH profile where every ref click and every javascript_tool call failed with \"Cannot access a chrome-extension:// URL of different extension\"."
     }
   ]
 }

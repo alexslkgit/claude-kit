@@ -100,6 +100,13 @@ The handoff costs about 200k units and breaks even after 11 requests, while his 
 He has asked to be told this rather than discover it from the meter. Do not go silent on it, and do
 not simply carry on: a session that keeps working past this point is the failure this hook exists
 to stop.
+
+Since 2026-08-25 he does not work this ritual by hand any more, so keep your part of it to one
+line. handoff-auto.sh writes the handoff by itself when the turn ends, handoff-guard.sh hands the
+whole briefing to the next session the moment he clears, and the only thing left that a machine
+cannot do is the keystroke. So the entire message he should ever see about this is: handoff
+written, press /clear. Never a paragraph, never a list of what you wrote, never a question about
+whether he wants it.
 EOF
 else
   cat <<EOF

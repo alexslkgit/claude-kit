@@ -201,6 +201,42 @@ except Exception: print("")' 2>/dev/null)"
     [ -n "$list" ] || exit 0
     n="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
 
+    # --- the automatic pickup ---------------------------------------------------------------
+    # He was typing "pick up the handoff" after every /clear, by his own count around three
+    # hundred times a day, and on 2026-08-25 he asked for that keystroke to disappear. It can:
+    # a session started BY a clear or a compact, with exactly one briefing written in the last
+    # hour, can only be the far end of the ritual that just happened. So the whole file goes in
+    # here as context and the session is already picked up before he says anything at all.
+    #
+    # Deliberately narrow. Two fresh handoffs, or a plain startup, and it falls through to the
+    # listing below: guessing which task he meant is the one failure that costs more than typing.
+    src="$(field source)"
+    case "$src" in
+      clear|compact)
+        fresh="$(printf '%s\n' "$list" | while read -r f; do
+          [ -n "$f" ] && [ -n "$(/usr/bin/find "$f" -mmin -60 2>/dev/null)" ] && printf '%s\n' "$f"
+        done)"
+        if [ "$(printf '%s\n' "$fresh" | /usr/bin/grep -c . )" = "1" ]; then
+          f="$(printf '%s\n' "$fresh" | head -1)"
+          cat <<EOF
+handoff-guard: he pressed /clear and you are already picked up. The briefing the previous session
+left, $(stamp_of "$f"), is below in full. He does not have to type "pick up the handoff" and he is
+not going to: that keystroke was removed on 2026-08-25 and asking him for it is a defect.
+
+Carry on from where it stops. Your first message opens with the board link as always and says in
+one line where you are picking up. Do not thank him for the handoff, do not summarise what you
+just read, do not write a new handoff, and do not tell him to clear a context he cleared seconds
+ago.
+
+--- $f ---
+$(cat "$f" 2>/dev/null)
+--- end ---
+EOF
+          exit 0
+        fi
+        ;;
+    esac
+
     if [ "$n" -gt 1 ]; then
       echo "handoff-guard: $n handoffs are waiting here, one per task."
       echo "Read the one whose title matches the task you have just been asked about, with the Read"

@@ -106,6 +106,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | `hooks/shell-guard.sh` | refuses a page with an inline `<style>`/`<script>` over 500 bytes; `--check` scans the kit's own templates |
 | `hooks/page-guard.sh` | refuses a page that can raise the browser window: a meta refresh, a reload, a focus, a modal, a desktop notification, a new tab |
 | `hooks/page-sweep.sh` | the same check over every page already on disk, at session start. Reports only what fires by itself; a call reached from a click or a file picker is his own and is left alone |
+| `hooks/handoff-auto.sh` | a `Stop` hook: past 250k it blocks the idle once and makes the session write the whole handoff by itself. Fires at most once per session and never chains |
 
 Lives in each repository, not here:
 

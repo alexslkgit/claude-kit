@@ -265,6 +265,31 @@ print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the automatic handoff. He was writing the same three-step ritual by hand around three
+# hundred times a day: session says "press /clear", he presses it, he types "pick up the handoff".
+# A Stop hook takes the first step and handoff-guard takes the third; the keystroke in the middle
+# is the only part no hook can do, verified 2026-08-25.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/handoff-auto.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("Stop", [])
+added = 0
+if not any(script in json.dumps(e) for e in entries):
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 15}]}); added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: automatic handoff registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the page sweep. The page guard only sees a page being written; it cannot see the ones
 # that were already on disk, the ones another tool wrote, or the ones he downloaded. On 2026-08-25
 # he asked for every existing file to be proved clean, not only future ones, so the sweep walks the
