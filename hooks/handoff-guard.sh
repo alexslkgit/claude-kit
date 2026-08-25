@@ -41,6 +41,14 @@ for _ in 1 2 3 4 5 6 7 8; do
     status_dir="$(head -1 "$dir/.claude/status-dir" | /usr/bin/sed 's/[[:space:]]*$//')"
     case "$status_dir" in "~"*) status_dir="$HOME${status_dir#\~}" ;; esac
   fi
+  # Marker-free fallback, added 2026-08-25. The walk looked UP for a marker and DOWN one level for
+  # a shelf, and was blind to the folder it was standing in — which is the case the whole design
+  # aims at: a session that already sits in its own task folder. ~/Downloads/html-autoswipe held
+  # HANDOFF.md, STATUS.md and DECISIONS.md and this hook said nothing, because nobody had written
+  # the one-line marker by hand. A folder holding STATUS.md is that task's status directory.
+  if [ -z "$status_dir" ] && [ -f "$dir/STATUS.md" ]; then
+    status_dir="$dir"
+  fi
   [ -n "$repo_root" ] && [ -n "$status_dir" ] && break
   [ "$dir" = "/" ] && break
   dir="$(dirname "$dir")"
@@ -245,34 +253,34 @@ except Exception: print("")' 2>/dev/null)"
     #
     # Deliberately narrow. Two fresh handoffs, or a plain startup, and it falls through to the
     # listing below: guessing which task he meant is the one failure that costs more than typing.
-    src="$(field source)"
-    # DISABLED 2026-08-25, same day it was written. See below: a fresh handoff is not proof that it
-    # belongs to THIS chat. Re-enabled only once the match is by identity, never by time.
-    case "DISABLED-$src" in
-      clear|compact)
-        fresh="$(printf '%s\n' "$list" | while read -r f; do
-          [ -n "$f" ] && [ -n "$(/usr/bin/find "$f" -mmin -60 2>/dev/null)" ] && printf '%s\n' "$f"
-        done)"
-        if [ "$(printf '%s\n' "$fresh" | /usr/bin/grep -c . )" = "1" ]; then
-          f="$(printf '%s\n' "$fresh" | head -1)"
-          cat <<EOF
-handoff-guard: he pressed /clear and you are already picked up. The briefing the previous session
-left, $(stamp_of "$f"), is below in full. He does not have to type "pick up the handoff" and he is
-not going to: that keystroke was removed on 2026-08-25 and asking him for it is a defect.
+    # --- the identity match, and the only one that is allowed ------------------------------
+    # The first version of this matched on FRESHNESS and was switched off the same day: the newest
+    # briefing on a shelf is simply whichever OTHER chat he cleared last, and picking it put another
+    # project into the context. The rule that replaced it was "re-enable only on identity, never on
+    # time", and this is that identity: the session is standing INSIDE one task's own folder and
+    # that folder holds exactly one briefing. A /clear restarts the session in the same directory,
+    # so the directory itself is the answer to "which chat is this" — no guess, no timestamp, and
+    # nothing for him to type. Two briefings, or a briefing anywhere but this folder, and it falls
+    # through to the listing below.
+    if [ "$n" = "1" ] && [ -s "$cwd/HANDOFF.md" ] && [ "$(printf '%s\n' "$list" | head -1)" = "$cwd/HANDOFF.md" ]; then
+      f="$cwd/HANDOFF.md"
+      cat <<EOF
+handoff-guard: you are already picked up, and he does not have to ask. This session is sitting in
+$cwd, that task keeps exactly one briefing, and it is below in full ($(stamp_of "$f")).
+He typed "pick up the handoff" after every clear for weeks; that keystroke was removed on
+2026-08-25 and asking him for it, or waiting for it, is a defect.
 
-Carry on from where it stops. Your first message opens with the board link as always and says in
-one line where you are picking up. Do not thank him for the handoff, do not summarise what you
-just read, do not write a new handoff, and do not tell him to clear a context he cleared seconds
-ago.
+Read it and carry on from where it stops. Your first message opens with the board link as always
+and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
+thank him for the handoff, do not summarise what you just read back at him, do not write a new
+handoff, and do not tell him to clear a context he cleared seconds ago.
 
 --- $f ---
 $(cat "$f" 2>/dev/null)
 --- end ---
 EOF
-          exit 0
-        fi
-        ;;
-    esac
+      exit 0
+    fi
 
     if [ "$n" -gt 1 ]; then
       echo "handoff-guard: $n handoffs are waiting here, one per task, and NONE of them is known to be"

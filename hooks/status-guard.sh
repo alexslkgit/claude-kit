@@ -61,6 +61,15 @@ for _ in 1 2 3 4 5 6 7 8; do
     repo_root="$dir"
     break
   fi
+  # A folder that already holds STATUS.md IS the status directory, marker or no marker. Requiring
+  # a separate marker file meant one hand-written line stood between a task and its own memory,
+  # and on 2026-08-25 ~/Downloads/html-autoswipe had STATUS.md, DECISIONS.md, board.html and
+  # HANDOFF.md all sitting in it while this hook announced the project had no status files at all.
+  # A shelf never trips this: a shelf holds task folders, it has no STATUS.md of its own.
+  if [ -f "$dir/STATUS.md" ]; then
+    status_dir="$dir"; repo_root="$dir"
+    break
+  fi
   [ "$dir" = "/" ] && break
   dir="$(dirname "$dir")"
 done
@@ -144,7 +153,9 @@ status-guard: $n prompts in. $cwd is a shelf, not a project: it holds several un
 each keeping its own STATUS.md, DECISIONS.md, board.html and plan.html in its own folder.
 
 $tasks
-If the work of this session is one of those, its files are the ones to read and to keep current.
+If the work of this session is one of those, its files are the ones to read and to keep current,
+and this session should already be sitting in that folder: call mcp__ccd_directory__change_directory
+with its absolute path now, so the next /clear inherits the answer instead of a guess.
 If it is a new task, it gets its own folder in the same shape rather than writing into the shelf.
 EOF
         exit 0
@@ -192,6 +203,16 @@ $tasks
 Whichever of these this session is about, that folder is its memory — read its STATUS.md before
 answering. A task that is not on the list is new and gets a folder of its own in the same shape;
 the wrap-up skill creates it. Nothing is written into the shelf's own .claude directory.
+
+THEN PIN THIS SESSION TO IT. The moment you know which task this chat is, call
+mcp__ccd_directory__change_directory with that folder's absolute path. A shelf cannot identify a
+chat: a /clear starts a session with a new id and no memory of which chat it belongs to, so the
+next one is left guessing between all of the above. Once the session sits in the task's own
+folder, the folder IS the answer and the guess never happens again. He does not care which
+directory a session sits in and never will — pinning is your job, not a question for him.
+Never infer the task from file recency: the newest files belong to whichever OTHER chat he
+cleared last, which points away from this one. Positive evidence only — his words, or the folder.
+A one-off with no task (a download, a look at a file) stays here and writes nothing.
 EOF
         exit 0
       fi
