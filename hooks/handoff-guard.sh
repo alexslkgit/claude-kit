@@ -136,10 +136,25 @@ So: picking by recency is FORBIDDEN. Picking "the one that looks most active" is
 Opening one to see whether it fits is forbidden, because reading it puts somebody else's project
 into this context and the damage is already done.
 
+FIRST, ASK YOURSELF WHO YOU ARE. The chat has a title, the title survives /clear, and it is the
+one identity signal the filesystem does not carry. Read it by renaming yourself and reading what
+comes back:
+
+    mcp__ccd_session_mgmt__set_session_title(session_id: "self", title: "identifying")
+
+The result ends with `(was "<your real title>")`. Rename yourself back to that exact string at
+once. `get_session` refuses the current session, so this round trip is the only way to read it.
+On 2026-08-25 the title was the ONLY thing that identified a cleared chat correctly, after its
+working directory had already pointed it at the wrong project and it had read that project's
+briefing.
+
 Open one ONLY when you have positive evidence:
   · exactly one briefing is listed, or
   · his message names the task, the file, the folder or the subject matter, or
-  · the working directory IS that task's own folder.
+  · your own chat title, read as above, names it, or
+  · the working directory belongs to ONE task and no other chat is parked in it. A git checkout
+    is NOT automatically that. If the parallel guard has just told you several sessions are live
+    in this directory, it is a shelf: it is not evidence, however much it looks like a project.
 
 Otherwise ask him, in one line, with the numbered list above, which one this chat is. That is a
 legitimate question: he is the only thing in the world that knows which chat he is sitting in.
