@@ -252,7 +252,9 @@ if os.path.exists(path):
 hooks = data.setdefault("hooks", {})
 entries = hooks.setdefault("PreToolUse", [])
 added = 0
-for matcher in ("Write|Edit", "Bash"):
+# Claude Design writes files through its own MCP tool, never through Write, so it was the one
+# generator the guard could not see until 2026-08-25.
+for matcher in ("Write|Edit|mcp__claude-design__write_files|mcp__claude-design__create_support_js", "Bash"):
     if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
         continue
     entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
@@ -260,6 +262,32 @@ for matcher in ("Write|Edit", "Bash"):
 if added:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
 print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
+# Register the page sweep. The page guard only sees a page being written; it cannot see the ones
+# that were already on disk, the ones another tool wrote, or the ones he downloaded. On 2026-08-25
+# he asked for every existing file to be proved clean, not only future ones, so the sweep walks the
+# whole disk at session start and reports only pages that can raise the window BY THEMSELVES.
+# A first run costs about 7 s; after that an mtime cache makes it about 1 s.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/page-sweep.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("SessionStart", [])
+added = 0
+if not any(script in json.dumps(e) for e in entries):
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 20}]}); added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: page sweep registered ({added} new entr{'y' if added==1 else 'ies'})")
 PY
 fi
 

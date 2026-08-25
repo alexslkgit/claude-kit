@@ -104,6 +104,8 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | `tools/kit-sync.sh` | gets a kit file from the clone, or from a cache checked at most every 3 h with a conditional request. Prints one line; the file is read only when it says CHANGED |
 | `tools/inline-shell.py` | folds a shell back into one portable file, for a page that has to travel by mail or as an artifact |
 | `hooks/shell-guard.sh` | refuses a page with an inline `<style>`/`<script>` over 500 bytes; `--check` scans the kit's own templates |
+| `hooks/page-guard.sh` | refuses a page that can raise the browser window: a meta refresh, a reload, a focus, a modal, a desktop notification, a new tab |
+| `hooks/page-sweep.sh` | the same check over every page already on disk, at session start. Reports only what fires by itself; a call reached from a click or a file picker is his own and is left alone |
 
 Lives in each repository, not here:
 

@@ -131,9 +131,9 @@ call. Most heartbeats end in you saying nothing at all, and that is correct.
 Chat scrolls and he loses it. The board is one page he keeps open on a second screen, and it is
 where everything lands. Build it as the first action of the meeting, before the first briefing.
 
-**There is one board design and it lives in one file**, `~/.claude/templates/meeting-board.html`.
+**There is one board design and it lives in one file**, `~/.claude/skills/meeting-live/board/render.py`.
 It is never regenerated, never rewritten per meeting and never composed in a chat turn. The renderer
-only swaps the JSON block inside it:
+holds the markup, the CSS and the palette, and takes only the JSON:
 
 ```bash
 python3 ~/.claude/skills/meeting-live/board/render.py <board.json> -o <board.html>
@@ -141,7 +141,13 @@ python3 ~/.claude/skills/meeting-live/board/render.py <board.json> -o <board.htm
 
 The JSON shape is documented at the top of `render.py`. Rewriting a fifteen-line JSON costs nothing,
 which is the point: rewrite it every time the room moves. To change how the board *looks*, edit the
-template by hand, once, and every future meeting inherits it.
+`CSS` and `render()` block in `render.py` by hand, once, and every future meeting inherits it.
+
+**The board never reloads itself.** `render.py` emits a background fetch that re-reads its own file
+and swaps the body. A page reload, or anything else that raises the window, drags his macOS Space
+over to Chrome while he is working somewhere else. There used to be a second copy of this board at
+`templates/meeting-board.html` that did exactly that on a 5 to 120 second timer; it was orphaned and
+was deleted on 2026-08-25.
 
 **Where the file goes.** Inside the project the work belongs to, if there is one
 (`<repo>/.claude/tasks/meeting-<topic>-<date>.html`), otherwise beside the transcript in
