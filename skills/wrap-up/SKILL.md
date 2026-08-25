@@ -163,3 +163,22 @@ If, while sweeping, you find something you never actually verified — a number 
 subagent report, a claim you inherited from an earlier session — do not launder it into the file as
 established fact. Either verify it now, or write it with the doubt attached and name what would
 settle it. The file's authority comes entirely from the fact that nothing in it is decorative.
+
+## One chat, one folder, 2026-08-25
+
+A task's four artefacts are useless if the next session picks up somebody else's set. The thing
+that makes that possible is a chat parked in a shelf directory such as `~/Downloads`, where every
+task's files sit side by side and the only difference between them is a modification time.
+
+So the wrap-up now finishes with two things it never used to do:
+
+1. **The handoff opens with its identity block** — task, folder, what the chat is called, and a
+   line saying what this task is NOT about. The format is in `skills/handoff/SKILL.md`.
+2. **The session moves into the task's own folder** with `mcp__ccd_directory__change_directory`,
+   if it is not there already. Silently: he does not need to know the mechanics. From then on his
+   next `/clear` in that chat starts inside the task, and the folder answers the question that a
+   fresh session cannot otherwise answer about itself.
+
+Verified the same day by two independent sessions: one that had guessed by recency and taken the
+wrong project, and one working in `~/Developer/idea-lab` from a chat parked in `~/Finances/finapp`,
+which was being offered another task's handoffs at every session start.

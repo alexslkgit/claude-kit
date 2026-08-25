@@ -108,12 +108,47 @@ case "$event" in
       echo "from saying it twice."
       echo
       if [ -n "$list" ]; then
+        cnt="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
         echo "Briefings on disk right now:"
+        i=0
         printf '%s\n' "$list" | while read -r f; do
-          [ -n "$f" ] && printf '  %s\n     %s  ·  %s\n' "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+          [ -n "$f" ] || continue
+          i=$((i + 1))
+          printf '  %s. %s\n     %s  ·  %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")"
         done
         echo
-        echo "Read the one whose title matches what he is asking about, then STATUS.md beside it."
+        if [ "$cnt" -gt 1 ]; then
+          cat <<'PICK'
+THE ONE RULE THAT MATTERS HERE, and it cost him a whole project on 2026-08-25: you do not know
+which of these is yours, and NOTHING on disk can tell you. A /clear starts a brand new session
+with a new id and no memory of which chat it belongs to; the folder is a shelf shared by every
+task; and the newest file is simply whichever OTHER chat he cleared most recently.
+
+So: picking by recency is FORBIDDEN. Picking "the one that looks most active" is forbidden.
+Opening one to see whether it fits is forbidden, because reading it puts somebody else's project
+into this context and the damage is already done.
+
+Open one ONLY when you have positive evidence:
+  · exactly one briefing is listed, or
+  · his message names the task, the file, the folder or the subject matter, or
+  · the working directory IS that task's own folder.
+
+Otherwise ask him, in one line, with the numbered list above, which one this chat is. That is a
+legitimate question: he is the only thing in the world that knows which chat he is sitting in.
+One digit from him costs seconds. The wrong briefing costs the project.
+
+Whatever you open, your first line names it: "поднял хендофф по <задача>". He caught the failure
+of 2026-08-25 only because the session said out loud what it had picked up.
+
+THEN CLOSE THE HOLE FOR THIS CHAT, ONCE: as soon as you know which task it is, move the session
+into that task's own folder with mcp__ccd_directory__change_directory. The shelf is what makes
+this ambiguous; a chat that sits in ~/Downloads/<task>/ can never be confused again, because the
+next /clear starts there and the folder itself is the answer. Do it silently, do not explain the
+mechanics to him, and do not ask permission for it.
+PICK
+        else
+          echo "Exactly one, so it is unambiguous: read it, then STATUS.md beside it."
+        fi
       else
         echo "None found here. Read STATUS.md in the project status directory, start from its cold-start"
         echo "section, and open with one line saying where you are picking up."
@@ -211,7 +246,9 @@ except Exception: print("")' 2>/dev/null)"
     # Deliberately narrow. Two fresh handoffs, or a plain startup, and it falls through to the
     # listing below: guessing which task he meant is the one failure that costs more than typing.
     src="$(field source)"
-    case "$src" in
+    # DISABLED 2026-08-25, same day it was written. See below: a fresh handoff is not proof that it
+    # belongs to THIS chat. Re-enabled only once the match is by identity, never by time.
+    case "DISABLED-$src" in
       clear|compact)
         fresh="$(printf '%s\n' "$list" | while read -r f; do
           [ -n "$f" ] && [ -n "$(/usr/bin/find "$f" -mmin -60 2>/dev/null)" ] && printf '%s\n' "$f"
@@ -238,17 +275,23 @@ EOF
     esac
 
     if [ "$n" -gt 1 ]; then
-      echo "handoff-guard: $n handoffs are waiting here, one per task."
-      echo "Read the one whose title matches the task you have just been asked about, with the Read"
-      echo "tool, before anything else. Leave the others alone: they belong to other tasks, and a"
-      echo "transient one inside .claude/handoffs/ is consumed by being read. A <task>/HANDOFF.md is"
-      echo "part of that task's own archive and stays put."
+      echo "handoff-guard: $n handoffs are waiting here, one per task, and NONE of them is known to be"
+      echo "yours. Do not open any of them until you have positive evidence which task this chat is:"
+      echo "his words naming it, or a working directory that is one task's own folder. Recency is not"
+      echo "evidence — the newest file is whichever OTHER chat he cleared last. Reading the wrong one"
+      echo "puts another project into this context, and on 2026-08-25 that destroyed a session that had"
+      echo "been running for days."
       echo
+      i=0
       printf '%s\n' "$list" | while read -r f; do
-        [ -n "$f" ] && printf '  %s\n     %s  ·  %s\n' "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+        [ -n "$f" ] || continue
+        i=$((i + 1))
+        printf '  %s. %s\n     %s  ·  %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")"
       done
       echo
-      echo "If none of them matches, say so in one line and carry on; do not read one at random."
+      echo "If he asks you to pick up a handoff and you cannot tell which, ask him in one line with"
+      echo "this numbered list. One digit from him is cheap; the wrong briefing is not. And whichever"
+      echo "you open, say which one in your first line so he can catch a mistake in a second."
       exit 0
     fi
 

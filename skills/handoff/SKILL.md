@@ -234,3 +234,28 @@ only in the handoff, because the handoff is consumed once and then discarded.
 
 Tell the user in one sentence that the file is written and he pastes its path as the first message
 of the new chat, and remind him to send anything still in flight into that chat when it comes back.
+
+## The first six lines of a handoff are its identity, 2026-08-25
+
+A `/clear` starts a brand new session with a new id, no memory of which chat it belongs to, and a
+working directory that is usually a shelf shared by every task. So a briefing that does not say
+what it is gets picked by recency, and on 2026-08-25 that put the ТЦК case into a bookkeeping
+chat and burned days of work in both.
+
+Every handoff now opens with this block, before anything else:
+
+```
+# HANDOFF — <task in his words> — <date>
+
+**Задача:** <one sentence, the subject a human would recognise>
+**Папка:** <absolute path of the task folder>
+**Чат:** <what this chat is called in his sidebar, if you know it>
+**Не твой, если:** <one line naming what this task is NOT about>
+```
+
+The last line is the one that saves him. "Не твой, если ты про бухгалтерию, налоги или банк" in
+the ТЦК handoff would have stopped the wrong session at the first glance instead of two hours in.
+
+And the moment a session knows which task it is, it moves itself into that task's folder with
+`mcp__ccd_directory__change_directory`. One chat, one folder: after that the next `/clear` starts
+inside the task and the folder itself is the answer, so the question never has to be asked twice.
