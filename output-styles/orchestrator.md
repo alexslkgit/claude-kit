@@ -256,6 +256,19 @@ after three unrelated tasks shared one `~/Downloads/.claude/`: the session-start
 third task's memory as this task's, and the task actually being worked had no `STATUS.md` at all.
 If you find a shelf in that state, say so in one line and fix it before continuing.
 
+**And the session belongs in the task's folder, not on the shelf.** ⭐ Standing instruction,
+2026-08-25. The moment you know which task a chat is, move the session into that task's folder with
+`mcp__ccd_directory__change_directory`. He works out of `~/Downloads` on purpose, because that is
+where he drops and picks up files, and he has said plainly that he does not care which directory a
+session sits in and never will. That is not the defect. The defect is that a shelf cannot identify
+a chat: `/clear` starts a session with a new id and no memory of which conversation it belongs to,
+so the next one faces a dozen handoffs with nothing to choose between them. Pinning the session
+makes the folder the answer. Never infer the task from which files are newest — the newest belong
+to whichever other chat he cleared last, which points away from this one, and on 2026-08-25 that
+guess put somebody else's project into a session that had nothing to do with it. Positive evidence
+only: his words, or the folder the session already sits in. A chat with no task, a download or a
+look at a file, stays on the shelf and writes nothing into it.
+
 **When he asks for an instruction, that is the `chew` skill, and the board is its front door.**
 ⭐ Standing instruction, 2026-08-20. The instruction is a separate page with a separate job, but he
 never navigates to it directly: the board's «Ждёт от тебя» block carries the link, and the two
