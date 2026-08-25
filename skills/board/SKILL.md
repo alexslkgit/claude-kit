@@ -347,6 +347,14 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 
 ### It has to survive a `/clear`
 
+**Полка раздаётся постоянно, порт 8899.** LaunchAgent `com.alexslk.tasks-board-server` держит
+`python3 -m http.server 8899 --bind 127.0.0.1` с рабочей папкой `~/Tasks`, так что любой борд
+открывается как `http://localhost:8899/<task>/board.html` без поднятия сервера руками, и ссылка
+не протухает после перезагрузки. Индекс всех бордов и планов — `http://localhost:8899/index.html`.
+Ссылку `file://` больше не давать: борды тянут `_shell/board.js`, и часть из них по `file://`
+не рендерится. Заведено 2026-08-25, когда задачи переехали в `~/Tasks`.
+
+
 - It lives at `.claude/tasks/<task>.html`, on disk, always — never the scratchpad, never `/tmp`.
 - Its path is named in `STATUS.md`, so a fresh session finds it without asking him.
 - **Outside a git checkout, the board is `<task>/board.html` in the task's own folder**, next to
