@@ -75,6 +75,43 @@ SESSDIR="$HOME/.claude/.handoff-guard"
 sid="$(field session_id)"; [ -n "$sid" ] || sid="$(printf '%s' "$cwd" | /usr/bin/tr -cd 'A-Za-z0-9')"
 counter="$SESSDIR/$sid.n"
 
+# --- who this chat is, which the filesystem alone can never say -------------------------------
+# A /clear starts a brand new CLI session id in the same directory, so every id this hook is
+# handed is fresh and identifies nothing. The desktop app, however, keeps the CHAT, and records
+# both halves in ~/Library/Application Support/Claude/claude-code-sessions/**/local_<chat>.json:
+#
+#   "cliSessionId": "<the id in this payload>"   new after every clear
+#   "sessionId":    "local_<uuid>"               the chat itself, stable for its whole life
+#   "title":        "<what he sees in the list>" stable, and set by the session-title tool
+#
+# That local_ id is the missing identity. A handoff stamped with it at write time is claimed by
+# exactly one chat, and the chat that wakes up after the clear resolves the same id and takes its
+# own briefing with no guess, no timestamp and nothing for him to type. Added 2026-08-25, after a
+# session with five waiting handoffs had to ask him which one it was and he answered that he did
+# not know either — the identity was on disk the whole time, and nothing was reading it.
+CHATROOT="$HOME/Library/Application Support/Claude/claude-code-sessions"
+CHAT_ID=""; CHAT_TITLE=""
+resolve_chat() {
+  [ -n "$sid" ] || return 0
+  [ -d "$CHATROOT" ] || return 0
+  local f
+  f="$(/usr/bin/grep -rl "\"cliSessionId\":\"$sid\"" "$CHATROOT" --include='local_*.json' 2>/dev/null | head -1)"
+  [ -n "$f" ] || return 0
+  CHAT_ID="$(basename "$f" .json)"
+  if command -v python3 >/dev/null 2>&1; then
+    CHAT_TITLE="$(python3 -c 'import json,sys
+try: print(json.load(open(sys.argv[1])).get("title","") or "")
+except Exception: pass' "$f" 2>/dev/null)"
+  fi
+  [ -n "$CHAT_TITLE" ] || CHAT_TITLE="$(/usr/bin/sed -n 's/.*"title"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
+}
+resolve_chat
+
+# The stamp a handoff carries, and the two readers of it.
+MARK='handoff-chat:'
+owner_of() { /usr/bin/sed -n "s/.*$MARK[[:space:]]*\([A-Za-z0-9_-]*\).*/\1/p" "$1" 2>/dev/null | head -1; }
+owner_title_of() { /usr/bin/sed -n "s/.*$MARK[[:space:]]*[A-Za-z0-9_-]*[[:space:]]*|[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*-->.*/\1/p" "$1" 2>/dev/null | head -1; }
+
 # Every handoff waiting for this session, newest first.
 #
 # shelf_handoffs is defined above the early exit. The walk only looks UP from cwd, which is blind
@@ -117,12 +154,21 @@ case "$event" in
       echo
       if [ -n "$list" ]; then
         cnt="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
+        if [ -n "$CHAT_ID" ]; then
+          echo "You are the chat \"$CHAT_TITLE\" ($CHAT_ID). A briefing stamped with that id is yours"
+          echo "by identity; one stamped with another id is not, whatever its date says."
+          echo
+        fi
         echo "Briefings on disk right now:"
         i=0
         printf '%s\n' "$list" | while read -r f; do
           [ -n "$f" ] || continue
           i=$((i + 1))
-          printf '  %s. %s\n     %s  ·  %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+          o="$(owner_of "$f")"; ot="$(owner_title_of "$f")"
+          if [ -z "$o" ]; then tag="unclaimed — predates stamping"
+          elif [ "$o" = "$CHAT_ID" ]; then tag="THIS CHAT — open this one"
+          else tag="another chat: ${ot:-$o} — not yours"; fi
+          printf '  %s. %s\n     %s  ·  %s\n     %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")" "$tag"
         done
         echo
         if [ "$cnt" -gt 1 ]; then
@@ -136,9 +182,9 @@ So: picking by recency is FORBIDDEN. Picking "the one that looks most active" is
 Opening one to see whether it fits is forbidden, because reading it puts somebody else's project
 into this context and the damage is already done.
 
-FIRST, ASK YOURSELF WHO YOU ARE. The chat has a title, the title survives /clear, and it is the
-one identity signal the filesystem does not carry. Read it by renaming yourself and reading what
-comes back:
+FIRST, ASK YOURSELF WHO YOU ARE. If this hook printed your chat id and title above, that is the
+answer and a stamped briefing bearing it is yours. If it could not resolve them, fall back to
+reading your own title by renaming yourself and reading what comes back:
 
     mcp__ccd_session_mgmt__set_session_title(session_id: "self", title: "identifying")
 
@@ -231,8 +277,18 @@ except Exception: print("")' 2>/dev/null)"
           done
         fi
         [ -s "$p" ] || exit 0
-        printf 'handoff-guard: the handoff is on disk at %s (%s lines) and excluded from git. Give him that path; nothing needs to be repeated into the chat.\n' \
-          "$p" "$(/usr/bin/wc -l < "$p" | tr -d ' ')"
+        # Stamp the file with the chat that wrote it, mechanically, so the next session after the
+        # clear can claim its own briefing without asking him. Line 2, so `head -1` still yields
+        # the title. Never rely on the model remembering to write this line: it is injected here.
+        if [ -n "$CHAT_ID" ] && ! /usr/bin/grep -q "$MARK" "$p" 2>/dev/null; then
+          tmp="$p.stamp.$$"
+          { /usr/bin/head -1 "$p"
+            printf '<!-- %s %s | %s -->\n' "$MARK" "$CHAT_ID" "$CHAT_TITLE"
+            /usr/bin/tail -n +2 "$p"
+          } > "$tmp" 2>/dev/null && mv -f "$tmp" "$p" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+        fi
+        printf 'handoff-guard: the handoff is on disk at %s (%s lines), stamped with this chat (%s) and excluded from git. Give him that path; nothing needs to be repeated into the chat.\n' \
+          "$p" "$(/usr/bin/wc -l < "$p" | tr -d ' ')" "${CHAT_TITLE:-unresolved}"
         exit 0
         ;;
 
@@ -277,6 +333,40 @@ except Exception: print("")' 2>/dev/null)"
     # so the directory itself is the answer to "which chat is this" — no guess, no timestamp, and
     # nothing for him to type. Two briefings, or a briefing anywhere but this folder, and it falls
     # through to the listing below.
+    # --- the identity match, and it needs no folder and no timestamp ------------------------
+    # The briefing was stamped with this chat's id when it was written, so the chat that comes
+    # back after the clear simply picks the file bearing its own name. This is the branch that
+    # ends the question "which of these is mine".
+    if [ -n "$CHAT_ID" ]; then
+      claimed=""
+      while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        [ "$(owner_of "$f")" = "$CHAT_ID" ] && claimed="$claimed$f
+"
+      done <<CLAIMEOF
+$list
+CLAIMEOF
+      cn="$(printf '%s' "$claimed" | /usr/bin/grep -c . )"
+      if [ "$cn" = "1" ]; then
+        f="$(printf '%s' "$claimed" | head -1)"
+        cat <<EOF
+handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE"
+($CHAT_ID), the briefing below was written by this same chat before the clear and carries its id,
+so it is yours by identity rather than by recency. It is here in full ($(stamp_of "$f")).
+
+Read it and carry on from where it stops. Your first message opens with the board link as always
+and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
+thank him for the handoff, do not summarise it back at him, do not write a new one, and do not
+tell him to clear a context he cleared seconds ago.
+
+--- $f ---
+$(cat "$f" 2>/dev/null)
+--- end ---
+EOF
+        exit 0
+      fi
+    fi
+
     if [ "$n" = "1" ] && [ -s "$cwd/HANDOFF.md" ] && [ "$(printf '%s\n' "$list" | head -1)" = "$cwd/HANDOFF.md" ]; then
       f="$cwd/HANDOFF.md"
       cat <<EOF
@@ -298,23 +388,37 @@ EOF
     fi
 
     if [ "$n" -gt 1 ]; then
-      echo "handoff-guard: $n handoffs are waiting here, one per task, and NONE of them is known to be"
-      echo "yours. Do not open any of them until you have positive evidence which task this chat is:"
-      echo "his words naming it, or a working directory that is one task's own folder. Recency is not"
-      echo "evidence — the newest file is whichever OTHER chat he cleared last. Reading the wrong one"
-      echo "puts another project into this context, and on 2026-08-25 that destroyed a session that had"
-      echo "been running for days."
+      echo "handoff-guard: $n handoffs are waiting here, one per task, and none of them carries this"
+      echo "chat's id. Do not open any of them until you have positive evidence which task this chat"
+      echo "is. Recency is not evidence — the newest file is whichever OTHER chat he cleared last."
+      echo "Reading the wrong one puts another project into this context, and on 2026-08-25 that"
+      echo "destroyed a session that had been running for days."
+      echo
+      if [ -n "$CHAT_ID" ]; then
+        echo "You are the chat \"$CHAT_TITLE\" ($CHAT_ID). That title is real identity and it survives"
+        echo "a clear: if it names one of the tasks below, that one is yours and you may open it."
+      else
+        echo "This chat's id could not be resolved, so the only identity left is his words."
+      fi
       echo
       i=0
       printf '%s\n' "$list" | while read -r f; do
         [ -n "$f" ] || continue
         i=$((i + 1))
-        printf '  %s. %s\n     %s  ·  %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")"
+        o="$(owner_of "$f")"; ot="$(owner_title_of "$f")"
+        if [ -z "$o" ]; then
+          tag="unclaimed — written before handoffs were stamped, so ownership is unknown"
+        elif [ "$o" = "$CHAT_ID" ]; then
+          tag="THIS CHAT"
+        else
+          tag="another chat: ${ot:-$o} — not yours, do not open"
+        fi
+        printf '  %s. %s\n     %s  ·  %s\n     %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")" "$tag"
       done
       echo
-      echo "If he asks you to pick up a handoff and you cannot tell which, ask him in one line with"
-      echo "this numbered list. One digit from him is cheap; the wrong briefing is not. And whichever"
-      echo "you open, say which one in your first line so he can catch a mistake in a second."
+      echo "If he asks you to pick up a handoff and you still cannot tell which, ask him in one line"
+      echo "with this numbered list. One digit from him is cheap; the wrong briefing is not. And"
+      echo "whichever you open, say which one in your first line so he can catch a mistake in a second."
       exit 0
     fi
 
