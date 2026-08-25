@@ -416,11 +416,15 @@ ones (0.3%, and it adds a decision to every picture).
 - **Bash is the largest single item in the bill: 37 286 calls, 42%, $3 425 a month**, at a median of
   325 characters of input. Nothing is big; there are simply thirty-seven thousand of them. Batch
   independent commands into one call, put related ones in one script, trim output at the source.
-- **Delegation moves cost, it does not remove it: subagents are 42% of the bill**, $3 394 over 1 447
+  `bulk-guard.sh` refuses the fourth read-only one-liner in an unbroken run of them and resets on
+  the refusal, so the next call always goes through and a flow that must look between steps cannot
+  deadlock.
+- **Delegation moves cost, it does not remove it: subagents are 39% of the bill**, $3 138 over 1 251
   runs. Delegate to isolate one verbose task, whose material would otherwise ride along in this
   context for the rest of the session. Do NOT fan out small tasks: measured elsewhere at 2.6–5.9x a
-  sequential run, and never faster on wall clock. Pin the tier hard, and prefer `/workflows` over raw
-  parallel spawns, because only a workflow staggers siblings so they share a cached prefix.
+  sequential run, and never faster on wall clock. Prefer `/workflows` over raw parallel spawns,
+  because only a workflow staggers siblings so they share a cached prefix. Which tier gets spawned
+  is where that 39% actually lives, and it is the next section.
 - **The tail is where the money is: the top 5% of sessions are 27% of the dollars**, the worst one
   $639 at 4 171 requests and a 527k peak. A hard cap beats average discipline.
 - **Never count messages when deciding to clear; count requests.** A user message is now a median of
@@ -472,8 +476,35 @@ The agent roster is already in every session's listing — do not restate it. Pi
 that will do the job *well*, before the run; cheap-first-then-escalate is rejected. Lower the tier
 only where the subagent fetches, filters, extracts, or runs and reports; keep Opus wherever it
 decides something you will act on without re-reading its raw output. Verification is a reaction to
-a suspicious result, not a routine step. **This seat runs on Opus or Fable, never lower** — say so
-and ask to switch if it is not.
+a suspicious result, not a routine step. **This seat runs on Opus or Fable, never lower** — he
+settled that on 2026-08-25 and the saving is taken out of the subagents instead.
+
+Measured 26 July to 25 August 2026, with sidechain rows counted for the first time, this is where
+the 39% sits:
+
+| tier | runs | requests | share of the month | per run |
+|---|---|---|---|---|
+| implementer-opus | 247 | 11 934 | **15.3%** | $5.04 |
+| general-purpose | 93 | 3 964 | 5.8% | $5.05 |
+| researcher-opus | 156 | 4 500 | 4.8% | $2.52 |
+| claude (catch-all) | 54 | 2 992 | 4.5% | $6.83 |
+| every sonnet tier together | 484 | 9 377 | 2.9% | $0.49 |
+
+Two rules follow, and `hooks/agent-guard.sh` enforces both at the call site.
+
+- **Never spawn an untiered type.** `general-purpose`, `claude`, `Explore`, `Plan` and a spawn with
+  no type at all carry no `model:` of their own, so they inherit whatever this chat is running,
+  which is Opus. Together they were 10.3% of the limit for 147 runs. Every one of the fourteen kit
+  agents does carry an explicit `model:` — that was checked on 2026-08-25, and the older theory
+  that the kit leaked Opus through missing fields was wrong. The leak is which type gets spawned.
+  `TIER-OK` in the brief lets a genuine catch-all through.
+- **An Opus tier has to be predicted, in writing.** `implementer-opus` is the largest line in the
+  audit after Bash, and it costs seven times `implementer-sonnet` a run: four times the price per
+  request, twice the requests. The brief carries a line `TIER-OPUS: <why the cheaper tier is
+  insufficient>` — an architectural boundary, concurrency, persistence or migration logic, a state
+  machine, a data invariant, a cross-cutting question where a plausible answer can be quietly
+  wrong. Without that line the call is refused, and the sonnet tier of the same role is the
+  default the brief was already written for. Fable takes `TIER-FABLE:` on the same terms.
 
 ## Minimal blast radius
 

@@ -200,6 +200,32 @@ print(f"  hooks: bulk guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the agent guard. Subagents are 39% of the limit and the money is in the tier: the
+# untiered types (general-purpose, claude, Explore, Plan, no type) carry no model of their own,
+# inherit the main chat's Opus and cost about $5 a run against $0.49 for a tiered sonnet agent,
+# and implementer-opus alone was 15.3% of the month. It refuses those and any -opus or -fable tier
+# whose brief does not state why the cheaper tier is insufficient. Markers TIER-OK, TIER-OPUS: and
+# TIER-FABLE: let a genuine case through.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/agent-guard.sh" <<'AG'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+entries = data.setdefault("hooks", {}).setdefault("PreToolUse", [])
+if any(script in json.dumps(e) for e in entries):
+    print("  hooks: agent guard already registered")
+else:
+    entries.append({"matcher": "Agent", "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+    print("  hooks: agent guard registered")
+AG
+fi
+
 # Register the browser guard. bulk-guard caps the pictures; this one caps the round trips. Measured
 # 2026-08-25 over 1802 transcripts: 8 700 browser tool calls in three weeks, 420 of them batched —
 # five percent. Every unbatched call is its own request, and a request re-sends the whole context.

@@ -112,28 +112,76 @@ EOF
     exit 2
     ;;
 
-  # --- Bash: 13%, and nothing here can be refused ---------------------------------------------
-  # 9 819 calls at a median of 236 tokens in and 81 out. No individual call is worth blocking; the
-  # cost is entirely that there are ten thousand of them, each re-sent for the rest of the session.
-  # The only lever is batching, and the only thing a hook can do about it is say so — three times
-  # per session, at counts where the pattern is already established. PreToolUse, so it arrives
-  # before the next batch is composed rather than after.
+  # --- Bash: 42% of the limit, and the teeth are on the run, not on the call ------------------
+  # Re-measured 2026-08-25 over the full month with subagents included: 37 286 calls at a median
+  # of 325 characters, $3 425, the largest single line in the audit. No individual call is worth
+  # blocking and none is large; the cost is that there are thirty-seven thousand of them, each
+  # one a request, each request re-sending the whole context underneath it.
+  #
+  # The only lever is batching, and until 2026-08-25 this hook only mentioned it three times a
+  # session and blocked nothing, which measurably changed nothing. What it refuses now is exactly
+  # the pattern that is provably wasteful and never load-bearing: a fourth read-only one-liner in
+  # an unbroken run of them — ls, then cat, then grep, then wc — where every one of those could
+  # have travelled in a single call. It is the same shape browser-guard already uses on unbatched
+  # clicks, and it resets on the refusal, so a flow that genuinely has to look between steps can
+  # never deadlock: the next call always goes through.
   Bash)
     counter="$STATE_DIR/$sid.bash"
     n=0; [ -f "$counter" ] && n="$(/bin/cat "$counter" 2>/dev/null || echo 0)"
     n=$(( n + 1 )); printf '%s' "$n" > "$counter" 2>/dev/null || true
+
+    simple="$(printf '%s' "$payload" | python3 -c '
+import json, re, sys
+try: d = json.load(sys.stdin)
+except Exception: print("0"); raise SystemExit
+c = str((d.get("tool_input") or {}).get("command") or "")
+# Anything already carrying more than one command is the behaviour being asked for.
+if re.search(r"&&|\|\||;|\n|\|", c) or len(c) > 400: print("0"); raise SystemExit
+# Read-only verbs only. A single mutating command is never refused.
+print("1" if re.match(r"\s*(ls|cat|head|tail|wc|pwd|echo|file|stat|du|which|type|"
+                      r"grep|rg|find|glob|sed -n|awk|jq|"
+                      r"git (status|log|show|diff|branch|remote))\b", c) else "0")
+' 2>/dev/null)"
+
+    runf="$STATE_DIR/$sid.bashrun"
+    if [ "$simple" = "1" ]; then
+      r=0; [ -f "$runf" ] && r="$(/bin/cat "$runf" 2>/dev/null || echo 0)"
+      r=$(( r + 1 )); printf '%s' "$r" > "$runf" 2>/dev/null || true
+    else
+      printf '0' > "$runf" 2>/dev/null || true; r=0
+    fi
+
+    if [ "$r" -ge 4 ] 2>/dev/null; then
+      printf '0' > "$runf" 2>/dev/null || true
+      cat >&2 <<EOF
+bulk-guard refused this Bash call: it is the fourth read-only one-liner in a row.
+
+Four calls are four requests, and a request costs the whole context sitting under it — 10.5 cents
+flat, whatever the command was. Measured over the month to 2026-08-25, Bash is 37 286 calls and
+42% of the limit at a median of 325 characters a call. Nothing in that number is size; all of it
+is count.
+
+The same four commands in one call cost one request. Independent lookups go in one heredoc or one
+short script, output is trimmed at the source with head, wc or grep rather than printed in full
+and read back here, and a long series of greps, builds or test runs belongs to a subagent whose
+context is discarded when it finishes.
+
+The run counter is already reset, so the next call goes through whatever it is. This refusal
+cannot repeat until another four read-only one-liners have gone by.
+EOF
+      exit 2
+    fi
+
     case "$n" in
       60|180|360) ;;
       *) exit 0 ;;
     esac
-    # Not a refusal — this call is fine. Exit 0 with a note on stdout, which PreToolUse adds to the
-    # context without blocking anything.
     cat <<EOF
-bulk-guard: that is Bash call #$n in this conversation. Measured over 173 sessions, Bash was 13% of
-all token spend and not one call was large — 9 819 calls at a median of 236 tokens in and 81 back,
-each re-sent on every later request. The only fix is fewer, bigger calls: independent commands in
-one message, related ones in one script, output trimmed at the source with head/wc/grep rather than
-printed in full and read here. If what is coming is a long series of greps, builds or test runs,
+bulk-guard: that is Bash call #$n in this conversation. Measured over the month to 2026-08-25,
+Bash was 37 286 calls and 42% of the whole limit, and not one call was large — the median is 325
+characters. Each is a request, and each request re-sends the entire context underneath it. The
+only fix is fewer, bigger calls: independent commands in one call, related ones in one script,
+output trimmed at the source. If what is coming is a long series of greps, builds or test runs,
 that whole series belongs to a subagent whose context is thrown away.
 EOF
     exit 0
