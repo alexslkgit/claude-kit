@@ -391,19 +391,23 @@ truly repeats belongs in a flow file instead), and cropping screenshots instead 
 ones (0.3%, and it adds a decision to every picture).
 
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
-- **Watch the context. Past ~150k, stop at the next natural boundary** — a finished sub-task, never
+- **Watch the context. Past ~200k, stop at the next natural boundary** — a finished sub-task, never
   mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
   place within ~20 turns. The one exception: fewer than ~10 requests of work left in the whole task,
   where the handoff cannot pay for itself — finish instead.
-- **150k, re-measured 2026-08-25, and this supersedes the 250k rule.** A full month priced from
+- **200k, re-measured 2026-08-25, and this supersedes the 250k rule.** A full month priced from
   `usage` with subagents counted for the first time — every earlier number in this file was computed
   on 58% of the spend, because subagent rows were never in the data. $8 145 at API list over 31 days,
   71 281 requests, 270 sessions. Simulating the same month cut at each threshold: 100k saves 22.0%,
   **150k saves 22.4%**, 200k 17.3%, 250k 12.0%, 300k 7.9%. The old rule was leaving about $500 a
   month on the table. Below 100k it collapses, because a fresh session already starts at a 72 641
   token floor and would thrash. 150k sits in the flat bottom under doubled handoff cost and under a
-  90k floor, and means about twenty cuts a day.
+  90k floor. But 656 cuts is about twenty-one a day, and he refused that as unlivable on 2026-08-25,
+  which is a legitimate veto: the arithmetic ignores what a clear costs a person. **200k is the rule**
+  — 10.1 of the 13.1 available points at 380 cuts, about twelve a day. Note what the simulation
+  really says: the month ran with 250k nominally in force and came out identical to the "never"
+  case, so the comparison that matters is not 250k against 200k, it is nothing against 200k.
 - **A request costs $0.105, whatever tool it runs.** Bash $0.105, Edit $0.106, Read $0.101, the
   simulator $0.105 — flat across everything, because the price is the context re-sent underneath it
   and not the payload. So the bill is the request count times ten cents, and shrinking what is
@@ -456,7 +460,7 @@ a session. Read every such ceiling that way.
   blocked on something only a human can do (a click, a login, a one-time code, a decision that is
   his) · a hard limit he set himself. Anything else — an awkward result, an unclear next step, a
   subagent that failed, a channel that 403'd — is a reason to *change approach*, not to stop.
-- Context pressure is the one soft brake: past ~150k, finish the sub-task, write the handoff, and
+- Context pressure is the one soft brake: past ~200k, finish the sub-task, write the handoff, and
   **tell him to press `/clear`** — that is a stop with a stated reason and a next action, which is
   exactly what this section asks for. Never just fall silent instead.
 - In a routine with nothing left to do, the closing message still says so explicitly, with the
