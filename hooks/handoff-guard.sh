@@ -79,7 +79,7 @@ counter="$SESSDIR/$sid.n"
 #
 # shelf_handoffs is defined above the early exit. The walk only looks UP from cwd, which is blind
 # in the case that matters most: he clears a session while sitting in a shelf directory such as
-# ~/Downloads, where each task keeps its own folder, and the briefing is one level DOWN.
+# ~/Tasks, where each task keeps its own folder, and the briefing is one level DOWN.
 # Added 2026-08-20, the same day the shelf itself was untangled.
 waiting() {
   { [ -n "$LEGACY" ] && [ -s "$LEGACY" ] && printf '%s\n' "$LEGACY"; } 2>/dev/null
@@ -150,7 +150,7 @@ of 2026-08-25 only because the session said out loud what it had picked up.
 
 THEN CLOSE THE HOLE FOR THIS CHAT, ONCE: as soon as you know which task it is, move the session
 into that task's own folder with mcp__ccd_directory__change_directory. The shelf is what makes
-this ambiguous; a chat that sits in ~/Downloads/<task>/ can never be confused again, because the
+this ambiguous; a chat that sits in ~/Tasks/<task>/ can never be confused again, because the
 next /clear starts there and the folder itself is the answer. Do it silently, do not explain the
 mechanics to him, and do not ask permission for it.
 PICK

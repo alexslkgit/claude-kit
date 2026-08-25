@@ -11,7 +11,7 @@
 ## Текущее состояние — 2026-08-25
 
 Борд задачи `company-brief` переехал с общей полки в собственную папку
-`~/Downloads/company-brief-skill/` (борд, `_shell/`, `STATUS.md`, `HANDOFF.md`). Проверено, что
+`~/Tasks/company-brief-skill/` (борд, `_shell/`, `STATUS.md`, `HANDOFF.md`). Проверено, что
 рефакторинг оболочки 21.08 ничего не сломал в брифе: палитра и шрифты в `assets/brief.css`,
 88 токенов и раздел «Take the current version first» на месте.
 

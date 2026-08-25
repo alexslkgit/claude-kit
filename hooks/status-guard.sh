@@ -75,7 +75,7 @@ for _ in 1 2 3 4 5 6 7 8; do
 done
 
 # A "shelf" is a working directory that is not a project but holds several unrelated tasks,
-# each in its own folder with its own STATUS.md — ~/Downloads is the live example. Resolving one
+# each in its own folder with its own STATUS.md — ~/Tasks is the live example. Resolving one
 # status_dir there is worse than resolving none: on 2026-08-20 the marker at the shelf level
 # pointed at a third task's folder, so a session working on a completely different task was told
 # that task's STATUS.md was its memory. List them instead of picking one.

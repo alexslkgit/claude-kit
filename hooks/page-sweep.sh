@@ -24,7 +24,7 @@ import json, os, re, sys
 HOME = os.path.expanduser("~")
 CACHE = os.path.join(HOME, ".claude", ".page-sweep-cache.json")
 ROOTS = [os.path.join(HOME, d) for d in
-         ("Downloads", "Developer", "Documents", "Desktop", ".claude/templates", ".claude/skills")]
+         ("Tasks", "Downloads", "Developer", "Documents", "Desktop", ".claude/templates", ".claude/skills")]
 
 # node_modules and friends are somebody else's code. tool-results and versions are frozen records
 # of what was already published: rewriting them would corrupt a transcript, and he never opens them.

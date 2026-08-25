@@ -123,18 +123,18 @@ Two layouts, and which one applies is decided by a single question: **is this a 
 .claude/tasks/_shell/             # plan.css + plan.js, copied from the kit
 ```
 
-**Outside a repository** — a scratch directory like `~/Downloads` is a shelf, not a project, and
+**Outside a repository** — the task shelf is `~/Tasks`, not a project directory, and
 each task is its own world. The task gets a folder and everything in it is flat and stably named,
 so a link never changes and the whole task can be zipped, moved or deleted as one thing:
 
 ```
-~/Downloads/<task>/plan.html      # the chewed plan
-~/Downloads/<task>/board.html     # the board
-~/Downloads/<task>/journal.md     # the journal
-~/Downloads/<task>/STATUS.md      # current state
-~/Downloads/<task>/DECISIONS.md   # append-only
-~/Downloads/<task>/_shell/        # plan.css + plan.js
-~/Downloads/<task>/.claude/status-dir   # one line: the absolute path to this folder
+~/Tasks/<task>/plan.html      # the chewed plan
+~/Tasks/<task>/board.html     # the board
+~/Tasks/<task>/journal.md     # the journal
+~/Tasks/<task>/STATUS.md      # current state
+~/Tasks/<task>/DECISIONS.md   # append-only
+~/Tasks/<task>/_shell/        # plan.css + plan.js
+~/Tasks/<task>/.claude/status-dir   # one line: the absolute path to this folder
 ```
 
 Recorded 2026-08-20: three unrelated tasks had been sharing one `~/Downloads/.claude/`, so the

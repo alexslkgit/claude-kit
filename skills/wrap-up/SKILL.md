@@ -167,7 +167,7 @@ settle it. The file's authority comes entirely from the fact that nothing in it 
 ## One chat, one folder, 2026-08-25
 
 A task's four artefacts are useless if the next session picks up somebody else's set. The thing
-that makes that possible is a chat parked in a shelf directory such as `~/Downloads`, where every
+that makes that possible is a chat parked in a shelf directory such as `~/Tasks`, where every
 task's files sit side by side and the only difference between them is a modification time.
 
 So the wrap-up now finishes with two things it never used to do:

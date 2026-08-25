@@ -351,7 +351,7 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 - Its path is named in `STATUS.md`, so a fresh session finds it without asking him.
 - **Outside a git checkout, the board is `<task>/board.html` in the task's own folder**, next to
   that task's `plan.html`, `STATUS.md`, `DECISIONS.md` and `journal.md`. A scratch directory like
-  `~/Downloads` is a shelf holding many unrelated tasks, and a single shared `.claude/` there makes
+  `~/Tasks` is a shelf holding many unrelated tasks, and a single shared `.claude/` there makes
   one task's memory masquerade as another's. See the `chew` skill's Files section for the layout.
 - Its link opens **every** chat message, the bare URL on its own first line.
 - Both themes live in the one file. It follows his system by default, and the three buttons in

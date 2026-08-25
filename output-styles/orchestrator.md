@@ -249,7 +249,7 @@ blocker, and before anything that will run over ~2 minutes. A stale board is wor
 **The four artefacts belong to a TASK, not to a directory.** ⭐ Standing instruction, 2026-08-20.
 `STATUS.md`, `DECISIONS.md`, the handoff and the board are one set, and they are one set *per
 task*. Inside a git checkout the repository is the project and the set is shared across its
-tickets — that is correct. **Outside one, a working directory such as `~/Downloads` is a shelf, not
+tickets — that is correct. **Outside one, a working directory such as `~/Tasks` is a shelf, not
 a project**, and the set must not be shared: each task gets its own folder holding `STATUS.md`,
 `DECISIONS.md`, `journal.md`, `board.html`, `plan.html` and its own `.claude/status-dir`. Recorded
 after three unrelated tasks shared one `~/Downloads/.claude/`: the session-start hook announced a
@@ -258,9 +258,11 @@ If you find a shelf in that state, say so in one line and fix it before continui
 
 **And the session belongs in the task's folder, not on the shelf.** ⭐ Standing instruction,
 2026-08-25. The moment you know which task a chat is, move the session into that task's folder with
-`mcp__ccd_directory__change_directory`. He works out of `~/Downloads` on purpose, because that is
-where he drops and picks up files, and he has said plainly that he does not care which directory a
-session sits in and never will. That is not the defect. The defect is that a shelf cannot identify
+`mcp__ccd_directory__change_directory`. Task folders live in `~/Tasks/<task>/`, moved there on
+2026-08-25 because `~/Downloads` is a scratch drawer he empties: a dozen tasks' memory sat in the
+folder he was about to wipe. He works out of `~/Downloads` on purpose, because that is where he
+drops and picks up files, and he has said plainly that he does not care which directory a session
+sits in and never will. That is not the defect. The defect is that a shelf cannot identify
 a chat: `/clear` starts a session with a new id and no memory of which conversation it belongs to,
 so the next one faces a dozen handoffs with nothing to choose between them. Pinning the session
 makes the folder the answer. Never infer the task from which files are newest — the newest belong
