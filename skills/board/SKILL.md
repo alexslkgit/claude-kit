@@ -354,6 +354,20 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 Ссылку `file://` больше не давать: борды тянут `_shell/board.js`, и часть из них по `file://`
 не рендерится. Заведено 2026-08-25, когда задачи переехали в `~/Tasks`.
 
+**Борд внутри гит-репозитория отдаётся тем же сервером, через симлинк.** Он остаётся лежать в
+`<repo>/.claude/tasks/`, как и положено, а в полке появляется `~/Tasks/_repos/<repo>` →
+`<repo>/.claude/tasks`. Ссылка тогда `http://localhost:8899/_repos/<repo>/<task>.html`, и
+относительный `_shell/board.js` резолвится сам, потому что он лежит в той же папке. Симлинк
+заводится один раз на репозиторий:
+
+```bash
+ln -sfn <repo>/.claude/tasks ~/Tasks/_repos/<repo-name>
+```
+
+Сервер, полка и генератор индекса ставятся из кита: `install.sh` создаёт `~/Tasks/_shell`,
+кладёт LaunchAgent из `templates/tasks-board-server.plist` и пересобирает `index.html` через
+`tools/tasks-index.py`. Руками на новой машине делать нечего.
+
 
 - It lives at `.claude/tasks/<task>.html`, on disk, always — never the scratchpad, never `/tmp`.
 - Its path is named in `STATUS.md`, so a fresh session finds it without asking him.

@@ -460,6 +460,40 @@ else
   echo "  output style: python3 missing — add \"outputStyle\": \"${STYLE}\" to ${SETTINGS} by hand"
 fi
 
+# The shelf is served permanently on 8899, because boards are handed over as
+# http://localhost:8899/... links and never as file:// — they pull _shell/board.js,
+# which does not load over file://. A LaunchAgent survives a reboot; a per-session
+# http.server on a random port does not.
+if [ "$(uname)" = "Darwin" ]; then
+  TASKS_DIR="${HOME}/Tasks"
+  mkdir -p "${TASKS_DIR}/_shell" "${TASKS_DIR}/_repos"
+  cp -f board-shell/board.css board-shell/board.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
+  cp -f plan-shell/plan.css plan-shell/plan.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
+
+  AGENT_LABEL="com.alexslk.tasks-board-server"
+  AGENT_PLIST="${HOME}/Library/LaunchAgents/${AGENT_LABEL}.plist"
+  if [ -f templates/tasks-board-server.plist ]; then
+    mkdir -p "${HOME}/Library/LaunchAgents"
+    sed "s|TASKS_DIR|${TASKS_DIR}|g" templates/tasks-board-server.plist > "${AGENT_PLIST}.new"
+    if [ ! -f "$AGENT_PLIST" ] || ! cmp -s "${AGENT_PLIST}.new" "$AGENT_PLIST"; then
+      mv "${AGENT_PLIST}.new" "$AGENT_PLIST"
+      launchctl bootout "gui/$(id -u)/${AGENT_LABEL}" 2>/dev/null || true
+      launchctl bootstrap "gui/$(id -u)" "$AGENT_PLIST" 2>/dev/null || true
+      echo "  board server: installed, serving ${TASKS_DIR} on http://localhost:8899"
+    else
+      rm -f "${AGENT_PLIST}.new"
+      launchctl print "gui/$(id -u)/${AGENT_LABEL}" >/dev/null 2>&1 \
+        || launchctl bootstrap "gui/$(id -u)" "$AGENT_PLIST" 2>/dev/null || true
+      echo "  board server: already serving http://localhost:8899"
+    fi
+  fi
+
+  if [ -f tools/tasks-index.py ] && command -v python3 >/dev/null 2>&1; then
+    python3 tools/tasks-index.py >/dev/null 2>&1 \
+      && echo "  board index: ${TASKS_DIR}/index.html rebuilt"
+  fi
+fi
+
 echo
 echo "Done. Run /clear — the output style loads at session start."
 echo "For a new repo: copy templates/CLAUDE.local.md to its root and gitignore it."
