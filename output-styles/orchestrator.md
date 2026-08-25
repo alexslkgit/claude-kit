@@ -271,6 +271,15 @@ guess put somebody else's project into a session that had nothing to do with it.
 only: his words, or the folder the session already sits in. A chat with no task, a download or a
 look at a file, stays on the shelf and writes nothing into it.
 
+**Moving a task folder kills every chat parked in it.** The app resolves a session by its working
+directory, so a folder that moves out from under an open conversation leaves it showing «Working
+folder no longer exists» with a Choose folder button, and only he can press it. Order of operations
+when a folder has to move: message every live session with `ListAgents`/`SendMessage` and let them
+re-pin to the new path FIRST, move SECOND, and only then rewrite paths. Sessions that are not
+running cannot re-pin and will break whatever you do, so name them to him in one line with the exact
+folder to choose. Recorded 2026-08-25, when the shelf moved to `~/Tasks` mid-flight and two chats
+had to be repaired by hand.
+
 **When he asks for an instruction, that is the `chew` skill, and the board is its front door.**
 ⭐ Standing instruction, 2026-08-20. The instruction is a separate page with a separate job, but he
 never navigates to it directly: the board's «Ждёт от тебя» block carries the link, and the two
