@@ -200,6 +200,37 @@ print(f"  hooks: bulk guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the browser guard. bulk-guard caps the pictures; this one caps the round trips. Measured
+# 2026-08-25 over 1802 transcripts: 8 700 browser tool calls in three weeks, 420 of them batched —
+# five percent. Every unbatched call is its own request, and a request re-sends the whole context.
+# It counts only the predictable actions (click, type, navigate, form fill) and nudges once per run
+# of four, then resets, so it can never deadlock a flow that genuinely has to look between steps.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/browser-guard.sh" <<'BG'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+matcher = (
+    "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__navigate|mcp__claude-in-chrome__form_input"
+    "|mcp__claude-in-chrome__file_upload|mcp__claude-in-chrome__browser_batch"
+    "|mcp__Claude_Browser__computer|mcp__Claude_Browser__navigate|mcp__Claude_Browser__form_input"
+    "|mcp__computer-use__computer_batch"
+)
+entries = data.setdefault("hooks", {}).setdefault("PreToolUse", [])
+if any(script in json.dumps(e) for e in entries):
+    print("  hooks: browser guard already registered")
+else:
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+    print("  hooks: browser guard registered")
+BG
+fi
+
 # Register the dash guard. The long-dash ban was written down on 2026-08-13 and kept failing,
 # because it lived only in skills/draft-message/SKILL.md and most drafts never load that skill.
 # So the check sits at the keystroke instead: browser typing and form fills always, plus briefs
