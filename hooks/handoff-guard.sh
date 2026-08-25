@@ -90,7 +90,7 @@ counter="$SESSDIR/$sid.n"
 # session with five waiting handoffs had to ask him which one it was and he answered that he did
 # not know either — the identity was on disk the whole time, and nothing was reading it.
 CHATROOT="$HOME/Library/Application Support/Claude/claude-code-sessions"
-CHAT_ID=""; CHAT_TITLE=""
+CHAT_ID=""; CHAT_TITLE=""; CHAT_TITLESRC=""
 resolve_chat() {
   [ -n "$sid" ] || return 0
   [ -d "$CHATROOT" ] || return 0
@@ -104,11 +104,50 @@ try: print(json.load(open(sys.argv[1])).get("title","") or "")
 except Exception: pass' "$f" 2>/dev/null)"
   fi
   [ -n "$CHAT_TITLE" ] || CHAT_TITLE="$(/usr/bin/sed -n 's/.*"title"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
+  CHAT_TITLESRC="$(/usr/bin/sed -n 's/.*"titleSource"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
 }
 resolve_chat
 
 # The stamp a handoff carries, and the two readers of it.
 MARK='handoff-chat:'
+
+MATCHPY='
+import sys, os, re
+title = sys.argv[1]
+STOP = set("the a an of and for to in on orchestrator session handoff work task claude helio".split())
+def toks(x):
+    return set(t for t in re.split(r"[^a-z0-9]+", x.lower()) if t and t not in STOP and len(t) > 1)
+want = toks(title)
+if want:
+    best_score, best_file, second = 0, None, 0
+    for line in sys.stdin:
+        f = line.strip()
+        if not f or not os.path.isfile(f):
+            continue
+        slug = os.path.splitext(os.path.basename(f))[0]
+        score = len(want & toks(slug))
+        if score > best_score:
+            second, best_score, best_file = best_score, score, f
+        elif score > second:
+            second = score
+    if best_score >= 2 and best_score >= second + 2:
+        print(best_file)
+'
+# --- the second way in, for a briefing written before stamping existed -------------------------
+# A stamp is exact and always wins. But a handoff written by an older session carries none, and he
+# asked on 2026-08-25 for the problem to be impossible in EXISTING chats too, not only in new ones.
+# The chat's title is the other half of its identity, it survives a clear, and this project's
+# handoffs are named after their task: "onboarding-ai-chat-page" the chat and
+# onboarding-ai-chat-page.md the briefing. So an unstamped file may be claimed by name, and only
+# when the name leaves no room for doubt: at least two words in common and a clear winner over the
+# runner-up. Anything less falls through to the list and to him.
+title_match() {   # stdin: candidate paths. stdout: the single winner, or nothing.
+  [ -n "$CHAT_TITLE" ] || return 0
+  command -v python3 >/dev/null 2>&1 || return 0
+  # The program goes in -c, never on stdin: a heredoc would BE stdin and the candidate paths
+  # would arrive at an already-exhausted pipe. That cost one silent test run.
+  python3 -c "$MATCHPY" "$CHAT_TITLE"
+}
 owner_of() { /usr/bin/sed -n "s/.*$MARK[[:space:]]*\([A-Za-z0-9_-]*\).*/\1/p" "$1" 2>/dev/null | head -1; }
 owner_title_of() { /usr/bin/sed -n "s/.*$MARK[[:space:]]*[A-Za-z0-9_-]*[[:space:]]*|[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*-->.*/\1/p" "$1" 2>/dev/null | head -1; }
 
@@ -365,6 +404,28 @@ $(cat "$f" 2>/dev/null)
 EOF
         exit 0
       fi
+
+      # No stamp names this chat. Try the name.
+      if [ "$cn" = "0" ]; then
+        f="$(printf '%s\n' "$list" | title_match)"
+        if [ -n "$f" ] && [ -s "$f" ]; then
+          cat <<EOF
+handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE",
+and of the $n briefings waiting here exactly one is named after that task and no other comes
+close, so it is yours. It carries no chat stamp only because it was written before handoffs were
+stamped; everything written from now on is claimed by id instead. It is here in full ($(stamp_of "$f")).
+
+Read it and carry on from where it stops. Your first message opens with the board link as always
+and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
+thank him for the handoff, do not summarise it back at him, and do not write a new one.
+
+--- $f ---
+$(cat "$f" 2>/dev/null)
+--- end ---
+EOF
+          exit 0
+        fi
+      fi
     fi
 
     if [ "$n" = "1" ] && [ -s "$cwd/HANDOFF.md" ] && [ "$(printf '%s\n' "$list" | head -1)" = "$cwd/HANDOFF.md" ]; then
@@ -416,6 +477,13 @@ EOF
         printf '  %s. %s\n     %s  ·  %s\n     %s\n' "$i" "$f" "$(stamp_of "$f")" "$(title_of "$f")" "$tag"
       done
       echo
+      case "$CHAT_TITLESRC" in
+        tool|user) ;;
+        *) echo "This chat's name was generated, not chosen, which is half of why nothing here"
+           echo "identifies it. Name it after its task now with set_session_title(session_id: \"self\"),"
+           echo "silently and without asking, so the next clear has something to match."
+           echo ;;
+      esac
       echo "If he asks you to pick up a handoff and you still cannot tell which, ask him in one line"
       echo "with this numbered list. One digit from him is cheap; the wrong briefing is not. And"
       echo "whichever you open, say which one in your first line so he can catch a mistake in a second."
