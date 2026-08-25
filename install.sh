@@ -216,10 +216,13 @@ if os.path.exists(path):
     except Exception:
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 matcher = (
-    "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__navigate|mcp__claude-in-chrome__form_input"
-    "|mcp__claude-in-chrome__file_upload|mcp__claude-in-chrome__browser_batch"
-    "|mcp__Claude_Browser__computer|mcp__Claude_Browser__navigate|mcp__Claude_Browser__form_input"
-    "|mcp__computer-use__computer_batch"
+    "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__navigate|mcp__claude-in-chrome__form_"
+    "input|mcp__claude-in-chrome__file_upload|mcp__claude-in-chrome__browser_batch|mcp__claude-in"
+    "-chrome__javascript_tool|mcp__claude-in-chrome__read_page|mcp__claude-in-chrome__get_page_te"
+    "xt|mcp__claude-in-chrome__find|mcp__Claude_Browser__computer|mcp__Claude_Browser__navigate|m"
+    "cp__Claude_Browser__form_input|mcp__Claude_Browser__javascript_tool|mcp__Claude_Browser__rea"
+    "d_page|mcp__Claude_Browser__get_page_text|mcp__Claude_Browser__find|mcp__computer-use__compu"
+    "ter_batch"
 )
 entries = data.setdefault("hooks", {}).setdefault("PreToolUse", [])
 if any(script in json.dumps(e) for e in entries):

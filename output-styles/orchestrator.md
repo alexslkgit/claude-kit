@@ -350,32 +350,45 @@ quadratic in its length. What decides everything is how much each turn *adds*.
 
 ### A long browser flow is a round-trip problem, not a screenshot problem
 
-Measured 2026-08-25 over 1802 transcripts, three weeks: 8 700 browser tool calls, 1 487 screenshots,
-~4.9M tokens entering contexts. The pictures are half of it and `bulk-guard` already caps those. The
-other half is that **420 of those 8 700 calls — five percent — were batched.** Every unbatched call
-is its own request, and a request re-sends the whole context: twelve sign-in steps at a 150k context
-cost 1.8M re-sent tokens one at a time and 150k as one `browser_batch`.
+Measured 2026-08-25 over 1802 transcripts, three weeks, priced per request from `usage`:
+**121 612 requests, of which browser work caused 10 772 — 9% of the requests and 6.7% of all
+spend.** It costs that much not because looking is expensive but because *stepping* is: the
+average context re-sent under a single browser click was **131k**. A session that touched a
+browser had a median of 103 requests, 108k context and 1.87M weighted units; one that did not,
+47 requests, 62k and 0.63M. Three times the price.
 
-- **Batch by default; a single call is the exception.** Anything predictable two steps ahead goes
-  into one `browser_batch`. `browser-guard.sh` nudges once per run of four single actions.
-- **Look with a script, not with your eyes.** A `javascript_tool` expression returning exactly the
-  field you need is ~260 tokens; a screenshot is 1 600 and then rides along for the rest of the
-  session. Reserve the picture for layout, and for text that is genuinely not in the DOM.
-  In-page `fetch` with `credentials: 'include'` is refused by the permission classifier — verified
-  2026-08-25 — so an authenticated download is never a script inside the page.
-- **The whole flow goes to `browser-scout-sonnet`, not just one look.** Give it the goal end to end
-  ("sign in, download the three PDFs, rename them, report one line"), not a list of clicks.
+The picture is the small half. Browser screenshots were 19M of that 169M, about a ninth. Ranked
+by what they are actually worth:
+
+- **The whole flow goes to `browser-scout-sonnet` (~4% of all spend).** Under the same click in a
+  subagent there is 20–30k of context instead of 131k. Hand over the goal end to end — "sign in,
+  download the three invoices, rename them, report one line each" — not a list of clicks, and let
+  it look as much as it needs. Keep in the main thread only the part that needs a decision that is
+  his. `browser-guard.sh` says this at browser call 6, 18 and 40 without blocking.
+- **Batch the predictable actions (~2%).** Only 420 of 8 700 calls were batched. Anything you can
+  predict two steps ahead goes into one `browser_batch`; `browser-guard.sh` refuses the fourth
+  single action in a row, once per run.
+- **Where a connector exists, do not open a tab (a whole flow each time).** Mail, Drive, Calendar
+  and Figma are MCP servers here. `browser-guard.sh` says so once per service per session, on the
+  URL.
+- **Look with a script, not with your eyes (~0.8%).** A `javascript_tool` expression returning the
+  field you need is ~260 tokens against 1 600 for a screenshot that then rides along. Reserve the
+  picture for layout and for text genuinely absent from the DOM.
 - **A flow walked twice becomes a file.** `~/.claude/browser-flows/flows/<name>.mjs`, run with
-  `node ~/.claude/tools/browser-flows/run.mjs <name>` — a persistent Chrome profile he signed into
-  once, `playwright-core` driving the installed Chrome with no browser download. Measured: 1.9s and
-  ~180 tokens of output for navigate + extract + download. Copying his real Chrome profile does NOT
-  work (cookies do not decrypt, verified 2026-08-25); sign-in is one visible window, once per site,
-  via `signin.mjs`.
-- **Check the connector list before opening a tab.** Mail, Drive and Calendar are MCP servers here.
-  A flow that ends in "attach the documents and send" should never reach a browser for that part.
-- **Write down each new site once**, in `~/.claude/site-notes/<domain>.md`: the deep URLs, the
-  selectors, what breaks. The second visit then starts at the right screen instead of rediscovering
-  the site.
+  `node ~/.claude/tools/browser-flows/run.mjs <name>`: a persistent Chrome profile he signed into
+  once, `playwright-core` driving the installed Chrome with no browser download. Measured 1.9s and
+  ~180 tokens for navigate + extract + download, so one replay saves a whole medium session. Do
+  not write flows speculatively — only after one has actually repeated.
+
+Three things were tried and do not work, so do not retry them: copying his real Chrome profile
+into the automation profile (cookies do not decrypt, zero came back), in-page `fetch` with
+`credentials: 'include'` (refused by the permission classifier), and a debugging port on his main
+Chrome profile (Chrome refuses it by design). Sign-in is one visible window per site, via
+`signin.mjs`.
+
+Rejected on cost of adoption, measured: per-site selector notes (0.3M per repeat visit, and what
+truly repeats belongs in a flow file instead), and cropping screenshots instead of taking whole
+ones (0.3%, and it adds a decision to every picture).
 
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
 - **Watch the context. Past ~250k, stop at the next natural boundary** — a finished sub-task, never
