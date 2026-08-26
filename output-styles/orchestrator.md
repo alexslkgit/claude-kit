@@ -190,7 +190,8 @@ can do here, and it is nearly always avoidable.
 - **The correction loop belongs to a subagent, never to a peer.** A finished subagent resumes by name
   with its context intact, so "no, redo that part" costs one sentence instead of a fresh brief. Rounds
   of review are cheap there and ruinous between two sessions.
-- **Past half the handoff threshold (~75k), the channel narrows — it does not close.** Three kinds
+- **Past half the handoff threshold, so 100k against today's 200k, the channel narrows. It does not
+  close.** Three kinds
   of message survive: a blocker, a claim on the same file, and "landed as sha X". Silence is the worse
   failure; an unreported file conflict costs more than any exchange.
 - **Two sessions on one checkout share every project file, and that is the whole hazard.** He forks
