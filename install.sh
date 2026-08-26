@@ -325,6 +325,41 @@ print(f"  hooks: page guard registered ({added} new entr{'y' if added==1 else 'i
 PY
 fi
 
+# Register the board inliner. A board is a JSON block that _shell/board.js draws at load time, and
+# the Claude Code desktop pane — where he actually opens the link — renders the HTML but does not
+# resolve the page's sibling subresources, so board.js never runs and he sees a blank page. Proved
+# 2026-08-26: the same file over file:// in headless Chrome renders in full, and the only two
+# boards on this Mac that show up in the pane are the two written as inline markup. The agent must
+# keep writing JSON only, so the rendering happens AFTER the tool call, out of the model's context.
+# PostToolUse, and safe to fail: any surprise leaves the file exactly as it was written.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/board-inline.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PostToolUse", [])
+added = 0
+# Bash is not optional here: the established way to update a board is a python heredoc that
+# rewrites the JSON block, so a Write|Edit-only matcher would never fire on a real board update.
+matcher = "Write|Edit|MultiEdit|Bash"
+stale = [e for e in entries if script in json.dumps(e) and e.get("matcher") != matcher]
+for e in stale:
+    entries.remove(e)
+if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 15}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: board inliner registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the automatic handoff. He was writing the same three-step ritual by hand around three
 # hundred times a day: session says "press /clear", he presses it, he types "pick up the handoff".
 # A Stop hook takes the first step and handoff-guard takes the third; the keystroke in the middle
@@ -520,15 +555,40 @@ else
   echo "  output style: python3 missing — add \"outputStyle\": \"${STYLE}\" to ${SETTINGS} by hand"
 fi
 
-# The shelf is served permanently on 8899, because boards are handed over as
-# http://localhost:8899/... links and never as file:// — they pull _shell/board.js,
-# which does not load over file://. A LaunchAgent survives a reboot; a per-session
-# http.server on a random port does not.
+# The shelf is served permanently on 8899, because that link updates itself in a tab he already
+# has open and a file:// one does not. A LaunchAgent survives a reboot; a per-session http.server
+# on a random port does not.
 if [ "$(uname)" = "Darwin" ]; then
   TASKS_DIR="${HOME}/Tasks"
   mkdir -p "${TASKS_DIR}/_shell" "${TASKS_DIR}/_repos"
-  cp -f board-shell/board.css board-shell/board.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
+  cp -f board-shell/board.css board-shell/board.js board-shell/render-body.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
   cp -f plan-shell/plan.css plan-shell/plan.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
+
+  # Every OTHER _shell on the machine gets the same three files. hooks/board-inline.sh renders a
+  # board through the page's OWN _shell/board.js, so a _shell left behind at an older version is a
+  # board that silently stops being inlined — control 5 of the hook's negative tests. Only folders
+  # that already hold a board.js are touched; none is created.
+  find "${TASKS_DIR}" "${HOME}/Developer" -type d -name _shell -not -path '*/node_modules/*' -print 2>/dev/null \
+  | while IFS= read -r sh; do
+      [ -f "${sh}/board.js" ] || continue
+      case "$sh" in */browser-token-economy/*) continue ;; esac   # frozen benchmark fixtures
+      cp -f board-shell/board.css board-shell/board.js board-shell/render-body.js "${sh}/" 2>/dev/null || true
+    done
+
+  # Every repo that keeps boards gets a shelf entry, so its board is reachable on 8899 instead of
+  # as a file:// URL. Until 2026-08-26 only energy-tracker was linked, which is why every other
+  # project still handed him a file:// link. The board stays in the repo; only the link moves.
+  for repo in "${HOME}"/Developer/*/; do
+    [ -d "${repo}.claude/tasks" ] || continue
+    name="$(basename "${repo%/}")"
+    # A real directory of the same name is somebody's data; never write a symlink inside it.
+    if [ -e "${TASKS_DIR}/_repos/${name}" ] && [ ! -L "${TASKS_DIR}/_repos/${name}" ]; then
+      echo "  board shelf: ${TASKS_DIR}/_repos/${name} is a real folder, left alone"
+      continue
+    fi
+    ln -sfn "${repo}.claude/tasks" "${TASKS_DIR}/_repos/${name}"
+  done
+  echo "  board shelf: $(find "${TASKS_DIR}/_repos" -maxdepth 1 -type l | wc -l | tr -d ' ') repos linked on http://localhost:8899/_repos/"
 
   AGENT_LABEL="com.alexslk.tasks-board-server"
   AGENT_PLIST="${HOME}/Library/LaunchAgents/${AGENT_LABEL}.plist"

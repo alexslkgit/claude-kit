@@ -118,29 +118,45 @@ on that line, even when the board did not change (⭐ standing instruction, 2026
 to scroll the chat hunting for it). Beyond that line the updates are silent: they are never
 narrated, never become a message, and never count against the three-sentence limit.
 
-**A `file://` URL is not a link. It is dead text in the app, and printing one every message for
-months is the reason he finally said the links do not work** (⭐ 2026-08-26, and he named it as a
-disease across several chats rather than one session's slip). The desktop app renders it blue and
-does nothing on the click. So the first line is an **Artifact URL**: publish the board once with
-the `Artifact` tool and put `https://claude.ai/code/artifact/…` on that line from then on.
+### The one link rule
 
-Publishing needs one build step, because the board on disk links `_shell/board.css` and
-`_shell/board.js` and an Artifact's CSP admits Google Fonts and nothing else. `_shell/build_artifact.py`
-inlines both and strips the document skeleton, which the Artifact host supplies itself:
+**The link is `http://localhost:8899/…` and nothing else.** That is the whole rule; the rest of
+this section is why, and it is written out because the rule has now been got wrong twice.
 
-    python3 _shell/build_artifact.py <board>.html "Название для галереи"
+    in a repo:        http://localhost:8899/_repos/<repo>/<task>.html
+    on the shelf:     http://localhost:8899/<task>/board.html
+    all of them:      http://localhost:8899/index.html
 
-Then publish `<board>.artifact.html`. **Republish the same file path after every board patch**, which
-keeps the URL stable for the whole task; a different path claims a new URL and he loses the tab he had
-open. The live refresh survives the move intact: `board.js` re-fetches `location.href` and re-renders
-from the JSON block rather than reloading, so a republish reaches a tab he already has open, which is
-the thing `file://` could never do (Chrome refuses that fetch on a non-http scheme).
+A LaunchAgent (`com.alexslk.tasks-board-server`) serves `~/Tasks` permanently, `install.sh`
+symlinks every repo under `~/Developer` that has a `.claude/tasks` into `~/Tasks/_repos`, and the
+link therefore survives a reboot and a `/clear`. It is preferred over every alternative for one
+reason that nothing else can match: **over http the board updates itself in a tab he already has
+open.** `board.js` re-fetches `location.href` every 15 seconds and swaps the DOM — no reload, no
+focus steal. Chrome refuses that fetch on a non-http scheme, so a board opened from disk is a
+snapshot and an 8899 board is live.
 
-Keep writing the file board too. It is the source, it is what the next session reads after a `/clear`,
-and it costs nothing. The artifact is a copy for him, not a replacement.
+**Two claims that used to stand here were wrong, and are corrected — do not restore them.**
 
-When something genuinely cannot be published, a `bash` block containing `open <absolute path>` is the
-fallback: the app puts a Run button on a shell-tagged block, so it is one click rather than none.
+- ~~"A `file://` URL is dead text in the app; the desktop app renders it blue and does nothing on
+  the click."~~ **False.** It opens, in the app's own pane, and the pane renders the HTML. What
+  the pane does not do is resolve the page's sibling subresources, so `_shell/board.js` never ran
+  and he was handed a blank white page — which looked exactly like a dead link and was diagnosed
+  as one on 2026-08-26 (commit 33ca8ef). `hooks/board-inline.sh` now bakes the rendered body and
+  the stylesheet into every board after it is written, so a board opened from disk shows its
+  content. That is the safety net, **not** a reason to hand out `file://` links: a disk board
+  cannot refresh itself.
+- ~~"Boards do not render in a browser over `file://`."~~ **False**, and it never was true.
+  Headless Chrome over `file://` renders a board in full — 28 423 characters of body, both
+  `_shell` files returning 200.
+
+There is no Artifact step and no `_shell/build_artifact.py`. That instruction was written from the
+wrong diagnosis, and the script it names was never copied into any `_shell/` by any installer, so
+following it produced a "file not found" on every machine. Publishing a board as an Artifact
+is not the answer to a blank pane; the inliner is.
+
+If the shelf server is genuinely down and cannot be restarted, a `bash` block containing
+`open <absolute path>` is the fallback: the app puts a Run button on a shell-tagged block, so it
+is one click rather than none.
 
 ## How to write it
 
@@ -157,18 +173,31 @@ Restyling the board, adding a state, fixing a colour: edit the shell file **in t
 re-copy it. Never patch a page's appearance in the page. `hooks/shell-guard.sh` refuses any page
 whose inline `<style>` or `<script>` runs over 500 bytes.
 
+**You will open a board on disk and find a `<style>` block and rendered `<main>` markup in it
+anyway. Leave them alone; they are not yours and they are not a violation.** They sit between
+`<!--board-inline-style-->` and `<!--board-inline-->` markers, and `hooks/board-inline.sh` puts
+them there AFTER the tool call that wrote the file, so they never pass through anyone's context.
+They exist because the desktop app's own pane does not load the page's sibling `_shell/*`, and
+without them he opens the link and sees a blank page. Rewriting a board is still exactly what it
+always was: replace the JSON block, nothing else. The hook re-renders the rest, and it strips its
+own old blocks first, so a stale one cannot accumulate.
+
 Install the shell once per repo or task folder, before the first board:
 
 ```bash
 SRC="${HOME}/.claude/board-shell"
 [ -d "$SRC" ] || SRC="${HOME}/Developer/claude-kit/board-shell"
 mkdir -p .claude/tasks/_shell            # outside a checkout: <task>/_shell
-for f in board.css board.js; do
+for f in board.css board.js render-body.js; do
   if [ ! -f ".claude/tasks/_shell/$f" ] || [ "$SRC/$f" -nt ".claude/tasks/_shell/$f" ]; then
     cp "$SRC/$f" ".claude/tasks/_shell/$f"
   fi
 done
 ```
+
+A `_shell/board.js` older than the machine is a board that silently stops being inlined:
+`hooks/board-inline.sh` renders through the page's OWN copy, and only the current one exports the
+`build` entry point it needs. That is why the copy is conditional on `-nt` and not on absence.
 
 Copied, not linked: a relative path works from a `file://` URL with no server, on all three of
 his Macs whatever the username, and the task folder can be moved or zipped whole. A symlink into
@@ -373,8 +402,14 @@ mid-work. This is why the template looks the way it does — do not "simplify" i
 `python3 -m http.server 8899 --bind 127.0.0.1` с рабочей папкой `~/Tasks`, так что любой борд
 открывается как `http://localhost:8899/<task>/board.html` без поднятия сервера руками, и ссылка
 не протухает после перезагрузки. Индекс всех бордов и планов — `http://localhost:8899/index.html`.
-Ссылку `file://` больше не давать: борды тянут `_shell/board.js`, и часть из них по `file://`
-не рендерится. Заведено 2026-08-25, когда задачи переехали в `~/Tasks`.
+Заведено 2026-08-25, когда задачи переехали в `~/Tasks`. Правило ссылки — одно, и оно записано
+выше, в «The one link rule»; здесь только устройство полки.
+
+Прежняя формулировка «борды по `file://` не рендерятся» была неверна и снята 2026-08-26: они
+рендерятся и в браузере, и в панели приложения — панель просто не подтягивает соседние
+`_shell/*`, поэтому тело теперь впечатывается в файл хуком `hooks/board-inline.sh`. Причина
+давать 8899, а не `file://`, другая и она одна: по http борд обновляется сам в уже открытой
+вкладке, а с диска — нет.
 
 **Борд внутри гит-репозитория отдаётся тем же сервером, через симлинк.** Он остаётся лежать в
 `<repo>/.claude/tasks/`, как и положено, а в полке появляется `~/Tasks/_repos/<repo>` →

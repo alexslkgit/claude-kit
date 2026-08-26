@@ -154,6 +154,13 @@
   }
 
   window.__boardDraw = draw;
+  // Node entry point for board-shell/render-body.js, which the board-inline hook runs after every
+  // board write to bake this same markup into the file. `module` is undefined in a browser, so
+  // this line costs the page nothing. One renderer, two callers: the pane and the browser can
+  // never disagree about what the board says.
+  if (typeof module === 'object' && module !== null && module.exports) {
+    module.exports = { build: build, draw: draw };
+  }
   var src = document.getElementById('board');
   if (src) draw(src.textContent);
 })();
