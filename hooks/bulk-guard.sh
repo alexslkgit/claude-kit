@@ -37,7 +37,7 @@ set -uo pipefail
 
 IMAGE_BUDGET=2          # free screenshots per session in the main conversation
 READ_LINES=1200         # a Read with no offset/limit above this is a whole-file dump
-WRITE_CHARS=12000       # ~3k tokens of file body; a board or a plan page, not a config edit
+WRITE_CHARS=24000       # measured break-even against a page-writer-sonnet run, A-048
 STATE_DIR="$HOME/.claude/bulk-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -246,23 +246,28 @@ EOF
     exit 2
     ;;
 
-  # --- Write: 4% ------------------------------------------------------------------------------
+  # --- Write: prose pages only, above the measured break-even -----------------------------------
   Write)
     [ "$clen" -gt "$WRITE_CHARS" ] 2>/dev/null || exit 0
+    # Source code is never handed to the page writer: it is the wrong role, and by A-048 the
+    # delegation is the more expensive path anyway. Only pages the user reads in a browser.
+    case "$fpath" in
+      *.html|*.htm|*.md|*.markdown|*.txt) ;;
+      *) exit 0 ;;
+    esac
     cat >&2 <<EOF
-bulk-guard: that Write carries $clen characters (~$(( clen / 4000 ))k tokens) of file body, and the
-whole body travels in the tool call and is then re-sent on every later request of this session.
-Blocked. Measured: Write from the main thread was 4% of all spend, largely boards rewritten several
-times per session.
+bulk-guard: that Write carries $clen characters (~$(( clen / 4000 ))k tokens) of page body. You pay
+for it twice here: once to compose it as output, and again on every later request of this session
+as it is re-read from cache.
 
-Hand it to page-writer-sonnet: give it the facts, the path, and the shape — it writes the file and
-returns three lines. The body never enters this context. That is strictly better for a board, a
-plan page, a status document or a long draft, because you are paying here for prose only the user
-reads in a browser.
+Measured break-even, A-048: composing plus carrying a page costs about the same as one
+page-writer-sonnet run at roughly 24 000 characters, and above that the run is cheaper. This one is
+over the line, so hand it over: give page-writer-sonnet the facts, the path and the shape, and it
+returns three lines while the body never enters this context.
 
-Edit is not blocked: changing part of an existing page costs the hunk, not the file. If this is a
-small file that merely happens to be dense, or the content is already in this context for another
-reason:
+Below that size doing it yourself is cheaper by about 1,55x, which is why this now fires only on
+long prose pages. Edit is never blocked: changing part of an existing page costs the hunk, not the
+file. If the content is already in this context for another reason:
   touch $STATE_DIR/$sid.bypass
 EOF
     exit 2
