@@ -115,6 +115,31 @@ record_break() {
   printf '%s\t%s\t%s\t%s\n' "$now_h" "$event" "$detail" "$cwd" >> "$GLOBAL_DIR/breaks.log" 2>/dev/null || true
 }
 
+# --- kit drift ------------------------------------------------------------------------------
+# A commit to the kit is not a release. The hooks that actually run are the copies under
+# ~/.claude/hooks, and something has to install them. On 2026-08-26 a narrowed rule sat in the kit
+# from 13:22 while every live session kept running the old broad one until 15:08, and a whole
+# measured run was blamed on a rule that was already fixed. Silent when the two agree, one line
+# when they do not, so the cost is zero on a clean machine.
+if [ "$event" = "SessionStart" ] && [ -d "$HOME/Developer/claude-kit/hooks" ]; then
+  drift=""
+  for kf in "$HOME/Developer/claude-kit/hooks/"*.sh; do
+    [ -f "$kf" ] || continue
+    inst="$HOME/.claude/hooks/$(basename "$kf")"
+    if [ ! -f "$inst" ]; then
+      drift="$drift $(basename "$kf" .sh)(missing)"
+    elif ! /usr/bin/cmp -s "$kf" "$inst"; then
+      drift="$drift $(basename "$kf" .sh)"
+    fi
+  done
+  if [ -n "$drift" ]; then
+    printf 'kit-drift: the hooks running right now differ from the kit:%s.\n' "$drift"
+    printf 'A kit commit is not a release. Until `bash ~/Developer/claude-kit/install.sh` runs, the\n'
+    printf 'old rule is still in force, so do not report one of these as fixed and do not blame one\n'
+    printf 'for a block until you have compared the installed file, not the kit git log.\n'
+  fi
+fi
+
 case "$event" in
 
   PreCompact)
