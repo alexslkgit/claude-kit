@@ -144,6 +144,42 @@ print("1" if re.match(r"\s*(ls|cat|head|tail|wc|pwd|echo|file|stat|du|which|type
 ' 2>/dev/null)"
 
     runf="$STATE_DIR/$sid.bashrun"
+
+    # --- the batching hypothesis, off by default --------------------------------------------
+    # Set BULK_GUARD_BATCH=1 and the run counter stops caring whether a call is a read-only
+    # one-liner: ANY Bash call extends the run, and the third one in a row is refused. This is
+    # the variant the baseline set measures against the shipped rule, one variable apart. It is
+    # deliberately env-gated rather than switched on: measured 2026-08-26, 38.8% of the month's
+    # Bash calls sit in unbroken runs of three or more, so this fires often, and every refusal
+    # costs a request of its own. Whether it pays is a question for the run, not for the logs.
+    if [ "${BULK_GUARD_BATCH:-0}" = "1" ]; then
+      r=0; [ -f "$runf" ] && r="$(/bin/cat "$runf" 2>/dev/null || echo 0)"
+      r=$(( r + 1 )); printf '%s' "$r" > "$runf" 2>/dev/null || true
+      if [ "$r" -ge 3 ] 2>/dev/null; then
+        printf '0' > "$runf" 2>/dev/null || true
+        cat >&2 <<EOF
+bulk-guard refused this Bash call: it is the third command in a row with no other tool between
+them, and the two before it have already been paid for.
+
+A request costs the whole context sitting under it, whatever the command was. Measured over the
+month to 2026-08-25, Bash is 37 286 calls and 42% of the limit at a median of 325 characters:
+none of that number is size, all of it is count.
+
+Put everything you can predict into ONE call — a heredoc, a short script, several commands joined
+with && or ; — and keep looking only where you genuinely cannot know the next command until you
+have seen this output.
+
+The run counter is already reset, so the next call goes through whatever it is.
+EOF
+        exit 2
+      fi
+      case "$n" in
+        60|180|360) ;;
+        *) exit 0 ;;
+      esac
+      exit 0
+    fi
+
     if [ "$simple" = "1" ]; then
       r=0; [ -f "$runf" ] && r="$(/bin/cat "$runf" 2>/dev/null || echo 0)"
       r=$(( r + 1 )); printf '%s' "$r" > "$runf" 2>/dev/null || true
