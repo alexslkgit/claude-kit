@@ -115,10 +115,32 @@ the board does not say so, write the board first.
 
 The board link opens **every chat message** — the bare URL on its own first line, nothing else
 on that line, even when the board did not change (⭐ standing instruction, 2026-08-16: he refused
-to scroll the chat hunting for it). Use the clickable form the project has established (a local
-`http://localhost:…` server if one is running, otherwise a full `file://` URL with the absolute
-path — a bare or relative path is not clickable). Beyond that line the updates are silent: they
-are never narrated, never become a message, and never count against the three-sentence limit.
+to scroll the chat hunting for it). Beyond that line the updates are silent: they are never
+narrated, never become a message, and never count against the three-sentence limit.
+
+**A `file://` URL is not a link. It is dead text in the app, and printing one every message for
+months is the reason he finally said the links do not work** (⭐ 2026-08-26, and he named it as a
+disease across several chats rather than one session's slip). The desktop app renders it blue and
+does nothing on the click. So the first line is an **Artifact URL**: publish the board once with
+the `Artifact` tool and put `https://claude.ai/code/artifact/…` on that line from then on.
+
+Publishing needs one build step, because the board on disk links `_shell/board.css` and
+`_shell/board.js` and an Artifact's CSP admits Google Fonts and nothing else. `_shell/build_artifact.py`
+inlines both and strips the document skeleton, which the Artifact host supplies itself:
+
+    python3 _shell/build_artifact.py <board>.html "Название для галереи"
+
+Then publish `<board>.artifact.html`. **Republish the same file path after every board patch**, which
+keeps the URL stable for the whole task; a different path claims a new URL and he loses the tab he had
+open. The live refresh survives the move intact: `board.js` re-fetches `location.href` and re-renders
+from the JSON block rather than reloading, so a republish reaches a tab he already has open, which is
+the thing `file://` could never do (Chrome refuses that fetch on a non-http scheme).
+
+Keep writing the file board too. It is the source, it is what the next session reads after a `/clear`,
+and it costs nothing. The artifact is a copy for him, not a replacement.
+
+When something genuinely cannot be published, a `bash` block containing `open <absolute path>` is the
+fallback: the app puts a Run button on a shell-tagged block, so it is one click rather than none.
 
 ## How to write it
 
