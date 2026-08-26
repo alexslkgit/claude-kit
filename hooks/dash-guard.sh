@@ -45,10 +45,17 @@ if tool.endswith("__computer") and str(ti.get("action") or "")=="type":
 if tool.endswith("__form_input"):
     hit("a form field",ti.get("value"))
 
-# 2. a brief or a peer message carrying text meant for a person
+# 2. a brief or a peer message carrying text meant for a person.
+# The trigger has to mean "compose something a person will read", not merely mention one of those
+# words. A bare "draft" or "Teams" anywhere in a long analytical brief matched everything: measured
+# 2026-08-26, 26 of the 30 blocks this hook has ever issued were Agent briefs with no message in
+# them at all, and the remaining 4 were session-to-session notes. It has never once caught a
+# message to a human, because chat prose is not a tool call.
 if tool in ("Agent","SendMessage"):
     body=str(ti.get("prompt") or ti.get("message") or "")
-    if re.search(r"composer|type exactly|reply box|Teams|1:1|DM\b|send it|draft",body,re.I):
+    compose=r"(draft|write|compose|send)\s+(a|an|the|this|it)?\s*(message|reply|email|comment|note|dm|answer)\b"
+    place=r"reply box|Teams composer|type exactly|send (it|this) to|post (it|this) (to|in)|jira comment|pr reply|slack message"
+    if re.search(compose,body,re.I) or re.search(place,body,re.I):
         hit("the message text inside this brief",body)
 
 # 3. a draft file
