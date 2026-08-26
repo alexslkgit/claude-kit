@@ -60,14 +60,36 @@ model = str(ti.get("model", "") or "")
 if model in ("sonnet", "haiku"):
     print("allow"); raise SystemExit(0)
 
+# Resolve the tier from the definition on disk, not from the name. Keying on a "-opus"
+# suffix let every project-local agent straight through: scan-reader, a repo agent defined
+# with model: opus and named nothing in particular, was 1.3% of the limit over 65 runs and
+# this hook waved all 65 past. The name is a label; the file is the fact.
+import os, re
+def declared_model(name):
+    if not name: return None
+    for base in (os.path.join(str(d.get("cwd") or ""), ".claude", "agents"),
+                 os.path.expanduser("~/.claude/agents"),
+                 os.path.expanduser("~/Developer/claude-kit/agents")):
+        f = os.path.join(base, name + ".md")
+        if os.path.isfile(f):
+            try: head = open(f, errors="ignore").read(4000)
+            except Exception: continue
+            m = re.search(r"^model:\s*([A-Za-z0-9._-]+)", head, re.M)
+            return (m.group(1).lower() if m else "")   # "" = defined but declares no model
+    return None                                        # no definition found at all
+
 untiered = ("general-purpose", "claude", "Explore", "Plan", "")
-if sub in untiered:
+decl = declared_model(sub)
+tier = model or decl or ""
+
+if sub in untiered or decl == "" or decl is None:
+    # No definition, or a definition that names no model: the run inherits the main chat.
     print("allow" if "TIER-OK" in brief else "untiered:" + (sub or "no type"))
     raise SystemExit(0)
-if sub.endswith("-fable") or model == "fable":
+if tier.startswith("fable") or sub.endswith("-fable"):
     print("allow" if "TIER-FABLE:" in brief else "fable:" + sub)
     raise SystemExit(0)
-if sub.endswith("-opus") or model == "opus":
+if tier.startswith("opus") or sub.endswith("-opus"):
     print("allow" if "TIER-OPUS:" in brief else "opus:" + sub)
     raise SystemExit(0)
 print("count:" + sub)
