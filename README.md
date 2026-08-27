@@ -103,6 +103,8 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | `board-shell/` | `board.css` + `board.js`, the board's look and its renderer. A board page is one JSON block; the renderer draws the markup and counts the percentages |
 | `tools/kit-sync.sh` | gets a kit file from the clone, or from a cache checked at most every 3 h with a conditional request. Prints one line; the file is read only when it says CHANGED |
 | `tools/inline-shell.py` | folds a shell back into one portable file, for a page that has to travel by mail or as an artifact |
+| `inbox/` | the owner's queue: `ask.sh` writes one request, `server.mjs` serves them all on http://localhost:7654. Every session on the machine writes to the same queue, he answers in one place, and `--wait` returns his click to the session that is blocked on it |
+| `hooks/inbox-guard.sh` | starts the queue server when the LaunchAgent has not, states the command at session start, and lists what is already waiting so a second session does not queue the same question twice |
 | `hooks/shell-guard.sh` | refuses a page with an inline `<style>`/`<script>` over 500 bytes; `--check` scans the kit's own templates |
 | `hooks/page-guard.sh` | refuses a page that can raise the browser window: a meta refresh, a reload, a focus, a modal, a desktop notification, a new tab |
 | `hooks/page-sweep.sh` | the same check over every page already on disk, at session start. Reports only what fires by itself; a call reached from a click or a file picker is his own and is left alone |

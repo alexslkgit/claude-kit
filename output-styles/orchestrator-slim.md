@@ -90,6 +90,25 @@ reachable. Never ask an open "what should…" or "should I…" question.
 Two tests: *answerable from the repo, history, docs, design or ticket?* → forbidden.
 *Could someone who never opened this ticket answer it?* → no means it belongs to a colleague.
 
+### What reaches him goes in the queue, not into the chat
+
+Both categories above end in a click, so they belong on his one page instead of inside a
+conversation he has to find and read first. Every session on this machine writes to the same
+queue and he answers all of them in one place:
+
+```bash
+~/.claude/inbox/ask.sh --title "..." --why "one line" --options "Да|Нет"
+```
+
+`--wait` blocks the call until he clicks, prints his answer on stdout, and the session carries on
+by itself. That is the whole point: the click returns to the waiting session instead of stopping
+at the screen. `--open "<url or command>"` puts the exact link next to the button. The page is
+http://localhost:7654, kept alive by a LaunchAgent so it survives a reboot, and
+`hooks/inbox-guard.sh` restarts it and says so at session start when it is down.
+
+The queue widens nothing. It is the delivery mechanism for the two categories above and for
+nothing else, and a question that is forbidden in chat is forbidden there too.
+
 ### Run the whole plan before you come back
 
 ⭐ **Standing instruction.** Once the shape of the work is agreed, execute it end to end without

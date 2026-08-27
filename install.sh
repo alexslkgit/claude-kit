@@ -41,6 +41,18 @@ copy_tree tools
 copy_tree templates
 chmod +x "${CLAUDE_DIR}/hooks/"*.sh 2>/dev/null || true
 
+# The owner's queue. One page for every session on the machine, so a click he alone can make does
+# not sit unread inside whichever conversation happened to need it. Copied file by file, never
+# with copy_tree: this directory also holds the live queue and its answers, and on the machine
+# where it was first built ask.sh is a symlink back into the kit that `cp -R` would write through.
+mkdir -p "${CLAUDE_DIR}/inbox/queue" "${CLAUDE_DIR}/inbox/answers"
+for f in ask.sh server.mjs; do
+  [ -L "${CLAUDE_DIR}/inbox/${f}" ] && rm -f "${CLAUDE_DIR}/inbox/${f}"
+  cp -f "${KIT_DIR}/inbox/${f}" "${CLAUDE_DIR}/inbox/${f}"
+done
+chmod +x "${CLAUDE_DIR}/inbox/ask.sh"
+echo "  inbox: ${CLAUDE_DIR}/inbox/ask.sh, queue served on http://localhost:7654"
+
 # Register the status guard. It records context resets and briefs the next session on whether
 # the project's status files can be trusted; it never writes them — only the wrap-up skill does.
 # Merged into settings.json, never overwriting other hooks; re-running install is idempotent.
@@ -493,6 +505,33 @@ print(f"  hooks: chrome guard registered ({added} new entr{'y' if added==1 else 
 PY
 fi
 
+# Register the inbox guard. The queue is only a rule if the page is up and every session knows
+# the command, so this starts the server when the LaunchAgent has not, and states the rule at
+# session start. UserPromptSubmit is registered too, and is silent unless the server dies under a
+# running session, which is the one case where a queued request would vanish unseen.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/inbox-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+added = 0
+for event in ("SessionStart", "UserPromptSubmit"):
+    entries = hooks.setdefault(event, [])
+    if any(script in json.dumps(e) for e in entries):
+        continue
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]}); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: inbox guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Merge the machine-conditional rules into ~/.claude/CLAUDE.md between markers. That file also
 # holds whatever the user wrote by hand, so this replaces only the marked block, never the file.
 # Each rule states its own precondition and is inert on a machine where it does not apply.
@@ -619,6 +658,32 @@ if [ "$(uname)" = "Darwin" ]; then
         || launchctl bootstrap "gui/$(id -u)" "$AGENT_PLIST" 2>/dev/null || true
       echo "  board server: already serving http://localhost:8899"
     fi
+  fi
+
+  # The queue server, on the same terms as the board server: a LaunchAgent survives a reboot and
+  # a session-scoped `node server.mjs &` dies with the session that started it. That failure is
+  # the reason this block exists, and it was watched happening on 2026-08-27.
+  INBOX_DIR="${CLAUDE_DIR}/inbox"
+  INBOX_LABEL="com.alexslk.claude-inbox"
+  INBOX_PLIST="${HOME}/Library/LaunchAgents/${INBOX_LABEL}.plist"
+  NODE_BIN="$(command -v node || true)"
+  if [ -f templates/inbox-server.plist ] && [ -n "$NODE_BIN" ]; then
+    mkdir -p "${HOME}/Library/LaunchAgents"
+    sed -e "s|NODE_BIN|${NODE_BIN}|g" -e "s|INBOX_DIR|${INBOX_DIR}|g" \
+      templates/inbox-server.plist > "${INBOX_PLIST}.new"
+    if [ ! -f "$INBOX_PLIST" ] || ! cmp -s "${INBOX_PLIST}.new" "$INBOX_PLIST"; then
+      mv "${INBOX_PLIST}.new" "$INBOX_PLIST"
+      launchctl bootout "gui/$(id -u)/${INBOX_LABEL}" 2>/dev/null || true
+      launchctl bootstrap "gui/$(id -u)" "$INBOX_PLIST" 2>/dev/null || true
+      echo "  inbox server: installed, http://localhost:7654"
+    else
+      rm -f "${INBOX_PLIST}.new"
+      launchctl print "gui/$(id -u)/${INBOX_LABEL}" >/dev/null 2>&1 \
+        || launchctl bootstrap "gui/$(id -u)" "$INBOX_PLIST" 2>/dev/null || true
+      echo "  inbox server: already serving http://localhost:7654"
+    fi
+  elif [ -z "$NODE_BIN" ]; then
+    echo "  inbox server: node not on PATH, skipped (the queue page will not be up)"
   fi
 
   if [ -f tools/tasks-index.py ] && command -v python3 >/dev/null 2>&1; then
