@@ -107,8 +107,11 @@ fi
 
 # Register the handoff guard. It fixes the path a handoff is written to, hides that file from
 # git, tells a new session the file is waiting, and moves it out of the repository the moment it
-# is read. PostToolUse is matched on Write and Read because those are the two moments the flow
-# must not depend on the model remembering anything.
+# is read. PostToolUse is matched on Write|Edit|MultiEdit and Read because those are the moments
+# the flow must not depend on the model remembering anything — Edit and MultiEdit joined the Write
+# matcher 2026-08-27, after a handoff written by Edit (or by a Bash heredoc, which no PostToolUse
+# matcher can see at all) reached SessionStart unstamped and the by-id pickup silently fell through
+# to title_match, or to nothing, depending on chance.
 if command -v python3 >/dev/null 2>&1; then
   python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/handoff-guard.sh" <<'PY'
 import json, os, sys
@@ -120,7 +123,7 @@ if os.path.exists(path):
     except Exception:
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
-wanted = {"SessionStart": [None], "UserPromptSubmit": [None], "PostToolUse": ["Write", "Read"]}
+wanted = {"SessionStart": [None], "UserPromptSubmit": [None], "PostToolUse": ["Write|Edit|MultiEdit", "Read"]}
 added = 0
 for event, matchers in wanted.items():
     entries = hooks.setdefault(event, [])
@@ -525,6 +528,12 @@ fi
 # Select the output style non-interactively. `/output-style` was removed in newer versions,
 # and `/config` is a manual step — this sets the same `outputStyle` key those wrote.
 # Merge, never overwrite: the file also holds permissions, env and hooks.
+#
+# 2026-08-27: this used to overwrite ANY existing outputStyle with the default, and it clobbered
+# `orchestrator-slim` — a style the kit ships and the user had deliberately chosen — with plain
+# `orchestrator` on a machine that was already set up. The default is only for a settings.json that
+# has no opinion yet: the key is absent, or it names a style this kit does not ship at all. A style
+# the kit ships, chosen already, survives a re-run of this script untouched.
 STYLE="orchestrator"
 SETTINGS="${CLAUDE_DIR}/settings.json"
 if [ ! -f "$SETTINGS" ]; then
@@ -532,17 +541,21 @@ if [ ! -f "$SETTINGS" ]; then
   printf '{\n  "outputStyle": "%s"\n}\n' "$STYLE" > "$SETTINGS"
   echo "  output style: created ${SETTINGS} with outputStyle=${STYLE}"
 elif command -v python3 >/dev/null 2>&1; then
-  python3 - "$SETTINGS" "$STYLE" <<'PY'
-import json, sys, shutil
-path, style = sys.argv[1], sys.argv[2]
+  python3 - "$SETTINGS" "$STYLE" "${CLAUDE_DIR}/output-styles" <<'PY'
+import json, sys, shutil, os
+path, style, styles_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(path) as f:
     raw = f.read()
 try:
     data = json.loads(raw) if raw.strip() else {}
 except json.JSONDecodeError as e:
     sys.exit(f"  output style: {path} is not valid JSON ({e}); set \"outputStyle\": \"{style}\" by hand")
-if data.get("outputStyle") == style:
+current = data.get("outputStyle")
+known = current and os.path.isfile(os.path.join(styles_dir, current + ".md"))
+if current == style:
     print(f"  output style: already {style}")
+elif known:
+    print(f"  output style: leaving {current} as set (a kit style already chosen)")
 else:
     shutil.copyfile(path, path + ".bak")
     data["outputStyle"] = style

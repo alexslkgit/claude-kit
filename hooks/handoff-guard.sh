@@ -74,6 +74,10 @@ DURABLE=""; [ -n "$status_dir" ] && DURABLE="$status_dir/HANDOFF.md"
 SESSDIR="$HOME/.claude/.handoff-guard"
 sid="$(field session_id)"; [ -n "$sid" ] || sid="$(printf '%s' "$cwd" | /usr/bin/tr -cd 'A-Za-z0-9')"
 counter="$SESSDIR/$sid.n"
+# Beside the counter, added 2026-08-27: marks that THIS session has already announced a pickup
+# once, whichever branch did it, so the deferred UserPromptSubmit check never repeats what
+# SessionStart already said and vice versa.
+picked_marker="$SESSDIR/$sid.picked"
 
 # --- who this chat is, which the filesystem alone can never say -------------------------------
 # A /clear starts a brand new CLI session id in the same directory, so every id this hook is
@@ -91,12 +95,24 @@ counter="$SESSDIR/$sid.n"
 # not know either — the identity was on disk the whole time, and nothing was reading it.
 CHATROOT="$HOME/Library/Application Support/Claude/claude-code-sessions"
 CHAT_ID=""; CHAT_TITLE=""; CHAT_TITLESRC=""
+# Bounded wait, added 2026-08-27. The mapping file is written by the desktop app AFTER the CLI
+# session already exists — measured on 471eaebd, 2m17s after SessionStart — so a resolve_chat that
+# only tries once at SessionStart routinely finds nothing and both identity branches below it are
+# gated on CHAT_ID being non-empty. An optional first argument is the number of EXTRA attempts
+# beyond the first, 0.4s apart; every call site but SessionStart keeps passing none, so nothing
+# outside that one branch waits at all, and even there the ceiling is ~6s and a miss still exits 0.
 resolve_chat() {
+  local extra="${1:-0}" tries f
+  tries=$((extra + 1))
   [ -n "$sid" ] || return 0
   [ -d "$CHATROOT" ] || return 0
-  local f
-  f="$(/usr/bin/grep -rl "\"cliSessionId\":\"$sid\"" "$CHATROOT" --include='local_*.json' 2>/dev/null | head -1)"
-  [ -n "$f" ] || return 0
+  while :; do
+    f="$(/usr/bin/grep -rl "\"cliSessionId\":\"$sid\"" "$CHATROOT" --include='local_*.json' 2>/dev/null | head -1)"
+    [ -n "$f" ] && break
+    tries=$((tries - 1))
+    [ "$tries" -gt 0 ] || return 0
+    sleep 0.4 2>/dev/null || true
+  done
   CHAT_ID="$(basename "$f" .json)"
   if command -v python3 >/dev/null 2>&1; then
     CHAT_TITLE="$(python3 -c 'import json,sys
@@ -106,7 +122,7 @@ except Exception: pass' "$f" 2>/dev/null)"
   [ -n "$CHAT_TITLE" ] || CHAT_TITLE="$(/usr/bin/sed -n 's/.*"title"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
   CHAT_TITLESRC="$(/usr/bin/sed -n 's/.*"titleSource"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
 }
-resolve_chat
+[ "$event" = "SessionStart" ] && resolve_chat 15 || resolve_chat
 
 # The stamp a handoff carries, and the two readers of it.
 MARK='handoff-chat:'
@@ -166,12 +182,106 @@ waiting() {
 title_of() { /usr/bin/head -1 "$1" 2>/dev/null | /usr/bin/sed 's/^#[[:space:]]*//' | /usr/bin/cut -c1-110; }
 stamp_of() { /bin/date -r "$(/usr/bin/stat -f %m "$1" 2>/dev/null || echo 0)" '+%Y-%m-%d %H:%M' 2>/dev/null; }
 
+# Self-healing stamp, added 2026-08-27. The PostToolUse/Write branch below is the only place that
+# writes the stamp, and it is registered for Write only until this same date's settings.json fix —
+# but even after that fix, a handoff dropped by a Bash heredoc is never seen by ANY PostToolUse
+# matcher, because no file_path ever passes through a tool call. So whenever this chat's identity
+# is known, claim any unstamped waiting handoff that title_match would resolve for this chat's own
+# title, using the exact stamp format and line-2 position the Write branch uses, and stamp it here
+# instead. Called from both SessionStart and UserPromptSubmit, after resolve_chat.
+heal_stamps() {
+  [ -n "$CHAT_ID" ] || return 0
+  local list unstamped target tmp
+  list="$(waiting)"
+  [ -n "$list" ] || return 0
+  unstamped="$(printf '%s\n' "$list" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -s "$f" ] || continue
+    /usr/bin/grep -q "$MARK" "$f" 2>/dev/null || printf '%s\n' "$f"
+  done)"
+  [ -n "$unstamped" ] || return 0
+  target="$(printf '%s\n' "$unstamped" | title_match)"
+  [ -n "$target" ] && [ -s "$target" ] || return 0
+  tmp="$target.stamp.$$"
+  { /usr/bin/head -1 "$target"
+    printf '<!-- %s %s | %s -->\n' "$MARK" "$CHAT_ID" "$CHAT_TITLE"
+    /usr/bin/tail -n +2 "$target"
+  } > "$tmp" 2>/dev/null && mv -f "$tmp" "$target" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+}
+
+# Archive-on-delivery, added 2026-08-27. Consumption was PostToolUse-on-Read only, so a briefing
+# read with a bare `cat` in a bypass-permissions session — or one whose full text this hook itself
+# just printed, in the SessionStart and UserPromptSubmit pickup blocks below — was never seen by
+# that matcher and sat on disk confusing the next session. The moment this hook has put a briefing
+# into the model's context in full, it HAS been delivered, so it archives it in that same breath,
+# exactly the way the PostToolUse/Read branch already does. $DURABLE is exempt on purpose: it is
+# part of the project's own archive, rewritten by the next wrap-up, and is never consumed.
+archive_handoff() {   # $1: the path just cat'ed in full into a heredoc above this call.
+  local f="$1"
+  [ -n "$f" ] && [ -s "$f" ] || return 0
+  [ -n "$DURABLE" ] && [ "$f" = "$DURABLE" ] && return 0
+  mkdir -p "$ARCHIVE" 2>/dev/null || true
+  mv -f "$f" "$ARCHIVE/$(basename "$repo_root")-$(basename "$f")" 2>/dev/null || true
+}
+
 case "$event" in
 
   UserPromptSubmit)
     mkdir -p "$SESSDIR" 2>/dev/null || true
     n="$(cat "$counter" 2>/dev/null || echo 0)"; n=$((n + 1)); printf '%s' "$n" > "$counter" 2>/dev/null || true
     /usr/bin/find "$SESSDIR" -type f -mtime +2 -delete 2>/dev/null || true
+
+    # --- deferred identity pickup, added 2026-08-27 -----------------------------------------
+    # SessionStart's bounded wait is capped at ~6s, and the mapping file that resolve_chat greps
+    # for was measured arriving 2m17s after the session started — well outside that ceiling. This
+    # session did not miss the handoff, it only missed it AT THAT MOMENT. Every prompt after that
+    # is another chance to resolve, so identity is checked here on every single one, unconditional
+    # on any keyword, until a pickup is announced once (marker: $picked_marker) or there is nothing
+    # to claim. This is the fix for the proven race: SessionStart's own branches stay untouched.
+    if [ ! -f "$picked_marker" ]; then
+      heal_stamps
+      pu_f=""
+      if [ -n "$CHAT_ID" ]; then
+        pu_list="$(waiting)"
+        if [ -n "$pu_list" ]; then
+          pu_claimed=""
+          while IFS= read -r pu_wf; do
+            [ -n "$pu_wf" ] || continue
+            [ "$(owner_of "$pu_wf")" = "$CHAT_ID" ] && pu_claimed="$pu_claimed$pu_wf
+"
+          done <<PUCLAIMEOF
+$pu_list
+PUCLAIMEOF
+          pu_cn="$(printf '%s' "$pu_claimed" | /usr/bin/grep -c . )"
+          if [ "$pu_cn" = "1" ]; then
+            pu_f="$(printf '%s' "$pu_claimed" | head -1)"
+          elif [ "$pu_cn" = "0" ]; then
+            pu_f="$(printf '%s\n' "$pu_list" | title_match)"
+          fi
+        fi
+      fi
+      if [ -n "$pu_f" ] && [ -s "$pu_f" ]; then
+        cat <<EOF
+handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE"
+($CHAT_ID). Identity only just resolved — the desktop app had not finished writing the mapping
+file at session start — and the briefing below is claimed by this chat, by its stamp or, if it
+predates stamping, by its name, so it is yours by identity rather than by recency. It is here in
+full ($(stamp_of "$pu_f")).
+
+Read it and carry on from where it stops. Your first message opens with the board link as always
+and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
+thank him for the handoff, do not summarise it back at him, do not write a new one, and do not
+tell him to clear a context he cleared seconds ago.
+
+--- $pu_f ---
+$(cat "$pu_f" 2>/dev/null)
+--- end ---
+EOF
+        archive_handoff "$pu_f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+        touch "$picked_marker" 2>/dev/null || true
+        exit 0
+      fi
+    fi
 
     printf '%s' "$payload" | /usr/bin/grep -qiE \
       'handoff|hand ?off|hand this over|хендоф|хэндоф|хендов|хэндов|архивируйся|заархивируй|перенеси в новый|новый чат|новый диалог' \
@@ -350,6 +460,8 @@ except Exception: print("")' 2>/dev/null)"
 
   SessionStart|*)
     rm -f "$counter" 2>/dev/null || true
+    rm -f "$picked_marker" 2>/dev/null || true
+    heal_stamps  # 2026-08-27: claim any unstamped handoff title_match resolves for this chat.
     list="$(waiting)"
     [ -n "$list" ] || exit 0
     n="$(printf '%s\n' "$list" | /usr/bin/grep -c . )"
@@ -402,6 +514,8 @@ tell him to clear a context he cleared seconds ago.
 $(cat "$f" 2>/dev/null)
 --- end ---
 EOF
+        archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+        touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
         exit 0
       fi
 
@@ -423,6 +537,8 @@ thank him for the handoff, do not summarise it back at him, and do not write a n
 $(cat "$f" 2>/dev/null)
 --- end ---
 EOF
+          archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+          touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
           exit 0
         fi
       fi
@@ -445,6 +561,8 @@ handoff, and do not tell him to clear a context he cleared seconds ago.
 $(cat "$f" 2>/dev/null)
 --- end ---
 EOF
+      archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+      touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
       exit 0
     fi
 
