@@ -346,6 +346,8 @@ quadratic in its length. What decides everything is how much each turn *adds*.
     existing page costs the hunk, not the file. Refused past 12 000 characters by the same hook.
   - **Bash: 13%, from count alone.** 9 819 calls, median 236 tokens in and 81 out — nothing is big,
     there are simply ten thousand of them. Batch independent calls into one message and one script.
+    Reading a file out with `cat`, `head`, `sed -n` or `jq .` is refused past 30 000 characters by
+    the same hook — a narrow window or a `grep` always passes, and the whole file is a subagent's job.
   - **`Read`: 5%.** Median 1 431 tokens per call, worst 13 925. Delegate the read, or pass
     `offset`/`limit`. Never a whole file pulled in to skim.
 

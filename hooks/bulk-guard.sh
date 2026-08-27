@@ -32,12 +32,31 @@
 # PreToolUse contract: exit 2 blocks the call and feeds stderr back to the model. Any other exit
 # code lets the call through. This script therefore exits 0 on every unexpected condition — it must
 # never be the reason a session cannot work.
+#
+# The hole, found 2026-08-26 in a real session: the Read rule above guards the Read tool only, and
+# the same file read out through Bash walked straight past it. That session pulled an ASR transcript
+# into the main conversation with sed -n '2,60p' and cat over five successive calls — about 58 000
+# characters, roughly 18 000 tokens — which then rode along in every later request of the session.
+# Read would have refused it. Bash was never asked. So Bash now also refuses a read-out utility
+# (cat, head, tail, sed -n A,Bp, less, more, bat, column, jq .) pointed at a file over
+# BASH_DUMP_BYTES. 30 KB is about 8–10k tokens: past that, a subagent that returns a conclusion is
+# cheaper than carrying the file for the rest of the session.
+#
+# What that rule deliberately does NOT refuse, because a false block costs more here than a false
+# pass: a narrow window (head -n N, tail -n N, sed -n 'A,Bp' under 200 lines), any grep — grep is a
+# filter, not a dump, whatever the file size — any pipeline, since a pipe is the session already
+# shrinking the output at the source, any redirection to a file, since that output never reaches the
+# conversation, and any path that cannot be stat'ed. Unknown means allow, everywhere. The scratchpad
+# round-trip exemption was considered and dropped: this hook cannot see the session's temp dir
+# without guessing at it, and that guess is fragile in the direction that blocks work.
 
 set -uo pipefail
 
 IMAGE_BUDGET=2          # free screenshots per session in the main conversation
 READ_LINES=1200         # a Read with no offset/limit above this is a whole-file dump
 WRITE_CHARS=24000       # measured break-even against a page-writer-sonnet run, A-048
+BASH_DUMP_BYTES=30000   # a file read out through Bash above this is a dump, not a look
+BASH_DUMP_LINES=200     # a window this narrow is a look, whatever the file behind it weighs
 STATE_DIR="$HOME/.claude/bulk-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -126,6 +145,184 @@ EOF
   # clicks, and it resets on the refusal, so a flow that genuinely has to look between steps can
   # never deadlock: the next call always goes through.
   Bash)
+    # --- a file read out in full through Bash, the hole closed 2026-08-26 -----------------------
+    # Runs before every counter in this branch and touches none of them: this rule is about the size
+    # of one call, the batching rule below is about the number of calls, and a refusal here must not
+    # move the state the other rule measures.
+    #
+    # The parser prints one tab-separated "path<TAB>bytes" line and only ever on a confident,
+    # positive detection. Every other outcome — an exception, an unreadable quoting, a missing
+    # python, a path that cannot be stat'ed — prints nothing, and nothing means allow.
+    dump="$(printf '%s' "$payload" | BASH_DUMP_BYTES="$BASH_DUMP_BYTES" \
+                                     BASH_DUMP_LINES="$BASH_DUMP_LINES" python3 -c '
+import json, os, re, shlex, stat, sys
+
+LIMIT = 30000
+WINDOW = 200
+try:
+    LIMIT = int(os.environ.get("BASH_DUMP_BYTES") or LIMIT)
+    WINDOW = int(os.environ.get("BASH_DUMP_LINES") or WINDOW)
+except Exception:
+    pass
+
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    raise SystemExit
+c = str((d.get("tool_input") or {}).get("command") or "")
+base = str(d.get("cwd") or "")
+if not os.path.isdir(base):
+    base = "."
+
+# A pipe shrinks the output at the source, a redirect sends it somewhere that is not this
+# conversation, and pbcopy is the clipboard. All three are already the right behaviour. A pipeline
+# whose tail happens not to shrink is a false negative this accepts on purpose.
+if not c or "|" in c or ">" in c or "pbcopy" in c:
+    raise SystemExit
+
+def size_of(tok):
+    if not tok or tok.startswith("-"):
+        return 0
+    p = os.path.expanduser(tok)
+    if not os.path.isabs(p):
+        p = os.path.join(base, p)
+    try:
+        st = os.stat(p)
+    except Exception:
+        return 0
+    if not stat.S_ISREG(st.st_mode):
+        return 0
+    return st.st_size
+
+def head_tail(rest):
+    # (is it already a narrow window, the file arguments). Anything unreadable answers "narrow".
+    n = None
+    unit = "lines"
+    files = []
+    follow = False
+    i = 0
+    while i < len(rest):
+        a = rest[i]
+        if a in ("-f", "-F", "--follow"):
+            follow = True
+        elif a in ("-n", "-c", "--lines", "--bytes"):
+            unit = "bytes" if a in ("-c", "--bytes") else "lines"
+            i += 1
+            n = rest[i] if i < len(rest) else None
+        elif a.startswith("--lines=") or a.startswith("--bytes="):
+            unit = "bytes" if a.startswith("--bytes=") else "lines"
+            n = a.split("=", 1)[1]
+        elif a.startswith("-"):
+            m = re.match(r"^-([nc]?)([0-9]+)$", a)
+            if m:
+                unit = "bytes" if m.group(1) == "c" else "lines"
+                n = m.group(2)
+        else:
+            files.append(a)
+        i += 1
+    if follow or n is None:
+        return True, files
+    if n.startswith("+"):
+        return False, files
+    m = re.match(r"^([0-9]+)([bkKmMgG]?)$", n)
+    if not m:
+        return True, files
+    mult = {"": 1, "b": 512, "k": 1024, "K": 1000,
+            "m": 1048576, "M": 1000000, "g": 1073741824, "G": 1000000000}
+    v = int(m.group(1)) * mult.get(m.group(2), 1)
+    if unit == "bytes":
+        return v <= LIMIT, files
+    return v <= WINDOW, files
+
+def sed_lines(rest):
+    # Only sed -n "A,Bp" FILE is understood. A substitution, an -e, an -f, a regex address: all of
+    # them are filters or unreadable from here, and both answer None, which allows.
+    if "-n" not in rest:
+        return None, []
+    if any(a.startswith("-") and a != "-n" for a in rest):
+        return None, []
+    plain = [a for a in rest if not a.startswith("-")]
+    if not plain:
+        return None, []
+    script, files = plain[0], plain[1:]
+    m = re.match(r"^\s*([0-9]+)\s*,\s*([0-9]+)\s*p\s*;?\s*$", script)
+    if m:
+        return int(m.group(2)) - int(m.group(1)) + 1, files
+    if re.match(r"^\s*[0-9]+\s*,\s*\$\s*p\s*;?\s*$", script) or re.match(r"^\s*p\s*$", script):
+        return WINDOW + 1, files
+    return None, files
+
+def jq_dump(rest):
+    ok = ("-r", "-j", "-C", "-M", "-S", "-a", "-e", "--raw-output", "--sort-keys", "--color-output")
+    if any(a.startswith("-") and a not in ok for a in rest):
+        return False, []
+    plain = [a for a in rest if not a.startswith("-")]
+    if not plain:
+        return False, []
+    return plain[0].strip() in (".", ".[]"), plain[1:]
+
+for seg in re.split(r"&&|;|\n|&", c):
+    try:
+        args = shlex.split(seg)
+    except Exception:
+        continue
+    while args and re.match(r"^[A-Za-z_][A-Za-z_0-9]*=", args[0]):
+        args.pop(0)
+    if not args:
+        continue
+    cmd = os.path.basename(args[0])
+    rest = args[1:]
+    files = [a for a in rest if not a.startswith("-")]
+    if cmd in ("cat", "less", "more"):
+        pass
+    elif cmd in ("head", "tail"):
+        narrow, files = head_tail(rest)
+        if narrow:
+            continue
+    elif cmd == "sed":
+        span, files = sed_lines(rest)
+        if span is None or span <= WINDOW:
+            continue
+    elif cmd == "jq":
+        whole, files = jq_dump(rest)
+        if not whole:
+            continue
+    elif cmd == "bat":
+        if any(a.startswith("-r") or a.startswith("--line-range") for a in rest):
+            continue
+    elif cmd == "column":
+        pass
+    else:
+        continue
+    for f in files:
+        n = size_of(f)
+        if n > LIMIT:
+            sys.stdout.write(f + "\t" + str(n))
+            raise SystemExit
+' 2>/dev/null)"
+
+    if [ -n "${dump:-}" ]; then
+      IFS=$'\t' read -r dpath dsize <<<"$dump"
+      if [ -n "${dpath:-}" ] && [ "${dsize:-0}" -gt "$BASH_DUMP_BYTES" ] 2>/dev/null; then
+        cat >&2 <<EOF
+bulk-guard: $dpath is $dsize characters (~$(( dsize / 4000 ))k tokens) and this command reads it out
+in full, so all of it lands in the main context and is re-sent on every later request of this
+session. Blocked. Read refuses exactly this; until 2026-08-26 the same file read through Bash was
+the way around it, measured once at 58 000 characters carried for a whole session.
+
+Take a narrow window instead — head -n 40, sed -n '120,180p', or a grep with a real pattern, which
+is never blocked whatever the file weighs. If the question is "what is in this file" or "what does
+it say about X", that is a subagent: researcher-sonnet for a question, researcher-haiku for a
+mechanical lookup, and ask it for the conclusion rather than the material. A pipeline that shrinks
+the output at the source, and a redirect into a file, both go through untouched.
+
+Genuinely need the whole thing here:
+  touch $STATE_DIR/$sid.bypass
+EOF
+        exit 2
+      fi
+    fi
+
     counter="$STATE_DIR/$sid.bash"
     n=0; [ -f "$counter" ] && n="$(/bin/cat "$counter" 2>/dev/null || echo 0)"
     n=$(( n + 1 )); printf '%s' "$n" > "$counter" 2>/dev/null || true

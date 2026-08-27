@@ -294,6 +294,8 @@ below follows from that line.
     the file; `Edit` costs the hunk, not the file. Refused past 12 000
     characters by the same hook.
   - **Bash: 13%, from count alone.** Batch independent calls into one message and one script.
+    Reading a file out with `cat`, `head`, `sed -n` or `jq .` is refused past 30 000 characters by
+    the same hook — a narrow window or a `grep` always passes, and the whole file is a subagent's job.
   - **`Read`: 5%.** Delegate the read, or pass `offset`/`limit`. Never a whole file pulled in to
     skim.
 
