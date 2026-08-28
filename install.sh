@@ -693,6 +693,39 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 echo
+# Register the board baker. Measured 2026-08-28: the Claude Code side panel opens a local file as a
+# static data: snapshot with JavaScript DISABLED, so a board, whose body is empty until board.js
+# runs, showed a correct title over a blank white page. Every board, every Mac, every session. The
+# baker runs the real renderer at write time and bakes its markup into the file, so the page is a
+# genuine static document; the JSON block stays the source of truth and nothing about how boards
+# are written changes. It also turns an invented schema into a loud error instead of a blank page.
+# PostToolUse catches the write, Stop sweeps the project's task pages for anything written by Bash.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/board-bake.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+added = 0
+post = hooks.setdefault("PostToolUse", [])
+if not any(script in json.dumps(e) for e in post):
+    post.append({"matcher": "Write|Edit", "hooks": [{"type": "command", "command": script, "timeout": 60}]})
+    added += 1
+stop = hooks.setdefault("Stop", [])
+if not any(script in json.dumps(e) for e in stop):
+    stop.append({"hooks": [{"type": "command", "command": script, "timeout": 60}]})
+    added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: board baker registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 echo "Done. Run /clear — the output style loads at session start."
 echo "For a new repo: copy templates/CLAUDE.local.md to its root and gitignore it."
 echo

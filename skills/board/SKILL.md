@@ -447,3 +447,32 @@ ln -sfn <repo>/.claude/tasks ~/Tasks/_repos/<repo-name>
 - Never more than one stage behind reality. If you are about to do something the board does not
   mention, write the board first.
 - Never narrate an update. The link on the first line is the whole announcement.
+
+## The page must be a real document, not a promise of one
+
+Measured 2026-08-28. The Claude Code side panel opens a local file as a **static `data:` snapshot
+with JavaScript disabled**. A board's `<body>` is empty until `board.js` runs, so what he actually
+saw was a correct browser tab title over a blank white page. Every board, every Mac, every session.
+The same is true of a chewed plan page.
+
+This is handled for you and needs no change to how a board is written. `hooks/board-bake.sh` runs
+after every `Write` and `Edit`, and again at the end of a turn over `./.claude/tasks/*.html`. It
+calls `tools/prerender-page.py`, which runs **the real shell renderer** under JavaScriptCore, bakes
+the resulting markup into `<div id="__baked">` and inlines the shell CSS and JS. The JSON block
+stays the source of truth, the live refresh still works when the page is served over http, and the
+baked block is removed by the script before the live renderer draws, so nothing renders twice. Runs
+are skipped on a hash when nothing changed.
+
+Two things follow for you:
+
+- **Never hand-edit the baked block.** Change the JSON and let the baker redraw it.
+- **The baker is also the schema check.** If the JSON does not match the renderer, the bake fails
+  loudly instead of leaving him a blank page. That is how this was found: a page-writer had invented
+  a `cards` key. There is no `cards` key. The board is
+  `{ "title", "sub", "stamp", "tasks": [ { "t", "state": "done|live|todo", "open", "items": [...] } ],
+  "you": {...}, "now", "decided": [...], "stampNote" }`, and items carry
+  `"state": "done|todo|wait|here"`. Copy the skeleton from `~/.claude/templates/board.html`.
+
+To bake by hand, for a page written somewhere else:
+
+    python3 ~/.claude/tools/prerender-page.py page.html
