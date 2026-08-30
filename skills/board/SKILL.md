@@ -415,12 +415,19 @@ removed 43% of all item text, about 3,800 tokens off a full rewrite.
 **Completed work is compressed, not displayed. At most three `done` items per group**, and each
 says what was achieved rather than how.
 
-**Compression has a floor as well as a ceiling: never fewer than three items in a group.**
+**A finished group loses its items entirely.** Corrected by the owner on 2026-08-30. Once every
+child of an item is `done`, the item stands alone as a closed line and carries no `items` at all:
+there is nothing left in there for him to decide, and a fold he opens only to find five ticks is
+a fold that wasted his click. Whatever the group achieved belongs in the parent's own line. This
+takes precedence over the floor below, which governs groups that are still open.
+
+**While a group is still open, compression has a floor as well as a ceiling: never fewer than
+three items.**
 Corrected by the owner on 2026-08-30, after a board came back with exactly one child under every
 single item. That is the rule read backwards, and it is worse than no compression at all: a group
 of one tells him nothing the parent line did not already say, while costing a fold he has to open.
-Ten done items collapse to three, not to one. A group that genuinely holds fewer than three facts
-does not get padded with filler and does not get a lone child either, its one fact belongs on the
+Ten items collapse to three, not to one. A group that genuinely holds fewer than three facts does
+not get padded with filler and does not get a lone child either, its one fact belongs on the
 parent's own line and the group carries no `items` at all. Items still `live` or `todo` keep their own line, because
 those are the ones he still has to think about. This rule saves no tokens at all under the
 mutate pattern: a done item is written once and never re-emitted, so nothing about it costs less.
