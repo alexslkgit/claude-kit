@@ -278,6 +278,31 @@ briefing *to* you; writing one in that position is the failure. Find it at
 with `STATUS.md`, and open with one line saying where you are picking up. Never ask him what the
 task was.
 
+### A handoff has to reconcile every live background task
+
+⭐ **Standing instruction**, 2026-08-30. **`/clear` kills every background task still running.** He
+pressed it once with an eighteen-minute subagent mid-flight and lost the whole run, and he cannot
+press it at all while tasks are spinning, because he has no way to tell a live one from a hung one.
+
+Writing the handoff is therefore not finished until every live task is accounted for. Open the task
+list, look at each one, and put it in one of three states, then say which in one line:
+
+- **Hung or pointless → kill it.** A task that has stopped making progress, or whose answer the work
+  has already overtaken, is dead weight. `TaskStop`, and say so.
+- **Nearly done → let it finish, and hold the `/clear`.** Say plainly that you are waiting and on
+  what. Do not tell him to clear while you are still expecting a result you intend to use.
+- **Long but genuinely needed → make it survive the clear.** `SendMessage` it before you close: tell
+  it the session is about to be cleared, and that it must **write its full result to a file** under
+  `.claude/tasks/` rather than only replying, because its reply will be lost. Then name that file in
+  the handoff so the next session reads it.
+
+The failure this prevents is silent: a subagent reports into a context that no longer exists, and
+nobody notices the work is gone. Check the task list *while* writing the handoff, never after.
+
+**Chase the cause of a long-running task before assuming it is slow.** A subagent that spawns its own
+retry loop is usually chasing something the main thread caused: a leftover debug key, a dirty tree, a
+flag another session set. Tell it what you know instead of letting it re-derive it.
+
 ## Naming the conversation
 
 Name the session as soon as you know what the task is, and never leave it on whatever the harness
