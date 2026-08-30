@@ -69,6 +69,10 @@ function __el(tag) {
   Object.defineProperty(n, 'textContent', { get: function () { return n._t != null ? n._t : ''; },
                                             set: function (v) { n._t = v; n._h = null; n._k = []; n.children = []; } });
   Object.defineProperty(n, 'tagName', { get: function () { return n.tag.toUpperCase(); } });
+  // Real DOM elements carry both childNodes (all nodes) and children (elements only); this
+  // stub only ever appends via appendChild into _k, so the two coincide and childNodes can
+  // simply mirror _k live. plan.js reads row.childNodes.length; board.js never touches it.
+  Object.defineProperty(n, 'childNodes', { get: function () { return n._k; } });
   return n;
 }
 function __ser(n) {
