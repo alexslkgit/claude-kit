@@ -296,6 +296,14 @@ list, look at each one, and put it in one of three states, then say which in one
   `.claude/tasks/` rather than only replying, because its reply will be lost. Then name that file in
   the handoff so the next session reads it.
 
+**And when a task you waited for finishes, REWRITE the handoff with what it actually produced.** ⭐
+Same instruction, 2026-08-30. A handoff that still says "a rewrite is in flight, read the diff"
+after the rewrite has landed makes the next session re-run work that is already done and already
+paid for. The moment a task reports, replace its "in flight" paragraph with its result: what it
+changed, what the numbers were, what is left. Never leave the next session to infer from a diff
+what a finished agent already told you in words. Assuming a task will not finish is not a reason to
+skip this; he will give it the half hour.
+
 The failure this prevents is silent: a subagent reports into a context that no longer exists, and
 nobody notices the work is gone. Check the task list *while* writing the handoff, never after.
 
