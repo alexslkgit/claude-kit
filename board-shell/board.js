@@ -22,7 +22,9 @@
    { "title": "...", "sub": "...", "stamp": "09:22", "drift": "было 63%, добавилось 4 подпункта",
      "tasks": [ { "t": "Задача", "state": "done|live|todo", "open": true,
                   "count": [2,2],                     // only for a task with no children listed
-                  "items": [ { "t": "Пункт", "state": "done|todo|wait|here", "items": [...] } ] } ],
+                  "closed": 6,                        // finished children deleted instead of listed
+                  "items": [ { "t": "Пункт", "state": "done|todo|wait|here", "closed": 2,
+                               "items": [...] } ] } ],
      "you":  { "cap": "Ждёт от тебя · 1", "h": "...", "p": "...", "stop": false,
                "btn": { "href": "plan.html", "label": "Открыть инструкцию" } },
      "now":  "одна строка о том, что я делаю сейчас",
@@ -36,12 +38,15 @@
 
 (function () {
   function tally(items) {
-    // leaves only: a node with children contributes its children, never itself
+    // leaves only: a node with children contributes its children, never itself.
+    // `closed` is how many finished children were deleted rather than listed: they are still work
+    // that was done, so they count in both halves of the fraction and the percent does not lie.
     var total = 0, done = 0, live = 0;
     for (var i = 0; i < (items || []).length; i++) {
       var n = items[i];
       if (n.items && n.items.length) {
-        var t = tally(n.items); total += t.total; done += t.done; live += t.live;
+        var t = tally(n.items), c = n.closed || 0;
+        total += t.total + c; done += t.done + c; live += t.live;
       } else {
         total++;
         if (n.state === 'done') done++;
@@ -51,9 +56,12 @@
     return { total: total, done: done, live: live };
   }
   function taskTally(task) {
-    if (task.items && task.items.length) return tally(task.items);
-    var c = task.count || [task.state === 'done' ? 1 : 0, 1];
-    return { total: c[1], done: c[0], live: task.state === 'live' ? 1 : 0 };
+    if (task.items && task.items.length) {
+      var t = tally(task.items), c = task.closed || 0;
+      return { total: t.total + c, done: t.done + c, live: t.live };
+    }
+    var c2 = task.count || [task.state === 'done' ? 1 : 0, 1];
+    return { total: c2[1], done: c2[0], live: task.state === 'live' ? 1 : 0 };
   }
   function pct(a, b) { return b ? Math.round(a * 100 / b) : 0; }
 

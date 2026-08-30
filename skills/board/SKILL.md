@@ -402,37 +402,51 @@ button carries the exact link, already opened in his browser where that is possi
 - No emoji.
 - The left tree fits one screen without scrolling. Overflow is deleted, never shrunk.
 
-### Item length and completed-work compression
+### Item length, and what happens to finished items
 
-Two rules the owner asked for on 2026-08-30, after the board had become, in his words, «свалка
-символов».
+Rules the owner asked for on 2026-08-30, after the board had become, in his words, «свалка
+символов». He corrected them twice the same day, and the corrections are marked where they land.
 
 **No item longer than two lines. A hard ceiling of 200 characters, aim for 120. One fact per
 item.** An item carrying three facts keeps the one that matters; the rest is dropped, not split
 into three items. Measured on one real board: 72 of 91 items ran over 160 characters, and a cap
 removed 43% of all item text, about 3,800 tokens off a full rewrite.
 
-**Completed work is compressed, not displayed. At most three `done` items per group**, and each
-says what was achieved rather than how.
+**A `done` child is deleted from the board, not compressed onto it.** Corrected by the owner on
+2026-08-30, superseding the earlier rule that kept at most three of them per group. A finished item
+has nothing left in it for him to decide, so listing it costs a line of his ten seconds and buys
+nothing. A group displays only the children that are still `live` or `todo`; whatever the closed ones
+achieved belongs on the parent's own line, in one clause, if it is worth saying at all.
 
-**A finished group loses its items entirely.** Corrected by the owner on 2026-08-30. Once every
-child of an item is `done`, the item stands alone as a closed line and carries no `items` at all:
-there is nothing left in there for him to decide, and a fold he opens only to find five ticks is
-a fold that wasted his click. Whatever the group achieved belongs in the parent's own line. This
-takes precedence over the floor below, which governs groups that are still open.
+**A finished group therefore carries no `items`.** Once every child is done, every child is deleted
+and the group stands alone as one closed line. This is now the same rule rather than a second one.
 
-**While a group is still open, compression has a floor as well as a ceiling: never fewer than
-three items.**
+**Deleting them must not move the percentage, so the parent carries `closed: <n>`.** The renderer
+counts `closed` as n leaves that are all done, in both halves of the fraction, so a group that shows
+two open children and hides six closed ones still reads `6 из 8`. Forget the field and the same board
+reads `0 из 2`: it will claim a nearly finished task has not been started, which is the exact
+disagreement between the header and the list he caught on a shipped board. `closed` sits on the task
+or on any branch node, beside `items`.
+
+```python
+d["tasks"][0]["closed"] = d["tasks"][0].get("closed", 0) + 1   # then delete the done child
+d["tasks"][0]["items"] = [x for x in d["tasks"][0]["items"] if x.get("state") != "done"]
+```
+
+Proved both ways in `board-shell/`: a board listing six `done` and two `todo` renders 75%, the same
+board with those six deleted and `closed: 6` renders 75%, and without the field it renders 0%.
+
+**The floor of three governs the open children, not what is left after deleting the closed ones.**
 Corrected by the owner on 2026-08-30, after a board came back with exactly one child under every
-single item. That is the rule read backwards, and it is worse than no compression at all: a group
-of one tells him nothing the parent line did not already say, while costing a fold he has to open.
-Ten items collapse to three, not to one. A group that genuinely holds fewer than three facts does
-not get padded with filler and does not get a lone child either, its one fact belongs on the
-parent's own line and the group carries no `items` at all. Items still `live` or `todo` keep their own line, because
-those are the ones he still has to think about. This rule saves no tokens at all under the
-mutate pattern: a done item is written once and never re-emitted, so nothing about it costs less.
-It is a readability rule only. The board exists to be understood in ten seconds, and 29 dead
-lines defeat that on their own, whatever they cost to type.
+single item: ten open items collapse to three, never to one, because a group of one tells him nothing
+the parent line did not already say while costing a fold he has to open. A group holding fewer than
+three genuinely open facts is not padded and does not get a lone child either: its one fact goes on
+the parent's own line and the group carries no `items`.
+
+None of this saves tokens under the mutate pattern, since a done item is written once and never
+re-emitted. It is a readability rule only. The board exists to be understood in ten seconds, and
+dead lines defeat that on their own, whatever they cost to type.
+
 
 ### Live refresh, and the reload ban
 
@@ -518,7 +532,7 @@ Two things follow for you:
 - **The baker is also the schema check.** If the JSON does not match the renderer, the bake fails
   loudly instead of leaving him a blank page. That is how this was found: a page-writer had invented
   a `cards` key. There is no `cards` key. The board is
-  `{ "title", "sub", "stamp", "tasks": [ { "t", "state": "done|live|todo", "open", "items": [...] } ],
+  `{ "title", "sub", "stamp", "tasks": [ { "t", "state": "done|live|todo", "open", "closed", "items": [...] } ],
   "you": {...}, "now", "decided": [...], "stampNote" }`, and items carry
   `"state": "done|todo|wait|here"`. Copy the skeleton from `~/.claude/templates/board.html`.
 
