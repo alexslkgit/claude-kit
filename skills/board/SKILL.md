@@ -139,12 +139,12 @@ snapshot and an 8899 board is live.
 
 - ~~"A `file://` URL is dead text in the app; the desktop app renders it blue and does nothing on
   the click."~~ **False.** It opens, in the app's own pane, and the pane renders the HTML. What
-  the pane does not do is resolve the page's sibling subresources, so `_shell/board.js` never ran
-  and he was handed a blank white page — which looked exactly like a dead link and was diagnosed
-  as one on 2026-08-26 (commit 33ca8ef). `hooks/board-inline.sh` now bakes the rendered body and
-  the stylesheet into every board after it is written, so a board opened from disk shows its
-  content. That is the safety net, **not** a reason to hand out `file://` links: a disk board
-  cannot refresh itself.
+  the pane actually does, measured 2026-08-28, is open the file as a static `data:` snapshot
+  with JavaScript disabled, so `_shell/board.js` never ran, `<body>` stayed empty, and he was
+  handed a blank white page, which looked exactly like a dead link and was diagnosed as one on
+  2026-08-26 (commit 33ca8ef). The rendered body and the shell CSS and JS are now baked into
+  every board after it is written, so a board opened from disk shows its content. That is the
+  safety net, **not** a reason to hand out `file://` links: a disk board cannot refresh itself.
 - ~~"Boards do not render in a browser over `file://`."~~ **False**, and it never was true.
   Headless Chrome over `file://` renders a board in full — 28 423 characters of body, both
   `_shell` files returning 200.
@@ -272,15 +272,32 @@ The skeleton around the block is fixed and is copied from `templates/board.html`
 </html>
 ```
 
-**Always replace the whole file** — never append. Growth is the failure mode, and it is a
-different failure from the shell one: the whole-file rule is about the data, the shell rule is
-about the styling. Measured 2026-08-21 over 30 days of real sessions: 189 board writes carried
-649 KB of CSS and JS and 1 143 KB of markup, all of it re-sent on every later request of those
-sessions. The same 189 boards as JSON are about a third of the markup and none of the styling.
+**Mutate the JSON in place with a short python script.** Never with a `Write` of the whole file,
+and never by authoring the whole `tasks` array again. "Rewritten in full" describes what the
+reader sees: the page is regenerated from the JSON on every load, so from his side every update
+looks complete. It does not describe what you type: your job is the diff, not the document.
 
-**If nothing changed, do not rewrite it.** Compare what you are about to write with what is on
-disk; identical means skip the write entirely. A board rewritten for the sake of the timestamp
-burns tokens and tells him nothing.
+```python
+d = json.load(open(p))
+d["tasks"][0]["items"].append({"t": "новый пункт", "state": "done"})
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=2)
+```
+
+Re-parse the file afterward to confirm it is still valid JSON before moving on.
+
+A token audit of 3,409 real board calls, 2026-05-21 to 2026-08-30, found 173 whole-file `Write`
+calls at a mean of 8,714 characters, roughly 2,900 tokens, against a mutate script's median of
+1,162 characters, roughly 420 tokens, for the same update: seven times less for the same fact
+landing on the page.
+
+**If nothing changed, do not run the script at all.** A board mutated for the sake of the
+timestamp burns tokens and tells him nothing.
+
+**Never read a board back to compare it with what you are about to write.** The mutate script
+already reads the file inside its own process, where nothing crosses the model. If you need to
+know what an entry currently says, have the script print that one entry, never the whole file.
+The same audit found reading a board back through `Read` at a median of 5,725 characters, and
+that read-back is 27% of everything boards cost across the 3,409 calls measured.
 
 ### The structure is fixed. Do not invent another one.
 
@@ -385,6 +402,31 @@ button carries the exact link, already opened in his browser where that is possi
 - No emoji.
 - The left tree fits one screen without scrolling. Overflow is deleted, never shrunk.
 
+### Item length and completed-work compression
+
+Two rules the owner asked for on 2026-08-30, after the board had become, in his words, «свалка
+символов».
+
+**No item longer than two lines. A hard ceiling of 200 characters, aim for 120. One fact per
+item.** An item carrying three facts keeps the one that matters; the rest is dropped, not split
+into three items. Measured on one real board: 72 of 91 items ran over 160 characters, and a cap
+removed 43% of all item text, about 3,800 tokens off a full rewrite.
+
+**Completed work is compressed, not displayed. At most three `done` items per group**, and each
+says what was achieved rather than how.
+
+**Compression has a floor as well as a ceiling: never fewer than three items in a group.**
+Corrected by the owner on 2026-08-30, after a board came back with exactly one child under every
+single item. That is the rule read backwards, and it is worse than no compression at all: a group
+of one tells him nothing the parent line did not already say, while costing a fold he has to open.
+Ten done items collapse to three, not to one. A group that genuinely holds fewer than three facts
+does not get padded with filler and does not get a lone child either, its one fact belongs on the
+parent's own line and the group carries no `items` at all. Items still `live` or `todo` keep their own line, because
+those are the ones he still has to think about. This rule saves no tokens at all under the
+mutate pattern: a done item is written once and never re-emitted, so nothing about it costs less.
+It is a readability rule only. The board exists to be understood in ten seconds, and 29 dead
+lines defeat that on their own, whatever they cost to type.
+
 ### Live refresh, and the reload ban
 
 The refresh is a background `fetch` with a `document.body` swap every 15 seconds, and it lives
@@ -441,7 +483,7 @@ ln -sfn <repo>/.claude/tasks ~/Tasks/_repos/<repo-name>
 
 - One board per task, and a board another session created is never rewritten by you.
 - Russian on the page, English everywhere else in the kit.
-- Rewrite in full or not at all. Never append, never grow.
+- Mutate the JSON in place with a script. Never a whole-file `Write`, never a read-back to compare.
 - The page is data. Styling and behaviour live in `_shell/`, are linked, and are never written
   into the page — fix them in `board-shell/` in the kit instead.
 - Never more than one stage behind reality. If you are about to do something the board does not
