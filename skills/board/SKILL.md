@@ -251,6 +251,29 @@ no children listed carries `count: [сделано, всего]`; a task with ch
 `you`, `now`, `decided`, `daily` are each optional and are simply absent when there is nothing to
 say. `open: false` starts a branch folded.
 
+**A bullet whose sub-bullets are all closed is itself closed, and it is folded.** Two halves,
+both mandatory, both stated by the user on 30.08.2026. A task with children has no state of its
+own: it is `done` exactly when every child is `done`, never earlier and never later, so a task
+still showing `live` over four `done` items is a defect, not a nuance. And a task that is `done`
+opens folded, `open: false`, because a finished branch is the one he does not need to read; an
+expanded wall of completed work is what makes him scroll past the two lines that are still
+running. Only a branch with something unfinished in it may start open.
+
+Never set this by hand, derive it, at the end of every board write:
+
+```python
+for t in d["tasks"]:
+    kids = t.get("items")
+    if not kids:
+        continue
+    t["count"] = [sum(k["state"] == "done" for k in kids), len(kids)]
+    if all(k["state"] == "done" for k in kids):
+        t["state"], t["open"] = "done", False
+```
+
+A task with no children keeps its own `state` and its `count`, and the same rule applies by hand:
+`count: [3, 3]` means the task is `done` and folded.
+
 The skeleton around the block is fixed and is copied from `templates/board.html` once:
 
 ```html
