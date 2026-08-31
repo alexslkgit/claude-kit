@@ -629,3 +629,53 @@ QA-эпику, подписан руками: доказан названием 
 **Контроль в обе стороны, прогнан, а не рассуждён.** Борд с шестью `done` и двумя `todo` рисует 75%.
 Тот же борд с удалёнными шестью и `closed: 6` рисует 75%. Он же без поля рисует 0%. Третий случай и
 есть та ложь, ради которой поле существует; без него проверка была бы пустой.
+
+## 2026-08-31 — the floor, not the conversation, is now the bill
+
+Measured over 515 transcripts, 2.9 GB, every request on this machine since 2026-08-11. Per day:
+requests, total context re-sent, the median session-start floor, and the share of the total that
+is the floor being paid for again on every request.
+
+| date | requests | context re-sent | floor | floor share |
+|---|---|---|---|---|
+| 08-13 | 4 264 | 777 M | 64 981 | 36% |
+| 08-17 | 1 410 | 254 M | 77 916 | 43% |
+| 08-25 | 5 928 | 995 M | 79 952 | 48% |
+| 08-27 | 1 563 | 253 M | 86 928 | 54% |
+| 08-30 | 3 773 | 601 M | 86 940 | 55% |
+| 08-31 | 850 | 127 M | 86 185 | 58% |
+
+**The floor grew 65k to 86k in twenty days, +32%, and its share of the bill went 36% to 58%.**
+Every rule written since 2026-08-03 attacked the conversation half, and that half did shrink. The
+half nobody was watching doubled its share. A session now pays for its system prompt more than for
+its own work.
+
+What the floor is made of, measured: the output style 38 663 chars (~9 700 tok), the skill listing
+14 407 chars (~3 600 tok), `~/.claude/CLAUDE.md` 3 799 chars (~950 tok). The rest is the built-in
+prompt, the tool schemas, the connector instruction blocks and the deferred tool-name list.
+
+Two causes found, both dated exactly:
+
+- **The `cloudflare@cloudflare` plugin, installed 2026-08-26T15:28Z.** The floor went 79.9k on
+  08-26 to 86.9k on 08-27, about +7k, and stayed. It contributed 13 skills, 2 MCP tools and 4 MCP
+  servers whose OAuth fails every session, so the "servers require authentication" notice was in
+  every prompt too. He has never done any Cloudflare work. Disabled in `~/.claude/settings.json`.
+- **The output style grows every time a rule is added.** `orchestrator-slim.md` was created
+  2026-08-26 at 34 822 chars and reached 38 663 in five days, +11%, while being nominally the
+  compressed variant of a 48 442 char file. Cut to 32 121 by moving the evidence out and keeping
+  every rule and all 20 standing instructions, verified by diffing the bolded rule sentences and
+  the star count. Saves about 1 640 tokens on every request of every session.
+
+The general rule, now in the style: **anything above the conversation is maintained, not
+inherited.** A connector or plugin nobody uses is a tax on every request; a rule added to the style
+costs every future request, so the rule goes in and its proof goes here.
+
+## 2026-08-31 — «press /clear» was said at 100k, and now a hook blocks it
+
+He was told to clear a session twelve requests old. The line was echoed from the previous session's
+closing message, and nothing forbade it: `context-guard.sh` announces the band, but no rule tied
+the sentence to the meter. `handoff-auto.sh` already runs on `Stop` and already measures context,
+so it now also reads the last assistant message and blocks the turn when it tells him to clear
+below 200k. Tested on three fake transcripts: fires at 99k with the sentence, silent at 99k
+without it, and the ordinary handoff branch still fires at 230k. Its own `HARD` was 250000,
+disagreeing with `context-guard.sh` since 08-25; both are 200000 now.

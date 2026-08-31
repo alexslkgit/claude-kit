@@ -12,7 +12,7 @@
 # ~/Downloads and any other non-repo directory the meter was dead. That meter now lives here
 # instead, with no repo requirement, and handoff-guard keeps only the file mechanics.
 #
-# The numbers, from TOKEN-AUDIT-2026-08-17.md:
+# The numbers, from TOKEN-ECONOMY.md, archived section 2026-08-17:
 #   RE-MEASURED 2026-08-25 over a full month priced from usage, subagents included for the first
 #   time (every earlier number in this file was computed on 58% of the spend):
 #     a request costs $0.105 whatever tool it runs — Bash .105, Edit .106, Read .101, simulator .105

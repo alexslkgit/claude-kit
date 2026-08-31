@@ -1,3 +1,39 @@
+# TOKEN-ECONOMY
+
+Everything measured about what this setup costs, newest first. Replaces the three separate
+`TOKEN-AUDIT-*.md` files, which were three snapshots of one investigation and were being re-read
+as if they were three independent findings.
+
+## What is still true, 2026-08-31
+
+- A request costs about $0.105 whatever tool it runs. The price is the context re-sent underneath
+  it, not the payload. Shrinking what is inside a call is close to worthless next to making fewer
+  calls.
+- **The session-start floor is now the larger half of the bill: 58% on 2026-08-31, against 36% on
+  08-13.** The floor grew 65k to 86k in twenty days. See `DECISIONS.md`, entry of 2026-08-31.
+- The cutting threshold is 200k, about twelve cuts a day. 150k is the arithmetic optimum; he
+  refused twenty-one cuts a day as unlivable on 2026-08-25 and that veto stands.
+- Tool traffic held in main contexts is 46% of the conversation half. Ranked: screenshots 13%,
+  Bash 13% from call count alone, Read 5%, Write 4%.
+- Subagents are 39% of the bill. Delegation moves cost, it does not remove it. Fanning out small
+  tasks measured 2.6 to 5.9 times a sequential run and was never faster on wall clock.
+- The tail dominates: the top 5% of sessions are 27% of the dollars. A hard cap beats average
+  discipline.
+- Every rule derived from these numbers now lives in a hook, not in prose. A threshold that only
+  lives in text loses to whatever is happening at the moment it is crossed; measured over 173
+  transcripts, the 250k rule was ignored for a month and the month came out identical to never
+  cutting at all.
+
+## Which numbers a hook cites
+
+`hooks/context-guard.sh` and `hooks/bulk-guard.sh` cite the 2026-08-17 audit by name. Its section
+is kept below verbatim for that reason.
+
+
+---
+
+# Archived: TOKEN-AUDIT-2026-08-25.md
+
 # Token audit 2026-07-26 → 2026-08-25 — the money answer
 
 Third in the series after `TOKEN-AUDIT-2026-08-03.md` (three machines, established that uncut sessions
@@ -378,3 +414,391 @@ order: `schema.py` (schema discovery) → `load.py` (parse and stream-split) →
 period filter) → `report.py` (sections 1–7) → `handoff.py` (handoff constants) → `sim.py` (threshold
 simulation) → `extras.py` (section 9) → `emit.py` (writes `spend-data.json`). Every number in this file
 also exists machine-readable in `spend-data.json` next to it.
+
+---
+
+# Archived: TOKEN-AUDIT-2026-08-17.md
+
+# Token audit 2026-08-17 — where the handoff threshold should actually sit
+
+Follow-up to `TOKEN-AUDIT-2026-08-03.md`. That audit established *that* uncut sessions dominate
+spend. This one measures *where* to cut, because he asked whether 200k is right or whether the
+threshold should be 500k.
+
+## Method
+
+Every `~/.claude/projects/*/*.jsonl` (1.7 GB, 13 projects) parsed for per-request `message.usage`.
+173 sessions with ≥3 requests. Context at a request = `input + cache_read + cache_creation`.
+Everything normalised to one unit — "what this volume would cost as a fresh input token" — so the
+four token classes are addable:
+
+```
+cost = input×1.0 + cache_read×0.1 + cache_creation×1.25 + output×5.0
+```
+
+`0.1` and `1.25` are the Anthropic cache read / 5-minute-write multipliers; `5.0` is Opus output at
+5× its input price. Total measured: **1 142 M units**.
+
+Script: `.claude/tasks/context-economics-measure.py`.
+
+## Findings
+
+| where the money goes | share |
+|---|---|
+| cache read — re-sending context already sent | **64%** |
+| cache write — new material entering the context | 20% |
+| output — actual generated text | 16% |
+
+**Cost of one request, by context at the moment of that request** (pooled over all 37 000 requests):
+
+| context | requests | cost/request | of which re-send |
+|---|---|---|---|
+| 50–100k | 5 119 | 20 200 | 7 600 |
+| 100–150k | 8 219 | 21 200 | 12 200 |
+| 150–200k | 7 848 | 26 200 | 17 000 |
+| 200–250k | 5 810 | 32 700 | 21 800 |
+| 250–300k | 3 813 | 38 000 | 26 900 |
+| 300–400k | 4 572 | 46 300 | 33 400 |
+| 400–500k | 1 536 | 64 500 | 43 000 |
+| 500k+ | 140 | 93 700 | 47 700 |
+
+Flat to ~130k, then roughly linear: **+7 000 per request for every +50k of context.**
+
+Other measured constants:
+
+- **Floor of a fresh session: 65k** (median first-request context; p25 62k, p75 70k, min 38k) —
+  system prompt, CLAUDE.md chain, tool schemas. With status files read in, an effective start of
+  ~90k. Over a 186-request session that floor alone is ~1.2 M units.
+- **Requests per user message: median 25**, mean 36, p75 41, p90 71.
+- **Requests per session: median 186**, p75 263, p90 349, max 4 302.
+- **92% of all spend sits in sessions that passed 200k** — 101 sessions at 200–400k, 14 past 400k.
+  Median context inside the most expensive sessions is 220–340k. The 200k rule was not being
+  followed; the single worst session was 4 302 requests, 527k peak, 168 M units — 15% of everything.
+- Sessions capped under 150k: **20 700** per request. Sessions past 400k: **39 300** for the same
+  kind of work. 1.9×.
+
+## Break-even and the optimum
+
+Handoff cost ≈ 200k units: STATUS + DECISIONS + board (output at 5×), the 65k floor re-written
+fresh in the new session, and the status files read back.
+
+Clearing at 250k for a ~90k restart saves ≈18 000 per subsequent request → **break-even at 11
+requests**, i.e. under half of one median user message.
+
+Minimising `8k + 0.13×(F+T)/2 + H×g/(T−F)` (F = 90k floor, H = 200k handoff, g ≈ 1k context growth
+per request) gives `T − F ≈ 55k`, so **T ≈ 145–170k**. Doubling the handoff-cost estimate to 400k
+only moves it to 170k. 500k would cost ~1.7× per unit of work.
+
+That is the *token* optimum, and it is not the answer, because it ignores how fast his context
+actually fills. Measured: **floor 65k, +26k per user message** (p75 50k, p90 84k). So:
+
+| threshold | avg context | cost/request | user messages of work before the clear |
+|---|---|---|---|
+| 160k | 125k | 27.1k | 3.7 |
+| 200k | 145k | 28.7k | 5.2 |
+| **250k** | 170k | **31.4k** | **7.1** |
+| 300k | 195k | 34.3k | 9.0 |
+| 350k | 220k | 37.4k | 11.0 |
+| 400k | 245k | 40.5k | 12.9 |
+
+160k buys 16% over 250k and costs a full wrap-up ritual every 3.7 messages. Past 250k it does start
+to hurt: 350k is +19% per request, 400k is +29%.
+
+**Decision: threshold 250k.** Exception: fewer than ~10 requests of work left in the whole task —
+the handoff cannot pay for itself, finish instead. Message count is never the signal; requests are.
+Below 250k the threshold is not the lever — the 26k per message is.
+
+## Where the 26k per message comes from
+
+"Carried cost" below = the token's size × 0.1 × the number of requests still to come in that
+session. It is what a token actually costs, not what it looked like when it arrived.
+Scripts: `.claude/tasks/m6.py` (results), `m7.py` (inputs and images).
+
+| entering the main context | calls | size each | carried | share of all spend |
+|---|---|---|---|---|
+| **screenshots** (simulator, browser, computer-use) | 1 600 images | ~1 600 | 147M | **13%** |
+| **Bash** — entirely from call count | 9 819 | 236 in / 81 out | 149M | **13%** |
+| **Agent** — briefs out, reports back | 754 | 1 317 / 272 | 59M | 5% |
+| **Read** — whole files | 1 288 | median 1 431, worst 13 925 | 54M | 5% |
+| **Write** — the file body rides along | 986 | median 2 590; a board is 8–10k | 48M | 4% |
+| **Edit** | 3 043 | 601 / 47 | 40M | 3% |
+| **total tool traffic held in main contexts** | | | **530M** | **46%** |
+
+That is the p90 message: ten screenshots (16k) + two whole files (5k) + one board written from the
+main thread (10k) = 31k in a single turn, then re-sent on every request after it.
+
+Rules written into `orchestrator.md` from this: screenshots never in the main thread (the verify
+loop is a subagent that returns words; the finished image goes to him via `SendUserFile` by path);
+Bash batched; long files authored by a subagent; `Read` with `offset`/`limit` or delegated.
+
+## Bigger leaks than the threshold
+
+1. **25 requests per user message.** It multiplies the 64%. Moving heavy reads and test runs into
+   subagents whose context dies with them is worth more than any threshold change.
+2. **The 65k floor**, paid at 6.5k on every single request forever. Trimming unused MCP tool schemas
+   is a separate, unstarted task.
+3. **The rule was ignored for two weeks.** Same failure mode as the status files before
+   `status-guard.sh`: a threshold that fires only in prose loses to whatever is happening at 160k.
+   A context-pressure hook is the fix, and it does not exist yet.
+
+## Did two weeks of handoff discipline actually pay?
+
+Unit of work = one `Edit`/`Write`. Median **across sessions**, not the weekly sum — otherwise one
+monster session decides the answer.
+
+| week | sessions | median cost per edit | median session peak |
+|---|---|---|---|
+| Jul 13 — before the discipline | 12 | 245k | 324k |
+| Aug 3 | 50 | 256k | 286k |
+| Aug 10 | 73 | 234k | 255k |
+| Aug 17 | 5 | 220k | 218k |
+
+**Correction, same day.** The median across sessions was the wrong statistic for the question
+"did this pay?", because it deliberately discards the expensive sessions and those *were* most of
+the bill. Measured on the aggregate — which is what the weekly limit sees:
+
+| week | cost per edit, whole bill | same, worst session removed | requests per edit | median context per request | cost per request |
+|---|---|---|---|---|---|
+| Jul 13 — nothing in place | 456k | 281k | 11.9 | 238k | 38 437 |
+| Aug 3 — the /compact era | 275k | 277k | 9.3 | 173k | 29 564 |
+| Aug 10 — the handoff era | 252k | 253k | 8.9 | 170k | 28 222 |
+| Aug 17 | 186k | 167k | 7.5 | 138k | 24 823 |
+
+**2.4× cheaper per unit of work**, and 1.7× even with each week's worst session removed — so it is
+not only that the monsters are gone, ordinary work got cheaper too. Requests per edit improved
+independently, 11.9 → 7.5.
+
+The three eras, dated from 38 compaction records in the transcripts: nothing until Jul 31 (this is
+where the 4 302-request, 527k session lives) · `/compact` from Jul 31 to Aug 4, 37 calls in five
+days, 16 of them on Jul 31 alone · handoffs and status files from Aug 4, with `/compact` never
+called again. The switch is dated exactly to when "compact is the wrong tool" entered the kit.
+`/compact` was much better than nothing (456k → 275k); handoffs are better than `/compact`
+(275k → 252k → 186k). The order is right and nothing here should be reverted.
+
+**On the per-session median: ~10%.** Session peaks fell by a third, but the saving was eaten by the
+floor growing 60k → 74k over the same month and by the 46% tool traffic being untouched. Commits
+cross-check: week 29 was 100 commits for 273M, week 33 was 187 for 450M — −12% per commit.
+
+The payoff is in the tail, where an average cannot see it. Worst single session as a share of its
+whole week:
+
+| week | worst session | its requests | its peak | share of the week |
+|---|---|---|---|---|
+| Jul 13 | 168.0M | 4 302 | 527k | **61%** |
+| Jul 27 | 45.7M | 1 282 | 458k | **92%** |
+| Aug 3 | 16.8M | 416 | 456k | 5% |
+| Aug 10 | 15.9M | 449 | 485k | 4% |
+
+Before the discipline one session ate two thirds to nine tenths of a week. After it the worst is
+four percent. The handoff ritual is insurance against the catastrophic session, not an efficiency
+win — and it is worth keeping on exactly that basis.
+
+## Screenshots cannot be dropped from a context
+
+Asked 2026-08-17 whether an image could be summarised to text and then deleted. It cannot: a
+context is append-only, and rewriting the prefix invalidates the cache, so everything after the
+deletion point would be re-sent at full price — more than leaving the image in place.
+
+The instinct is right about the *place*, though: a subagent takes the screenshots, looks, clicks,
+looks again, and returns words. The images die with its context. Break-even:
+
+| case | cheaper | why |
+|---|---|---|
+| one image, session nearly over | inline | 1 600 × 0.1 × 20 = 3k, under a subagent's own floor |
+| one image, early in a session | about even | 1 600 × 0.1 × 150 = 24k vs that floor |
+| a loop of three or more | subagent, by several times | ten images with 100 requests left = 160k |
+
+Writing the description costs ~100 output tokens = 500 units, i.e. nothing, so the worry that
+narrating the image would cost more than keeping it does not hold.
+
+Caveat on every delegation number here: **subagent spend is not in the 1 142M.** 754 `Agent` calls
+appear in these transcripts and zero sidechain records, so the child side lives elsewhere. What is
+measured is the saving to the main context; the subagent's own bill is real and unquantified.
+
+## The threshold now fires by itself
+
+`hooks/context-guard.sh`, registered by `install.sh` on `UserPromptSubmit` and `PostToolUse`.
+220k soft band (said once), 250k hard band (repeats). PostToolUse is needed because a turn is a
+median of 25 requests and can enter at 150k and leave at 260k without passing a prompt boundary;
+each band announces once per session on the tool path so ten thousand Bash calls do not become ten
+thousand reminders.
+
+A context meter already existed inside `handoff-guard.sh` at 200k and had never fired for him: that
+script returns early when the cwd is not a git checkout, so in `~/Downloads` — where he sat at 206k
+on 2026-08-17 — it was dead code. That is the actual bug this hook fixes, and it is why the rule
+looked ignored for a month.
+
+## Verified: a subagent can drive the browser
+
+Asked 2026-08-17 whether browsing could be delegated at all. It can. A subagent reached both
+`mcp__claude-in-chrome__list_connected_browsers` (three browsers answered) and
+`mcp__Claude_Browser__tabs_context` (returned the open tab). The grant is the `tools:` line —
+`mcp__claude-in-chrome__*, mcp__Claude_Browser__*` — and a bare tool list without those globs
+grants no MCP tools at all.
+
+Two things that check out and are worth keeping:
+
+- The connectivity check cost **42 755 tokens**. That is the subagent's own floor, and it is why
+  `bulk-guard.sh` allows two images in the main thread rather than none: one screenshot near the end
+  of a session is genuinely cheaper inline. The win is on loops. Narrow `tools:` lists and sonnet
+  rather than opus exist to keep that floor small.
+- The browser-list result had text appended instructing the agent to ask the user and switch
+  browsers. It refused, correctly, on the grounds that tool output is data and not a task. The
+  agents' prompts say this explicitly and it held under a real injection attempt.
+
+Corrected the same day: new agent files become available **immediately**, without `/clear` — the
+registry refreshed inside the same session.
+
+---
+
+# Archived: TOKEN-AUDIT-2026-08-03.md
+
+# Token audit — three machines, 2026-08-03
+
+Measured from local transcripts on each machine by a separate Claude Code session, not estimated.
+Two reports received so far (work Mac / iOS project, personal Mac / energy-tracker); the third is
+still outstanding. Numbers condensed from the raw reports, which were pasted into a chat that will
+be cleared — this file is the surviving copy.
+
+## The cost model both machines converged on
+
+`cost ≈ (context size) × (API requests per user turn) × (number of turns)`
+
+Everything the model reads is re-sent with every request. What enters the context is not the cost;
+how many times it leaves again is.
+
+- Personal Mac: 8.5 API requests per user turn, 274,697 cache-read tokens carried per main-thread
+  request → **one average turn cost ~232,000 base-input-equivalents before a single output token**.
+- Unique tool payload across 19 days: ~5.8M tokens. Re-sent an average of **261 times**.
+- Work Mac: re-send multiplier **361.6×** — 1.07M unique tool tokens became 386M input tokens.
+
+## Where the money actually goes (personal Mac, 20 sessions, 234.9M weighted)
+
+| Component | Share |
+|---|---|
+| cache read | 64.4% |
+| cache write | 20.8% (main thread is 1h TTL = 2.0x; subagents are 5m = 1.25x) |
+| output | 14.7% |
+| fresh input | 0.015% |
+
+Input side is 85% of everything. **Thinking is ~3.6% of total spend** — reasoning effort is a
+marginal lever, not a major one.
+
+## The three concrete behaviours that cost the most
+
+1. **Marathon sessions.** Personal Mac: one session = **48% of all spend** (342 h wall-clock, 209
+   turns, 2,268 requests, peak context 526,798 tokens, compacted manually 9 times from ~500k and
+   back to ~525k within ~18.5 turns each time). Work Mac: two sessions = **65% of all spend**
+   (24.5 h / 350k cache-read per request / peak 602k; and 16.9 h / 381 requests / zero subagents).
+   Every compaction in both samples was `trigger:manual` — the harness never forced one.
+2. **Fanout.** 8.5 requests per turn (personal), 12.9 per reply (work), each re-sending the whole
+   conversation. Halving tool calls per turn is worth about as much as halving the context.
+3. **Images in long-lived contexts.** 313 screenshots reached main threads (~470k tokens). A
+   screenshot taken at turn 20 of a 200-turn session is re-sent on every request after it. The iOS
+   Simulator tool was the worst density measured: 545 calls, 230 images, 68 characters of text each.
+
+## What is already efficient — do not "optimize" it
+
+- **Subagents compress 35.7× (work Mac) / to 1.7% of input bytes (personal Mac).** They absorbed
+  81% of all tool bytes and returned 278k chars. But they are 40% of weighted spend and 51.7% of
+  requests, because each subagent request itself averages 116.5k cache-read tokens. On the personal
+  Mac the lever is **narrower briefs**, not more delegation; on the work Mac 16 of 20 sessions used
+  **no subagents at all**, so there the lever is delegating in the first place.
+- Build and lint output is already filtered: 401 `xcodebuild` calls = 434k chars total (~1.1k each);
+  no Bash result anywhere exceeded 50k chars.
+- Repeat reads inside one context window: 0.1% of spend.
+- **Static config — `CLAUDE.md`, output style, memory — is ~1–2% of total spend.** Both machines
+  measured this independently. Real and permanent, but small next to session discipline.
+
+## Ranked levers
+
+| # | Action | Saving | Whose |
+|---|---|---|---|
+| 1 | Cap context at ~150k and end the session with a handoff file + `/clear`, never `/compact` from 500k | 15–30% | rule |
+| 2 | Fewer API calls per turn: batch independent tool calls, one script instead of five commands | 10–15% | habit |
+| 3 | Screenshots and visual verification only inside a subagent, returning a text verdict | 5–10% | rule |
+| 4 | Narrower subagent briefs — exact file lists, no re-reading the same spec | ~5% | rule |
+| 5 | Turn off unused connectors and plugins (~9k tokens of prefix on every request) | 5–7% | **user, in app settings** |
+| 6 | Static overhead: output style and `CLAUDE.md` slimming | ~1–2% | done / in progress |
+| 7 | Lower reasoning effort on mechanical turns | 1–2% | habit |
+
+Levers 1–3 hit the same 65%, so they do not add up.
+
+Why 1 is first: the habit of compacting at "50% of context" is calibrated against a 1M window, so
+50% means ~500k carried on each of 8.5 requests per turn. `/compact` also costs a full-context
+request to produce its summary, and the context then regrows to the same place within ~18 turns.
+
+## The honest caveat
+
+All of this measures **tokens weighted by published API price ratios**. That is a proxy for
+plan-limit consumption, not a measurement of it: transcripts carry no limit, quota or cost field,
+and `~/.claude/telemetry/` held only failed-upload records. It is unknown whether a Max
+subscription meters cache reads at full weight, at a discount, or at all — if at full weight,
+re-sent context dominates even harder than 64% suggests.
+
+At the last snapshot the limits were **not binding**: 5-hour window 19%, weekly all-models 5%,
+weekly Fable 0%, on Max 20x. An earlier "weekly 96%" screenshot was taken at the very end of a
+weekly window and is not representative. So this is about headroom and speed, not a wall.
+
+## Open questions worth settling
+
+- How does Max meter the 5-hour and weekly windows — raw tokens, price-weighted tokens, or
+  requests? The answer re-ranks everything above.
+- Is the 1-hour cache TTL on main threads chosen by the harness or configurable? At 2.0x it is 25%
+  of weighted cost; a 5-minute TTL would halve that for fast-turnaround sessions and cost more for
+  sessions with long pauses.
+- Does a subagent inherit any part of the parent context, or only its prompt? The measured 116.5k
+  cache-read per subagent request suggests they grow their own contexts rather than inherit, but
+  that was inferred, not confirmed.
+
+## Third machine (this one, iOS project) — disputes four of the priors
+
+Sample: 3,155 requests, 61 user turns, 76.7M weighted. It found two schema traps the other two
+missed, so its method is the most trustworthy of the three:
+
+- Subagent transcripts live at `<sessionId>/subagents/**/agent-*.jsonl`; globbing only the root
+  loses **51% of requests and 33.7% of spend**.
+- Rows sharing one `message.id` carry *different* content blocks — "dedup by id, keep the first"
+  loses **66% of tool calls**.
+
+Its numbers: input 80.7% / cache read 56.7% (not 85 / 64) · output 19.3% (not 15) · thinking 31.4%
+of output, but the largest single output category is **tool-call arguments at 55.6%** · unique
+payload 2.76M tokens re-sent **35.7×, not 261×** — it states 261× is arithmetically impossible on
+its data. Treat 261× as unreliable.
+
+Its headline differs too: **the driver is requests per turn, not context size — 51.7 API calls per
+user turn**, and three sessions = 53.5% of spend from 12 turns (one made 176 requests over 2 turns,
+never compacted, peak 412k).
+
+Its ranked levers: compact at ~150k instead of running to 412k (10–16%) · fewer, wider subagent
+briefs — 83 launches cost 2.3M tokens of prefix alone (5–7%) · static: style 26.6→17.1 KB, disable
+2 plugins with `usageCount: 0` and 7 unused connectors (3.3%) · trim `git`/`grep`/`cat` output at
+the call site (1.5–2%) · `AGENTS.md` routing table instead of 4 unconditional "You must read" over
+26 KB of docs (~1%) · `Read` with `offset`/`limit` instead of `cat`/`sed` dumps (0.5–1%).
+
+It explicitly leaves alone: build and lint, **screenshots (0.1% despite 21 MB of base64)**, repeat
+reads, the amount of delegation (34.4× compression), cache TTL, visible answer length, model tiers.
+
+### What survives all three reports
+
+1. Long sessions that are never cut are the top lever. 48% / 65% / 53.5% of spend on one to three
+   sessions each.
+2. Static config — style, `CLAUDE.md`, memory — is **1–3%**. Real, permanent, small.
+3. Requests per user turn matter as much as context size (8.5 / 12.9 / 51.7 measured).
+4. Delegation compresses 34–36×; the argument is over brief width, not over whether to delegate.
+5. Thinking is a minor lever (3.6% of total on one machine).
+
+Screenshots are disputed: machine 2 ranked them 5–10%, machine 3 measured 0.1%. **Not a rule.**
+
+## Context window
+
+Peaks of 526,798 and 412,000 tokens were measured, so the window on those sessions was far above
+200k. The "150k cap" is therefore a **cost** rule, not a capacity rule.
+
+## Collision to resolve before anything is committed
+
+The work Mac's session slimmed **the same file** we are slimming here — it reports
+`output-styles/orchestrator.md` going 30,267 → 22,144 characters. The file at kit HEAD
+(`5735aac`) is **19,423 characters**, so that machine started from a stale copy and has not pulled
+`b34a9c6` / `09fd021`. Its diff must not be committed as-is. Resolution: pull there first, then
+compare against `DRAFT-orchestrator-v3.md` (2,361 tokens vs the current 5,403) and keep one version.

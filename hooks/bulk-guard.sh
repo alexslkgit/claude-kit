@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bulk-guard.sh — keeps bulk out of the main conversation by refusing it at the call site.
 #
-# The measurement this exists for (TOKEN-AUDIT-2026-08-17.md, 173 sessions, 37k requests):
+# The measurement this exists for (TOKEN-ECONOMY.md, archived section 2026-08-17, 173 sessions, 37k requests):
 # tool traffic held in main contexts — what was sent plus what came back — is 46% of all token
 # spend, because every one of those tokens is re-sent on every later request of the session.
 # Ranked by that carried cost:
