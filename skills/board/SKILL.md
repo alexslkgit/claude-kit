@@ -182,6 +182,23 @@ without them he opens the link and sees a blank page. Rewriting a board is still
 always was: replace the JSON block, nothing else. The hook re-renders the rest, and it strips its
 own old blocks first, so a stale one cannot accumulate.
 
+**Two hooks bake, not one, and you will meet either of them.** They were written a fortnight
+apart against the same blank page and both are wired, so the marker you find in a file depends
+only on how that file was last touched:
+
+| hook | fires on | leaves behind |
+|---|---|---|
+| `hooks/board-inline.sh` | `Write`, `Edit`, `MultiEdit` **and `Bash`** | `<!--board-inline-style-->` … `<!--board-inline-->` |
+| `hooks/board-bake.sh` | `Write`, `Edit`, and a sweep at `Stop` | `<div id="__baked">`, via `tools/prerender-page.py` |
+
+`Bash` is the row that matters: the prescribed way to update a board is a python heredoc, so on a
+normal board update `board-inline.sh` is the one that runs and `__baked` is simply absent. Do not
+go looking for it, and do not add it by hand. `board-bake.sh` earns its place on the other half of
+the job: it runs the real renderer and **fails loudly on a JSON key the renderer does not know**,
+which is how a board invented with a `cards` key was caught before he opened a blank page.
+
+Neither is yours to invoke. Both leave the file alone and exit 0 on anything unexpected.
+
 Install the shell once per repo or task folder, before the first board:
 
 ```bash
@@ -512,12 +529,15 @@ ln -sfn <repo>/.claude/tasks ~/Tasks/_repos/<repo-name>
 `tools/tasks-index.py`. Руками на новой машине делать нечего.
 
 
-- It lives at `.claude/tasks/<task>.html`, on disk, always — never the scratchpad, never `/tmp`.
+- It lives on disk, always — never the scratchpad, never `/tmp`. Two layouts, and since the
+  tasks moved to `~/Tasks` on 2026-08-25 the **shelf layout is the common case**, not the exception:
+  - **on the shelf: `~/Tasks/<task>/board.html`**, the task's own folder, next to that task's
+    `plan.html`, `STATUS.md`, `DECISIONS.md` and `journal.md`. `~/Tasks` itself is a shelf holding
+    many unrelated tasks, and a single shared `.claude/` there makes one task's memory masquerade
+    as another's. See the `chew` skill's Files section for the layout.
+  - **inside a git checkout: `<repo>/.claude/tasks/<task>.html`**, beside the task journal of the
+    same basename, served through the `~/Tasks/_repos/<repo>` symlink.
 - Its path is named in `STATUS.md`, so a fresh session finds it without asking him.
-- **Outside a git checkout, the board is `<task>/board.html` in the task's own folder**, next to
-  that task's `plan.html`, `STATUS.md`, `DECISIONS.md` and `journal.md`. A scratch directory like
-  `~/Tasks` is a shelf holding many unrelated tasks, and a single shared `.claude/` there makes
-  one task's memory masquerade as another's. See the `chew` skill's Files section for the layout.
 - Its link opens **every** chat message, the bare URL on its own first line.
 - Both themes live in the one file. It follows his system by default, and the three buttons in
   the header (авто / светлая / тёмная) force one; the choice is kept in `localStorage` and
@@ -541,10 +561,12 @@ with JavaScript disabled**. A board's `<body>` is empty until `board.js` runs, s
 saw was a correct browser tab title over a blank white page. Every board, every Mac, every session.
 The same is true of a chewed plan page.
 
-This is handled for you and needs no change to how a board is written. `hooks/board-bake.sh` runs
-after every `Write` and `Edit`, and again at the end of a turn over `./.claude/tasks/*.html`. It
-calls `tools/prerender-page.py`, which runs **the real shell renderer** under JavaScriptCore, bakes
-the resulting markup into `<div id="__baked">` and inlines the shell CSS and JS. The JSON block
+This is handled for you and needs no change to how a board is written, by whichever of the two
+hooks in the table above touched the file last. `hooks/board-bake.sh` runs after every `Write` and
+`Edit`, and again at the end of a turn, sweeping `./.claude/tasks/*.html` in a checkout and
+`./board.html` and `./plan.html` in a task folder on the shelf. It calls `tools/prerender-page.py`,
+which runs **the real shell renderer** under JavaScriptCore, bakes the resulting markup into
+`<div id="__baked">` and inlines the shell CSS and JS. The JSON block
 stays the source of truth, the live refresh still works when the page is served over http, and the
 baked block is removed by the script before the live renderer draws, so nothing renders twice. Runs
 are skipped on a hash when nothing changed.

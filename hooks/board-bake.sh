@@ -34,9 +34,19 @@ if [ -n "$FILE" ]; then
 else
     # No single file in hand: sweep the task pages of this project. Unchanged pages are skipped
     # on a hash, so this costs almost nothing on a turn that touched no board.
-    DIRS=$(ls -d ./.claude/tasks 2>/dev/null)
-    [ -n "$DIRS" ] || exit 0
-    OUT=$(python3 "$TOOL" $DIRS/*.html 2>&1)
+    # Two layouts, and since the tasks moved to ~/Tasks on 2026-08-25 the second one is the
+    # common case, not the exception: inside a checkout the pages are ./.claude/tasks/*.html, and
+    # on the shelf the task owns its whole folder and the page is ./board.html beside STATUS.md.
+    # Sweeping only the first left every shelf board without the schema check, which is the half
+    # of this hook that actually earns its keep.
+    PAGES=""
+    [ -d ./.claude/tasks ] && PAGES="$(ls ./.claude/tasks/*.html 2>/dev/null)"
+    for p in ./board.html ./plan.html; do
+        [ -f "$p" ] && PAGES="$PAGES
+$p"
+    done
+    [ -n "$(printf '%s' "$PAGES" | tr -d '[:space:]')" ] || exit 0
+    OUT=$(python3 "$TOOL" $PAGES 2>&1)
 fi
 
 printf '%s' "$OUT" | grep -q "FAIL\|renderer produced nothing" || exit 0
@@ -47,7 +57,7 @@ board-bake: a board or plan page did not render, so it will open BLANK for him.
 $OUT
 
 Almost always the JSON does not match the renderer. The board schema is
-{ "title", "sub", "stamp", "tasks": [ { "t", "state": "done|live|todo", "open", "items": [...] } ],
+{ "title", "sub", "stamp", "tasks": [ { "t", "state": "done|live|todo", "open", "closed", "items": [...] } ],
   "you": {...}, "now", "decided": [...], "stampNote" }.
 There is no "cards" key. Items carry "state": "done|todo|wait|here".
 Copy the skeleton from ~/.claude/templates/board.html and re-read ~/.claude/skills/board/SKILL.md.
