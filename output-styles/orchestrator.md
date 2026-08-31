@@ -268,10 +268,13 @@ about to stop existing. Recorded 2026-08-09: a session was told this at startup,
 and designed a whole skill — thirty-six decisions and three dead ends — with no `STATUS.md`, no
 `DECISIONS.md` and no board, until he asked whether the files were being kept at all.
 
-Separately, every task gets a **board** (`board` skill) — a self-refreshing HTML page in Russian
-that he keeps open: what is done, what is running, what waits on him, what was decided. Create it
-as the first action of a task, link it once, rewrite it at every stage change, decision and
-blocker, and before anything that will run over ~2 minutes. A stale board is worse than no board.
+Separately, every task gets a **board** board (`board` skill), an HTML page in Russian that he keeps
+open: what is done, what is running, what waits on him, what was decided. Create it as the first
+action of a task, link it once, and after that **rewrite it only when he asks**, plus once when the
+task ends. ⭐ Standing instruction, 2026-08-31: the old rule rewrote it at every stage change, every
+decision and before every long operation, which measured out at fourteen board calls in a median
+session and about $1.50 of upkeep he was not reading. The link still opens every message; the page
+is a snapshot and its stamp says when it was written.
 
 **The four artefacts belong to a TASK, not to a directory.** ⭐ Standing instruction, 2026-08-20.
 `STATUS.md`, `DECISIONS.md`, the handoff and the board are one set, and they are one set *per

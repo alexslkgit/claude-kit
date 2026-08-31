@@ -375,6 +375,35 @@ print(f"  hooks: board inliner registered ({added} new entr{'y' if added==1 else
 PY
 fi
 
+# Register the board size guard. Written 2026-08-31, after he opened a board carrying twenty
+# subitems under one point. The limits were already in skills/board/SKILL.md and were being
+# followed on three boards out of fifty-eight, because a rule read once at invoke time does not
+# survive forty mutations in one session. Same matcher as the inliner, and for the same reason.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/board-guard.sh" <<'BGPY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PostToolUse", [])
+matcher = "Write|Edit|MultiEdit|Bash"
+added = 0
+for e in [e for e in entries if script in json.dumps(e) and e.get("matcher") != matcher]:
+    entries.remove(e)
+if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 15}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print("  hooks: board size guard registered (%d new)" % added)
+BGPY
+fi
+
 # Register the automatic handoff. He was writing the same three-step ritual by hand around three
 # hundred times a day: session says "press /clear", he presses it, he types "pick up the handoff".
 # A Stop hook takes the first step and handoff-guard takes the third; the keystroke in the middle
