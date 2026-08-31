@@ -11,6 +11,14 @@ as if they were three independent findings.
   calls.
 - **The session-start floor is now the larger half of the bill: 58% on 2026-08-31, against 36% on
   08-13.** The floor grew 65k to 86k in twenty days. See `DECISIONS.md`, entry of 2026-08-31.
+- **A denied built-in tool is dropped from the prompt, not merely blocked.** Four of them,
+  `Artifact`, `Workflow`, `ScheduleWakeup`, `ReportFindings`, are 23 333 tokens of floor,
+  measured 2026-08-31 against a control session four minutes apart on the same config. That is
+  29% of the floor and about 15% of the whole bill in a project where those tools are unused.
+  Denying an **MCP** tool does nothing for cost: its schema stays in the prompt. Only switching
+  the connector off removes it. Roll out with `tools/deny-tools.py <project-dir> <Tool>...`,
+  per project and by measured use, never globally: `Artifact` is genuinely used in
+  `energy-tracker`, `Rodovid_business` and `Downloads`.
 - The cutting threshold is 200k, about twelve cuts a day. 150k is the arithmetic optimum; he
   refused twenty-one cuts a day as unlivable on 2026-08-25 and that veto stands.
 - Tool traffic held in main contexts is 46% of the conversation half. Ranked: screenshots 13%,
