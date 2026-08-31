@@ -26,7 +26,7 @@
 
 set -uo pipefail
 
-HARD=250000
+HARD=200000  # matches context-guard.sh; the two must never disagree
 STATE_DIR="$HOME/.claude/context-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -56,6 +56,39 @@ for l in sys.stdin:
 print(n)' 2>/dev/null)"
 : "${ctx:=0}"
 [ "$ctx" -gt 0 ] 2>/dev/null || exit 0
+# Under the threshold, this hook has one other job: catch the session telling him to press
+# /clear when nothing asked for it. Happened 2026-08-31 at 100k in a session twelve requests old,
+# because the previous session's closing line was still in view and got echoed. A clear costs him
+# the whole conversation, so the sentence may only appear when the meter actually says so.
+if [ "$ctx" -lt "$HARD" ] 2>/dev/null; then
+  last="$(/usr/bin/tail -c 200000 "$tp" 2>/dev/null | python3 -c 'import json,sys
+t=""
+for l in sys.stdin:
+    try: d=json.loads(l)
+    except Exception: continue
+    if d.get("type")!="assistant": continue
+    for c in (d.get("message") or {}).get("content") or []:
+        if isinstance(c,dict) and c.get("type")=="text": t=c.get("text","")
+print(t)' 2>/dev/null)"
+  case "$last" in
+    */clear*|*"клир"*|*"Клир"*)
+      : > "$marker" 2>/dev/null || true
+      k=$(( ctx / 1000 ))
+      python3 - "$k" <<'PY2'
+import json, sys
+k = sys.argv[1]
+print(json.dumps({"decision":"block","reason":(
+ "clear-guard: you just told him to press /clear, and the context is %sk. The rule is 200k. "
+ "Under it a clear throws away a working conversation for nothing, and he reads the sentence as "
+ "you not knowing where you are.\n\n"
+ "Say so plainly in one line: the /clear was wrong, the session is at %sk, carry on. Do not "
+ "explain the hook, do not apologise at length, do not restate what you were doing."
+) % (k, k)}))
+PY2
+      exit 0;;
+  esac
+fi
+
 [ "$ctx" -ge "$HARD" ] 2>/dev/null || exit 0
 
 : > "$marker" 2>/dev/null || true

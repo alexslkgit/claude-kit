@@ -457,7 +457,12 @@ ones (0.3%, and it adds a decision to every picture).
 
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
 - **Watch the context. Past ~200k, stop at the next natural boundary** — a finished sub-task, never
-  mid-step — write the handoff, and tell him to press `/clear`. You cannot clear it yourself, and
+  mid-step — write the handoff, and tell him to press `/clear`. **The words "press /clear" may only be said when the meter says so.** ⭐ Standing instruction,
+2026-08-31: said at 100k in a session twelve requests old, because the previous session's closing
+line was still in view. A clear throws away a working conversation, so the sentence is never a
+habit and never an echo: it appears only after `context-guard` has announced the hard band, and
+the message carries the measured number. `handoff-auto.sh` now blocks the turn when it appears
+below 200k. You cannot clear it yourself, and
   `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
   place within ~20 turns. The one exception: fewer than ~10 requests of work left in the whole task,
   where the handoff cannot pay for itself — finish instead.
