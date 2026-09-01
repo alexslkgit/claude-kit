@@ -94,7 +94,7 @@ picked_marker="$SESSDIR/$sid.picked"
 # session with five waiting handoffs had to ask him which one it was and he answered that he did
 # not know either — the identity was on disk the whole time, and nothing was reading it.
 CHATROOT="$HOME/Library/Application Support/Claude/claude-code-sessions"
-CHAT_ID=""; CHAT_TITLE=""; CHAT_TITLESRC=""
+CHAT_ID=""; CHAT_TITLE=""; CHAT_TITLESRC=""; CHAT_CREATED=""; CHAT_LASTACT=""
 # Bounded wait, added 2026-08-27. The mapping file is written by the desktop app AFTER the CLI
 # session already exists — measured on 471eaebd, 2m17s after SessionStart — so a resolve_chat that
 # only tries once at SessionStart routinely finds nothing and both identity branches below it are
@@ -121,6 +121,17 @@ except Exception: pass' "$f" 2>/dev/null)"
   fi
   [ -n "$CHAT_TITLE" ] || CHAT_TITLE="$(/usr/bin/sed -n 's/.*"title"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
   CHAT_TITLESRC="$(/usr/bin/sed -n 's/.*"titleSource"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$f" | head -1)"
+  # createdAt/lastActivityAt (epoch ms in the mapping file, converted to seconds to match
+  # `stat -f %m`) bound this chat's own activity window — used only as heal_stamps' fallback tie
+  # break below, never as its own cache key: the CWD is shared by ten chats, the id in $f is not.
+  if command -v python3 >/dev/null 2>&1; then
+    CHAT_CREATED="$(python3 -c 'import json,sys
+try: print(int((json.load(open(sys.argv[1])).get("createdAt") or 0))//1000)
+except Exception: print(0)' "$f" 2>/dev/null)"
+    CHAT_LASTACT="$(python3 -c 'import json,sys
+try: print(int((json.load(open(sys.argv[1])).get("lastActivityAt") or 0))//1000)
+except Exception: print(0)' "$f" 2>/dev/null)"
+  fi
 }
 [ "$event" = "SessionStart" ] && resolve_chat 15 || resolve_chat
 
@@ -201,6 +212,27 @@ heal_stamps() {
   done)"
   [ -n "$unstamped" ] || return 0
   target="$(printf '%s\n' "$unstamped" | title_match)"
+  # Fallback tie break, added 2026-09-01: title_match stays first and wins whenever it can, but a
+  # tie it refuses to call (e.g. two "33186-offerbox-..." files sharing every token) left every
+  # unstamped file to the listing forever. This chat's own activity window — createdAt through
+  # lastActivityAt, from the SAME mapping file resolve_chat already read, never the shared cwd —
+  # is the second signal: only used when title_match found nothing, and only acted on when
+  # exactly one unstamped file's mtime falls inside it. Two matches inside the window is exactly
+  # as ambiguous as the tie it was meant to break, so it stays silent, same as today.
+  if [ -z "$target" ] && [ -n "$CHAT_CREATED" ] && [ "$CHAT_CREATED" -gt 0 ] 2>/dev/null; then
+    local lo="$CHAT_CREATED" hi="${CHAT_LASTACT:-0}" mt in_window="" cnt=0
+    [ -n "$hi" ] && [ "$hi" -ge "$lo" ] 2>/dev/null || hi="$lo"
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      mt="$(/usr/bin/stat -f %m "$f" 2>/dev/null || echo -1)"
+      if [ "$mt" -ge "$lo" ] 2>/dev/null && [ "$mt" -le "$hi" ] 2>/dev/null; then
+        in_window="$f"; cnt=$((cnt + 1))
+      fi
+    done <<HEALWINEOF
+$unstamped
+HEALWINEOF
+    [ "$cnt" = "1" ] && target="$in_window"
+  fi
   [ -n "$target" ] && [ -s "$target" ] || return 0
   tmp="$target.stamp.$$"
   { /usr/bin/head -1 "$target"
@@ -280,6 +312,28 @@ EOF
         archive_handoff "$pu_f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
         touch "$picked_marker" 2>/dev/null || true
         exit 0
+      fi
+
+      # --- late identity announcement, added 2026-09-01 --------------------------------------
+      # No handoff matched above, but identity itself may still be the news: SessionStart marks
+      # "$sid.unresolved" whenever it ran with CHAT_ID empty (the mapping file the desktop app
+      # writes can lag minutes past SessionStart, not just the ~6s SessionStart is willing to
+      # wait). The first prompt after that lag clears, if nothing was claimed, still deserves the
+      # same identity line SessionStart would have printed had it resolved in time — once, not on
+      # every prompt, tracked by its own marker so it never repeats and never blocks the pu_f
+      # check above on later prompts.
+      if [ -n "$CHAT_ID" ] && [ -f "$SESSDIR/$sid.unresolved" ]; then
+        identity_marker="$SESSDIR/$sid.identity-announced"
+        if [ ! -f "$identity_marker" ]; then
+          touch "$identity_marker" 2>/dev/null || true
+          rm -f "$SESSDIR/$sid.unresolved" 2>/dev/null || true
+          echo "handoff-guard: identity resolved late — the desktop app had not finished writing the"
+          echo "mapping file at session start."
+          echo
+          echo "You are the chat \"$CHAT_TITLE\" ($CHAT_ID). That title is real identity and it survives"
+          echo "a clear."
+          exit 0
+        fi
       fi
     fi
 
@@ -401,6 +455,58 @@ EOF
     ;;
 
   PostToolUse)
+    tool="$(field tool_name)"
+
+    # --- the Bash blind spot, closed 2026-09-01 --------------------------------------------
+    # Every branch below keys off tool_input.file_path, which only Write/Edit/MultiEdit/Read ever
+    # carry. A handoff dropped with `cat > .claude/handoffs/<slug>.md <<'EOF' ... EOF` is a Bash
+    # call with no file_path anywhere in its payload, so it reached SessionStart unstamped —
+    # measured at 36 of 37 files in one project. The command text itself is the only place the
+    # path exists, so it is read out of tool_input.command instead, and only paths that already
+    # match this hook's own two shapes (a .claude/handoffs/*.md file or a HANDOFF.md) are ever
+    # touched. A file that already carries ANY chat's marker is left alone, same as below.
+    if [ "$tool" = "Bash" ]; then
+      [ -n "$DIR" ] || exit 0          # nothing transient to police in a non-repo cwd
+      [ -n "$CHAT_ID" ] || exit 0      # nothing to stamp with
+      candidates=""
+      if command -v python3 >/dev/null 2>&1; then
+        candidates="$(printf '%s' "$payload" | python3 -c '
+import json, re, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+cmd = (data.get("tool_input") or {}).get("command", "") or ""
+seen = set()
+for m in re.finditer(r"[^\s\"\x27]*(?:\.claude/handoffs/[^\s\"\x27]+\.md|HANDOFF\.md)", cmd):
+    tok = m.group(0)
+    if tok and tok not in seen:
+        seen.add(tok)
+        print(tok)
+' 2>/dev/null)"
+      fi
+      [ -n "$candidates" ] || exit 0
+      printf '%s\n' "$candidates" | while IFS= read -r cand; do
+        [ -n "$cand" ] || continue
+        case "$cand" in
+          /*) full="$cand" ;;
+          *)  full="$cwd/$cand" ;;
+        esac
+        case "$full" in
+          "$LEGACY"|"$DIR"/*.md) ;;    # same two shapes the Write branch below polices
+          *) continue ;;
+        esac
+        [ -s "$full" ] || continue
+        /usr/bin/grep -q "$MARK" "$full" 2>/dev/null && continue   # already claimed — leave it
+        tmp="$full.stamp.$$"
+        { /usr/bin/head -1 "$full"
+          printf '<!-- %s %s | %s -->\n' "$MARK" "$CHAT_ID" "$CHAT_TITLE"
+          /usr/bin/tail -n +2 "$full"
+        } > "$tmp" 2>/dev/null && mv -f "$tmp" "$full" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+      done
+      exit 0
+    fi
+
     p=""
     if command -v python3 >/dev/null 2>&1; then
       p="$(printf '%s' "$payload" | python3 -c 'import json,sys
@@ -414,7 +520,6 @@ except Exception: print("")' 2>/dev/null)"
       "$LEGACY"|"$DIR"/*.md) ;;        # $DURABLE is deliberately absent: it is never consumed
       *) exit 0 ;;
     esac
-    tool="$(field tool_name)"
 
     case "$tool" in
       Write|Edit|MultiEdit)
@@ -461,6 +566,15 @@ except Exception: print("")' 2>/dev/null)"
   SessionStart|*)
     rm -f "$counter" 2>/dev/null || true
     rm -f "$picked_marker" 2>/dev/null || true
+    mkdir -p "$SESSDIR" 2>/dev/null || true
+    # Marks that THIS SessionStart ran without identity, so the first UserPromptSubmit after the
+    # mapping file catches up (it can lag minutes past SessionStart, see resolve_chat above) knows
+    # to announce identity once on its own. Cleared the moment identity resolves, here or there.
+    if [ -z "$CHAT_ID" ]; then
+      touch "$SESSDIR/$sid.unresolved" 2>/dev/null || true
+    else
+      rm -f "$SESSDIR/$sid.unresolved" "$SESSDIR/$sid.identity-announced" 2>/dev/null || true
+    fi
     heal_stamps  # 2026-08-27: claim any unstamped handoff title_match resolves for this chat.
     list="$(waiting)"
     [ -n "$list" ] || exit 0

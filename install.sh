@@ -144,11 +144,12 @@ fi
 
 # Register the handoff guard. It fixes the path a handoff is written to, hides that file from
 # git, tells a new session the file is waiting, and moves it out of the repository the moment it
-# is read. PostToolUse is matched on Write|Edit|MultiEdit and Read because those are the moments
-# the flow must not depend on the model remembering anything — Edit and MultiEdit joined the Write
-# matcher 2026-08-27, after a handoff written by Edit (or by a Bash heredoc, which no PostToolUse
-# matcher can see at all) reached SessionStart unstamped and the by-id pickup silently fell through
-# to title_match, or to nothing, depending on chance.
+# is read. PostToolUse is matched on Write|Edit|MultiEdit, Read, and Bash because those are the
+# moments the flow must not depend on the model remembering anything — Edit and MultiEdit joined
+# the Write matcher 2026-08-27, after a handoff written by Edit reached SessionStart unstamped and
+# the by-id pickup silently fell through to title_match, or to nothing, depending on chance. Bash
+# joined after a heredoc write left 36 of 37 handoffs unstamped: no PostToolUse matcher before this
+# one ever saw a file_path for a Bash tool call, so the hook now reads the command text itself.
 if command -v python3 >/dev/null 2>&1; then
   python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/handoff-guard.sh" <<'PY'
 import json, os, sys
@@ -160,7 +161,7 @@ if os.path.exists(path):
     except Exception:
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
-wanted = {"SessionStart": [None], "UserPromptSubmit": [None], "PostToolUse": ["Write|Edit|MultiEdit", "Read"]}
+wanted = {"SessionStart": [None], "UserPromptSubmit": [None], "PostToolUse": ["Write|Edit|MultiEdit", "Read", "Bash"]}
 added = 0
 for event, matchers in wanted.items():
     entries = hooks.setdefault(event, [])
