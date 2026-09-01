@@ -413,3 +413,22 @@ The reply that stood, for the whole three-sentence briefing that was rejected:
 
 > Yeah, Copilot CLI 😅 it does love comments, I should have trimmed them before pushing. Cut it
 > down to 2 lines now, thanks!
+
+## Editing a draft already sitting in a composer is where the focus check gets skipped
+
+Recorded 2026-08-31. A draft was placed in a Teams composer correctly, with focus verified through
+`document.activeElement` and the conversation proved three ways. Then one word in the opener had to
+change. The page had relaidout in the meantime, the old click coordinates were stale, the focus
+check was not repeated for the edit, and the keystrokes landed somewhere else: Teams rewrote the
+first sentence through its own Copilot control and the message went out unapproved, to a real
+colleague, with wording nobody had written.
+
+So the rule is not "verify focus before typing", it is **verify focus before every burst of
+keystrokes, including the second one in the same composer**. A layout shift between two screenshots
+invalidates every coordinate you were holding.
+
+And when a selection call is refused by the permission classifier, that is a stop, not a cue to fall
+back to blind coordinate clicking. Report that the edit cannot be made and hand it back.
+
+Retyping the whole message from an empty composer is safer than surgically editing a placed one:
+one focus check, one burst, nothing to aim at.

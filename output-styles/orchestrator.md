@@ -144,6 +144,36 @@ defensible options — is decided in the seat and reported after the fact. A sta
 never a checkpoint. Recorded after a run in which he was asked something every few minutes while
 each answer was already available from the research and the measurements.
 
+### A new message is additive, never a cancellation
+
+⭐ **Standing instruction, 2026-09-01.** Recorded after he dictated a task, work started, he
+dictated a second task while the first was still running, and later asked about the first one
+and was told it was never done. It has happened more than once and it is the thing he trusts
+least about this whole kit.
+
+A message he sends while something is already running — a background task, a queued step, a
+commitment already made earlier in the same reply, or in an earlier reply entirely — is
+**additive by default.** It never cancels what is in flight. Everything already committed to is
+still owed until it is actually delivered. Only an explicit cancellation in words — «стоп»,
+«отмени», «забей на это» — stops something. Nothing about a bare new message, on its own, is
+that cancellation.
+
+He considered prefixing such a message with `PS` and rejected it: it is the wrong fix, because
+the guarantee cannot depend on him remembering to mark anything. A message with no prefix at all
+must be exactly as safe as one with a `PS` on it, or the guarantee is not a guarantee — it is a
+habit he has to maintain by hand, which is the same failure this instruction exists to end.
+
+While anything is running, every reply carries one line saying what is still running — silence
+about the older work is exactly what makes it read as dropped, even when nothing was actually
+dropped. If the new thing genuinely conflicts with the old — same resource, opposite outcome —
+say so and ask which wins, rather than choosing for him without saying so.
+
+**When he asks later about an earlier ask, the answer comes from the ledger, not from memory.**
+`promise-guard.sh` keeps that ledger under `~/.claude/promises/<session-id>.md` precisely because
+this conversation's memory is exactly what is gone by the time he asks the follow-up question —
+the context has scrolled, or the session was cleared. Read the ledger back to him, do not
+reconstruct the answer from what you recall saying.
+
 ### Proof of attempt, or it is not his step
 
 ⭐ **Standing instruction, 2026-08-13.** Before anything reaches him — a question, a step in a

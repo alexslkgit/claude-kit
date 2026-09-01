@@ -454,6 +454,36 @@ print(f"  hooks: automatic handoff registered ({added} new entr{'y' if added==1 
 PY
 fi
 
+# Register the promise guard. He dictates a task, dictates a second one while the first is still
+# running, and later asks about the first and is told it was never done — happened more than once,
+# and it is the thing he trusts least. UserPromptSubmit prints the open ledger back so a new message
+# lands on top of it instead of over it; Stop blocks, the way handoff-auto blocks, when the model is
+# about to go idle with an open line older than a minute. Both read the same ledger under
+# ~/.claude/promises/<session-id>.md that the CLI half of the same script writes.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/promise-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+added = 0
+entries = hooks.setdefault("UserPromptSubmit", [])
+if not any(script in json.dumps(e) and e.get("matcher") is None for e in entries):
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]}); added += 1
+entries = hooks.setdefault("Stop", [])
+if not any(script in json.dumps(e) for e in entries):
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 15}]}); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: promise guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the page sweep. The page guard only sees a page being written; it cannot see the ones
 # that were already on disk, the ones another tool wrote, or the ones he downloaded. On 2026-08-25
 # he asked for every existing file to be proved clean, not only future ones, so the sweep walks the
@@ -533,6 +563,33 @@ for event in ("UserPromptSubmit", "SessionStart"):
 if added:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
 print(f"  hooks: parallel guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
+# Register the test-net guard. Fires before a `git push` Bash call: lazily chains the git-level
+# pre-push safety net into whatever repo is being pushed to (tools/install-pre-push-hook.sh), and
+# reminds — once per session, never a block — to run scoped tests first. Both halves exist because
+# of the 2026-09-01 incident: a rewritten spec file pushed unbuilt, approved, minutes from merge,
+# CI red. See hooks/pre-push-test-net.sh and DECISIONS.md for the full reasoning.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/test-net-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+if not any(script in json.dumps(e) and e.get("matcher") == "Bash" for e in entries):
+    entries.append({"matcher": "Bash", "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: test-net guard registered ({added} new entr{'y' if added==1 else 'ies'})")
 PY
 fi
 

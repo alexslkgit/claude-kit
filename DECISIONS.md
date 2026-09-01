@@ -679,3 +679,53 @@ so it now also reads the last assistant message and blocks the turn when it tell
 below 200k. Tested on three fake transcripts: fires at 99k with the sentence, silent at 99k
 without it, and the ordinary handoff branch still fires at 230k. Its own `HARD` was 250000,
 disagreeing with `context-guard.sh` since 08-25; both are 200000 now.
+
+## 2026-09-01 — a push can never again be the first time the tests are compiled
+
+**The incident.** A pull request on the Lufthansa iOS repo had both approvals and was minutes
+from merging. A last "cosmetic" commit rewrote a whole Quick/Nimble spec file — 499 lines in,
+566 out — and was pushed without ever being compiled locally. CI went red on a PR about to be
+merged blind. His words: he does not want to wait an hour before pushing, but he does want to
+know, by the time the PR is ready to merge, whether the tests passed.
+
+**Decision.** Two halves, deliberately different mechanisms because they solve different costs.
+
+1. **A real git `pre-push` hook, not a Claude hook**, because a push from Xcode's own git
+   integration or a plain terminal has to be covered too, not only a push run through this tool.
+   `hooks/pre-push-test-net.sh` reads the pushed refs, skips tags and branch deletions and the
+   default branch, works out the project's own test command, and backgrounds it fully detached
+   (closed stdio, `disown`ed) so the push itself is never slowed by so much as a second. Result
+   lands at `~/.claude/test-runs/<repo>-<sha>.log` and a one-line `<repo>-<sha>.status`
+   (`PASS`/`FAIL` + timestamp) — one per repo, one per pushed sha, so it survives a `git commit
+   --amend` re-push finding the same answer already there.
+2. **`hooks/test-net-guard.sh`, a Claude `PreToolUse` hook on `Bash`**, is the cheap half and the
+   one that would have actually caught this exact incident: run only the tests you touched,
+   scoped (`xcodebuild test -only-testing:…`), before pushing — minutes instead of an hour. It
+   fires once per session, never blocks, and is a reminder because it cannot know which tests a
+   commit actually touched.
+
+**Command discovery, in order:** `.claude/test-command` override, a fastlane lane (`test`,
+`tests`, `unit_test(s)`, `ci`, `ci_test(s)`, first match, `bundle exec` if a `Gemfile` exists),
+`xcodebuild test` against a workspace/project with exactly one shared scheme, `npm test`/`yarn
+test` off `package.json`'s own `test` script, `swift test`, `cargo test`, `pytest`. Anything it
+cannot resolve says so in one line on stderr and exits 0 — this must never be the reason a push
+fails.
+
+**Why not `core.hooksPath`.** The simpler install was one `git config --global core.hooksPath`
+pointing at the kit. Rejected: it is machine-wide across every hook type, not just `pre-push`,
+and the Lufthansa repo already has a real `git-lfs` `pre-push` and a real swiftlint/swiftformat
+`pre-commit` in `.git/hooks`. Pointing `hooksPath` at the kit would have silently turned both
+off on every repo on the machine. Instead `tools/install-pre-push-hook.sh` chains a small
+forwarding block into whatever `pre-push` a repo already has, appended after it, idempotent,
+never replacing what was there. It is installed lazily, by `test-net-guard.sh`, the first time a
+`git push` runs from that repo through Claude Code — which is what lets an already-cloned repo
+pick up the net without a manual step, on any Mac.
+
+**The `-configuration Debug` trap, named explicitly so nobody re-adds it.** On the Lufthansa repo
+the scheme is `LH`, whose own configuration is `DebugLH`; `xcodebuild -configuration Debug`
+against it does not select an existing configuration, it breaks the build. The generic
+`xcodebuild` fallback in `pre-push-test-net.sh` never appends a `-configuration` flag for exactly
+this reason — a project that needs one names it in its own `.claude/test-command` instead. On
+this repo specifically, fastlane's `tests` lane is picked before the `xcodebuild` fallback is
+even considered, so the trap does not apply here in practice, but the fallback still had to be
+built as if it would.
