@@ -55,7 +55,14 @@ DIR="$HOME/.claude/promises"
 # or resolve several lines at once instead of paying that price per line.
 #
 #   promise-guard.sh add  <session-id> "<ask>" ["<ask>" ...]
-#   promise-guard.sh set  <session-id> <line#>:<open|done|dropped>[:<reason>] [... more pairs]
+#   promise-guard.sh set  <session-id> <line#>:<open|waiting|done|dropped>[:<reason>] [... more pairs]
+#
+# WAITING is the fourth state and it exists because the Stop half would otherwise force a lie.
+# A line blocked on something outside this session — a CI run, a build, another person — is
+# still owed and must not be marked done, but holding the turn hostage to it is pointless: the
+# event will not arrive while the model sits there. So waiting keeps the line visible on the way
+# in and stops it blocking on the way out. It always carries a reason naming what is being waited
+# on, and it goes back to open the moment that thing lands.
 #   promise-guard.sh list <session-id>
 # ---------------------------------------------------------------------------------------------
 cmd="${1:-}"
@@ -91,7 +98,7 @@ add|set|list)
       exit 1
     fi
     if [ "$#" -eq 0 ]; then
-      echo "usage: promise-guard.sh set <session-id> <line#>:<open|done|dropped>[:<reason>] [...]" >&2
+      echo "usage: promise-guard.sh set <session-id> <line#>:<open|waiting|done|dropped>[:<reason>] [...]" >&2
       exit 1
     fi
     python3 - "$ledger" "$@" <<'PY'
@@ -107,7 +114,7 @@ for spec in sys.argv[2:]:
     except ValueError:
         continue
     state = parts[1].strip()
-    if state not in ("open", "done", "dropped"):
+    if state not in ("open", "waiting", "done", "dropped"):
         continue
     reason = parts[2].strip() if len(parts) > 2 else ""
     changes[idx] = (state, reason)
@@ -179,7 +186,8 @@ UserPromptSubmit)
 import hashlib, os, sys
 ledger, fp_file = sys.argv[1], sys.argv[2]
 with open(ledger) as f:
-    lines = [l.rstrip("\n") for l in f if l.startswith("- [open]")]
+    lines = [l.rstrip("\n") for l in f
+             if l.startswith("- [open]") or l.startswith("- [waiting]")]
 if not lines:
     # Silent: an empty open set costs nothing, whether the ledger is new or fully drained.
     sys.exit(0)
@@ -198,7 +206,8 @@ with open(fp_file, "w") as f:
 def label(line):
     # "- [open] 2026-09-01 15:12 \u00b7 <ask>" -> "<ask>", capped short.
     ask = line.split("\u00b7", 1)[-1].strip() if "\u00b7" in line else line
-    return (ask[:40] + "\u2026") if len(ask) > 40 else ask
+    ask = (ask[:40] + "\u2026") if len(ask) > 40 else ask
+    return ("~" + ask) if line.startswith("- [waiting]") else ask
 
 shown = lines[:5]
 tail = f" ({len(shown)} oldest)" if len(lines) > 5 else ""
@@ -244,9 +253,12 @@ reason = (
     "ledger. Going idle with an open commitment is the exact failure this hook exists to stop — "
     "a second task landing on top of the first is not a cancellation of the first.\n\n"
     "%s\n\n"
-    "Each line has to leave this turn in one of three states: finished, marked done, or marked "
-    "dropped with a reason he can read — never silently left open. Use:\n"
+    "Each line has to leave this turn resolved: finished, marked done, marked waiting on something "
+    "outside this session, or marked dropped with a reason he can read — never silently left open. "
+    "Waiting is for a line blocked on a CI run, a build or another person: it stays owed and stays "
+    "visible, it just stops holding the turn. Use:\n"
     "  promise-guard.sh set %%SID%% <line#>:done\n"
+    "  promise-guard.sh set %%SID%% <line#>:waiting:<what is being waited on>\n"
     "  promise-guard.sh set %%SID%% <line#>:dropped:<reason>\n"
     "This hook can only enforce what was written to the ledger; it has no way to know about a "
     "request that was never logged, so treat any gap you notice here as a bug in this turn, not "
