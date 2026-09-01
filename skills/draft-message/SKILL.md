@@ -37,6 +37,31 @@ Order of preference, best first:
 3. **A code block in the chat** — the fallback, not the routine. If you end up here, say in one
    line why the first two were impossible.
 
+### Messengers live in the browser, never in the desktop app
+
+Standing instruction, 2026-09-01, in his own words: he uses Slack and Telegram **in the browser
+only, always**. So a signed-out or missing desktop app is not a finding, not a blocker, and never a
+reason to send him to it for a click. Do not open it, do not propose it, do not report on it.
+
+Recorded after a session opened desktop Slack, met a "Sign In to Grid Dynamics" splash, and treated
+that as the reason the message could not be delivered.
+
+### When the composer cannot be typed into, the chat is the delivery
+
+Verified on C12239 on 2026-09-01, five attempts: the Chrome extension focuses Slack's composer
+correctly (`aria-label` "Message to <name>"), the first burst of characters lands, and every
+keystroke after it is **silently dropped** — including when the editor is re-focused via JS
+immediately before each type. Nothing about the focus check catches this, because focus was never
+the problem.
+
+So when this happens: clear whatever partial text you left behind (a `Range` plus
+`execCommand("delete")` works, and leaving his composer dirty is a defect on its own), then give him
+the message as a plain code block in the chat and say in one line that the composer could not be
+written to. That is the fallback in the order of preference above, and this is one of the cases that
+earns it.
+
+Do not spend more attempts on it, and do not fall through to the desktop app.
+
 Whichever you use, finish with one line: who it goes to, where it is waiting, and the exact click
 that sends it — "Gmail → Черновики → письмо с темой X → Send". Not "I drafted a reply."
 
