@@ -15,8 +15,11 @@ as if they were three independent findings.
   `Artifact`, `Workflow`, `ScheduleWakeup`, `ReportFindings`, are 23 333 tokens of floor,
   measured 2026-08-31 against a control session four minutes apart on the same config. That is
   29% of the floor and about 15% of the whole bill in a project where those tools are unused.
-  Denying an **MCP** tool does nothing for cost: its schema stays in the prompt. Only switching
-  the connector off removes it. Roll out with `tools/deny-tools.py <project-dir> <Tool>...`,
+  Confirmed in a second project on 2026-09-01: `ai-company` fell 81 276 to 61 764, minus 19 512.
+  **Only built-ins leave.** Denying an **MCP** tool does nothing for cost: its schema stays in the
+  prompt, only switching the connector off removes it. Denying a **skill** does nothing either,
+  measured 2026-09-01: ten `Skill(...)` entries moved the floor by five tokens and every denied
+  skill was still described in full, because the listing is built before permissions apply. Roll out with `tools/deny-tools.py <project-dir> <Tool>...`,
   per project and by measured use, never globally: `Artifact` is genuinely used in
   `energy-tracker`, `Rodovid_business` and `Downloads`.
 - The cutting threshold is 200k, about twelve cuts a day. 150k is the arithmetic optimum; he
