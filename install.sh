@@ -85,6 +85,31 @@ print(f"  hooks: status guard registered ({added} new entr{'y' if added==1 else 
 PY
 fi
 
+# Register the deny guard. It names the built-in tools a project pays for in every request and
+# never calls; a denied built-in leaves the system prompt entirely, measured at 23 333 tokens for
+# four of them. Silent unless the project is established and the tool is genuinely unused, so
+# registering it everywhere is safe.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/deny-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON - skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("SessionStart", [])
+if any(script in json.dumps(e) for e in entries):
+    print("  hooks: deny guard already registered")
+else:
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 15}]})
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+    print("  hooks: deny guard registered")
+PY
+fi
+
 # Register the copilot guard. It keeps bulk work on an employer-funded Copilot licence instead
 # of the user's personal subscription. The script checks that licence itself and says nothing on
 # a machine without it, so registering it everywhere is safe. PreToolUse is matched on the Agent
