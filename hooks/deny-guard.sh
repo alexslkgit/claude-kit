@@ -63,9 +63,12 @@ done
 mcp_denied=""
 case "$denied" in *mcp__*) mcp_denied=1;; esac
 
-[ -n "$unused" ] || [ -n "$mcp_denied" ] || exit 0
+skill_denied=""
+case "$denied" in *"Skill("*) skill_denied=1;; esac
 
-echo "deny-guard: this project pays for tool schemas it never calls."
+[ -n "$unused" ] || [ -n "$mcp_denied" ] || [ -n "$skill_denied" ] || exit 0
+
+echo "deny-guard: this project pays for prompt text it never uses."
 if [ -n "$unused" ]; then
   echo "  Never called here in $sessions sessions:${unused}. A denied built-in leaves the prompt"
   echo "  entirely (Workflow ~4.8k tokens, Artifact ~2.2k, plus their input schemas), every request."
@@ -74,5 +77,9 @@ fi
 if [ -n "$mcp_denied" ]; then
   echo "  An mcp__ entry in permissions.deny saves nothing: an MCP schema stays in the prompt when"
   echo "  denied. Only switching the connector off removes it."
+fi
+if [ -n "$skill_denied" ]; then
+  echo "  A Skill() entry in permissions.deny saves nothing either: the skill listing is built before"
+  echo "  permissions are applied, so a denied skill is still described in full. Measured A-023."
 fi
 exit 0
