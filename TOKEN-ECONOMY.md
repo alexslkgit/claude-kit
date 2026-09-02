@@ -16,7 +16,7 @@ Fitted weights, percent of the 5-hour meter per 1M tokens:
 |---|---|---|---|---|
 | Opus 5 | 0.07 (range 0.05-0.10) | 1.6 (range 1.1-2.2) | 1.3 (assumed) | 60 (range 50-70) |
 | Fable 5.1 | unmeasured | 5.0 | not measured | about 60 at effort medium |
-| Sonnet 5 | output ≈ 20 per 1M (one run, range 0-40), a third of Opus, in line with the price ratio; cache weights unmeasured |
+| Sonnet 5 | unmeasured | unmeasured | not measured | 20 (one run, range 0-40; a third of Opus, in line with the price ratio) |
 
 The weekly meter moves at about 1/5.5 of the 5-hour meter this week; the weekly limit itself is
 boosted 50 percent until 2026-09-13, so this week's weekly percentages read low against a normal
