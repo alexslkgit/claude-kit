@@ -729,3 +729,27 @@ this reason — a project that needs one names it in its own `.claude/test-comma
 this repo specifically, fastlane's `tests` lane is picked before the `xcodebuild` fallback is
 even considered, so the trap does not apply here in practice, but the fallback still had to be
 built as if it would.
+
+## 2026-09-02 — archive-on-delivery consumes a briefing the delivering chat is forbidden to act on
+
+`handoff-guard.sh` archives a briefing the moment it has printed it in full, added 2026-08-27 because
+an unarchived one sat on disk confusing the next session. That is right in every ordinary case and it
+has one hole, found in `~/Developer/ai-company` today.
+
+The conveyor's PIPELINE forbids stage 4 from running in the session that did stage 3. The handoff
+`sunset-alarm-stage-4-resubmission.md` was written for a chat other than the one that wrote it, and
+`c5ea64c`'s stamping is what let the chat discover, correctly, that it was the forbidden one. But the
+hook had already delivered and archived it, so the briefing meant for the *next* chat was gone from
+`.claude/handoffs/` and sitting in `~/.claude/handoff-archive/` under a name that chat has no reason
+to look for. The refusal was correct and it consumed the thing the refusal exists to protect.
+
+**Filed, not fixed, and deliberately.** The hook cannot know that a chat declined a briefing: delivery
+is observable, refusal is not, and making the archive conditional on something unobservable is how
+`archive_handoff` gets a second bug. Restoring it is one `cp` from the archive, and the seat that
+refuses is the only party that knows a refusal happened. So the rule lives with the refusing seat:
+**a briefing you decline is copied back to `.claude/handoffs/` before you say anything about it.**
+
+It is not being added to the output style. The style is re-sent on every request of every session and
+this is a rule for a case that has arisen once, in one project whose own handoff now carries the note.
+A rule that cheap to restate at the point of use does not belong in the floor. Revisit if a second
+project's handoff is ever consumed the same way.
