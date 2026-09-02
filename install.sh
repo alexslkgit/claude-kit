@@ -142,6 +142,32 @@ print(f"  hooks: copilot guard registered ({added} new entr{'y' if added==1 else
 PY
 fi
 
+# Register the unattended guard. It refuses a backgrounded `copilot -p` that no supervisor is
+# watching, and a backgrounded build with no marker file to poll. Both shapes lost a full night of
+# unattended work on 2026-09-01; the rule they enforce is in machine-rules/copilot-delegation.md,
+# and it is a hook for the same reason the copilot guard is one.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/unattended-guard.sh" <<'UG'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON \u2014 skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+if not any(script in json.dumps(e) and e.get("matcher") == "Bash" for e in entries):
+    entries.append({"matcher": "Bash", "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: unattended guard registered ({added} new entry)")
+UG
+fi
+
 # Register the handoff guard. It fixes the path a handoff is written to, hides that file from
 # git, tells a new session the file is waiting, and moves it out of the repository the moment it
 # is read. PostToolUse is matched on Write|Edit|MultiEdit, Read, and Bash because those are the
