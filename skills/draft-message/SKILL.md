@@ -432,3 +432,24 @@ back to blind coordinate clicking. Report that the edit cannot be made and hand 
 
 Retyping the whole message from an empty composer is safer than surgically editing a placed one:
 one focus check, one burst, nothing to aim at.
+
+## Cut every detail the reader does not need to answer
+
+⭐ **His instruction, 2026-09-02**, given while reading a three-sentence paragraph explaining why a
+Sonar Quality Gate was red. He replaced it with one line: «Где можно без лишних деталей, нужно без
+лишних деталей, чтобы человека не грузить.»
+
+The reader is deciding, not auditing. Write the smallest thing that lets them answer.
+
+- **A paragraph of reasoning becomes one clause.** "Quality Gate red, tests and lint green" carries
+  everything the reader needs; the stage list, the line counts and the file counts do not change
+  their answer and are cut.
+- **Numbers earn their place only if the reader would act differently without them.** "370 lines in
+  67 files" is impressive to the author and irrelevant to the person pressing merge.
+- **Never explain why you could not fix something** unless you are asking them to fix it. It reads
+  as pre-emptive defence and it doubles the length.
+- **One message, one question.** Everything not attached to the question goes to the bottom as a
+  single line, or into a separate message.
+
+The test before sending: delete each sentence in turn and ask whether the reader could still give
+the same answer. If they could, it was never needed.
