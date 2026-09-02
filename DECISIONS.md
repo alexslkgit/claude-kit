@@ -753,3 +753,40 @@ It is not being added to the output style. The style is re-sent on every request
 this is a rule for a case that has arisen once, in one project whose own handoff now carries the note.
 A rule that cheap to restate at the point of use does not belong in the floor. Revisit if a second
 project's handoff is ever consumed the same way.
+
+## 2026-09-02 — the cut moves from a manual /clear at 200k to an automatic compaction at 300k
+
+Evidence: sim2's policy table (`research/meter/SIM-2026-09.md` under `~/Tasks/browser-token-economy`),
+which re-ran the meter and found the manual `/clear` at 200k no longer earns its keystroke — compaction
+costs 0.66 meter-percent per cut against handoff's 0.57, but a cut at 300k runs 3.2 cuts/day against
+200k's 14.3, and the daily total lands within 0.1% of never cutting at all versus 200k's +1.5%/day. The
+200k rule was worth the ritual when the alternative was 21 cuts a day at 150k; it stops being worth it
+once compaction can be automatic and the keystroke count is the only thing left to optimize.
+
+Cost: none. Benefit: the keystroke is removed — nobody presses `/clear` any more, and nobody has to be
+told to.
+
+`context-guard.sh` and `handoff-auto.sh` both move `HARD` from 200000 to 300000 (the two must never
+disagree; `SOFT` in `context-guard.sh` moves from 180000 to 270000). Past the hard band, `context-
+guard.sh` no longer tells the assistant to tell him to press `/clear` — an automatic compaction is
+imminent, so the assistant finishes the current sub-task, makes sure `STATUS.md`/`DECISIONS.md` hold
+every decision since the last wrap-up, and says one line that compaction is about to happen, nothing
+else. `handoff-auto.sh` still writes the auto-handoff at `HARD` — that material is what the post-
+compaction session re-reads — but its message and the clear-guard below `HARD` are both updated to say
+`/clear` is not requested at all any more.
+
+`handoff-guard.sh` now reads `source` from `SessionStart`'s stdin JSON (`startup | resume | clear |
+compact | fork`) and treats `compact` the same as `clear`: the pointer to `STATUS.md` and the freshest
+`HANDOFF.md` is re-injected after a compaction exactly as it already was after a manual clear — the
+existing SessionStart branch never gated on `source` in the first place, so this is confirmation and
+future-proofing rather than a behavior change.
+
+A new PreCompact hook, `hooks/compact-steer.sh`, is registered for both `manual` and `auto` triggers.
+Its stdout is appended to the compaction instructions, so it prints a short keep/drop list: preserve
+verbatim the board URL, the task folder path, every decision id (A-xxx), every file path edited this
+session, every number measured, all open questions, and which subagent is still running; drop tool
+outputs, file bodies and screenshots.
+
+The window itself is set with `CLAUDE_CODE_AUTO_COMPACT_WINDOW=313000` in `install.sh`'s settings merge
+and directly in `~/.claude/settings.json` (313k minus the 13k reserve auto-compact reserves lands the
+real threshold on 300k, matching `HARD` above).

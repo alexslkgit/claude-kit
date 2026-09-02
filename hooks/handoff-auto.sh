@@ -10,6 +10,12 @@
 # /compact, and there is no supported way for any process to type into a running interactive
 # session. So this hook takes step 1, and handoff-guard.sh takes step 3.
 #
+# 2026-09-02: step 2 is gone. CLAUDE_CODE_AUTO_COMPACT_WINDOW is set so an automatic compaction
+# fires by itself past 300k, so nobody presses anything any more — this hook still takes step 1
+# (the handoff material is what the post-compaction session re-reads) but no longer tells him to
+# press /clear, and handoff-guard.sh now re-injects the same pointer after a compaction as it
+# does after a manual clear.
+#
 # How step 1 is taken: a Stop hook fires when the assistant is about to go idle, which is exactly
 # the natural boundary the rule asks to stop at. Over the threshold it answers `decision: block`,
 # which hands the turn back to the model with a reason instead of ending it. The model then writes
@@ -26,7 +32,7 @@
 
 set -uo pipefail
 
-HARD=200000  # matches context-guard.sh; the two must never disagree
+HARD=300000  # matches context-guard.sh; the two must never disagree
 STATE_DIR="$HOME/.claude/context-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -78,9 +84,10 @@ print(t)' 2>/dev/null)"
 import json, sys
 k = sys.argv[1]
 print(json.dumps({"decision":"block","reason":(
- "clear-guard: you just told him to press /clear, and the context is %sk. The rule is 200k. "
- "Under it a clear throws away a working conversation for nothing, and he reads the sentence as "
- "you not knowing where you are.\n\n"
+ "clear-guard: you just told him to press /clear, and the context is %sk. The rule is 300k, and "
+ "/clear is not requested at all any more — compaction is automatic past that threshold, so a "
+ "manual clear now only throws away a working conversation for nothing, and he reads the sentence "
+ "as you not knowing where you are.\n\n"
  "Say so plainly in one line: the /clear was wrong, the session is at %sk, carry on. Do not "
  "explain the hook, do not apologise at length, do not restate what you were doing."
 ) % (k, k)}))
@@ -100,17 +107,19 @@ k = sys.argv[1]
 reason = (
   "handoff-auto: this conversation is at %sk tokens and you are about to go idle, which is the "
   "natural boundary the rule asks for. Do the whole handoff now, without asking him anything and "
-  "without offering it as a choice.\n\n"
+  "without offering it as a choice. This material is what the post-compaction session re-reads, "
+  "so it still has to be written even though nobody is pressing /clear any more.\n\n"
   "1. Bring the task's files up to date first: STATUS.md rewritten, DECISIONS.md appended, the "
   "board rewritten to its current state. A handoff that only writes a prompt is incomplete.\n"
   "2. Write the continuation briefing to the task's own handoff file, the path handoff-guard "
   "names at session start. One handoff per task, never a shared one.\n"
-  "3. Then say exactly one line to him, the board link first as always, and the words: handoff "
-  "written, press /clear. Nothing else. Do not explain the ritual, do not list what you wrote, "
-  "and do not ask whether he wants it.\n\n"
-  "He does not have to type anything after the clear: the next session is handed the briefing "
-  "automatically. This fires once per session, so if the handoff is already written and current, "
-  "say the one line and stop."
+  "3. Then say exactly one line to him, the board link first as always: handoff written, "
+  "compaction is about to happen automatically. Nothing else, and never tell him to press /clear "
+  "— that keystroke is not requested any more, past 300k an automatic compaction takes it from "
+  "here. Do not explain the ritual, do not list what you wrote, and do not ask whether he wants it.\n\n"
+  "He does not have to type or press anything: compaction fires by itself and the next context is "
+  "handed the briefing automatically. This fires once per session, so if the handoff is already "
+  "written and current, say the one line and stop."
 ) % k
 print(json.dumps({"decision": "block", "reason": reason}))
 PY

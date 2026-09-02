@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# context-guard.sh — makes the clear-at-200k rule fire by itself.
+# context-guard.sh — makes the auto-compact-at-300k rule fire by itself.
 #
 # Why this exists as a hook and not as a line in the output style: the line was there, and
 # measured 2026-08-17 across 173 real transcripts it was ignored for a month. 101 sessions ran
@@ -28,8 +28,9 @@
 #   is now 9.9 requests at $2.74, so a cut at 150k pays for itself well inside one message
 #
 # Two bands, and the difference between them matters:
-#   220k  soft — do not start anything large, finish what is open. Said once.
-#   200k  hard — wrap up at the next boundary and tell him to press /clear. Repeats.
+#   270k  soft — do not start anything large, finish what is open. Said once.
+#   300k  hard — an automatic compaction is imminent; wrap up STATUS.md/DECISIONS.md at the next
+#         boundary. No /clear instruction any more — compaction is automatic. Repeats.
 #
 # Two events, because one is not enough. UserPromptSubmit catches the start of a turn, but a
 # turn is a median of 25 requests and can be 71, so a session can enter at 150k and leave at
@@ -41,8 +42,14 @@
 
 set -uo pipefail
 
-SOFT=180000
-HARD=200000
+# Re-measured 2026-09-02, sim2 (research/meter/SIM-2026-09.md under ~/Tasks/browser-token-economy):
+# a manual /clear at 200k saves nothing over never cutting at all (200k costs +1.5%/day vs never,
+# 300k is within 0.1% of never, at 3 cuts/day instead of 14). CLAUDE_CODE_AUTO_COMPACT_WINDOW is
+# now set to 313000 in settings.json (313k minus the 13k reserve = 300k threshold), so compaction
+# fires by itself and the manual keystroke is no longer the cut point. HARD must match
+# handoff-auto.sh — the two must never disagree.
+SOFT=270000
+HARD=300000
 STATE_DIR="$HOME/.claude/context-guard"
 
 payload="$(cat 2>/dev/null || true)"
@@ -93,34 +100,19 @@ fi
 
 if [ "$band" = "hard" ]; then
   cat <<EOF
-context-guard: this conversation is at ${k}k tokens. Every further request re-sends all of it —
-about ${per_req}k units each, against 21k at 150k and 24k in a fresh session. The user's standing
-rule, re-measured 2026-08-25, is to stop past 200k at the next natural boundary — a finished
-sub-task, never mid-step — run the wrap-up skill so STATUS.md, DECISIONS.md and the board are
-current, write the handoff, and then tell him in plain words to press /clear. You cannot clear it
-yourself and /compact is the wrong tool: it costs a full-context request and the context regrows
-to here within ~20 turns.
-
-The handoff costs about 200k units and breaks even after 11 requests, while his median message is
-25, so it pays for itself inside one message of work. The single exception he agreed to: fewer than
-~10 requests of work left in the entire task — then finish instead, and say that is why.
-
-He has asked to be told this rather than discover it from the meter. Do not go silent on it, and do
-not simply carry on: a session that keeps working past this point is the failure this hook exists
-to stop.
-
-Since 2026-08-25 he does not work this ritual by hand any more, so keep your part of it to one
-line. handoff-auto.sh writes the handoff by itself when the turn ends, handoff-guard.sh hands the
-whole briefing to the next session the moment he clears, and the only thing left that a machine
-cannot do is the keystroke. So the entire message he should ever see about this is: handoff
-written, press /clear. Never a paragraph, never a list of what you wrote, never a question about
-whether he wants it.
+context-guard: this conversation is at ${k}k tokens, past 300k. An automatic compaction is
+imminent — CLAUDE_CODE_AUTO_COMPACT_WINDOW is set so the window closes here, and nothing has to
+be pressed for it to fire. Finish the current sub-task, make sure STATUS.md and DECISIONS.md hold
+every decision made since the last wrap-up, and then say in one line that compaction is about to
+happen. Nothing else: no paragraph, no list of what you wrote, no /clear instruction — /clear is
+not requested any more, compaction is automatic and handoff-guard.sh re-injects STATUS.md and the
+freshest HANDOFF.md right after it, the same way it does after a manual /clear.
 EOF
 else
   cat <<EOF
-context-guard: this conversation is at ${k}k tokens, ~${per_req}k units per request. Past 200k the
-standing rule is to wrap up at the next finished sub-task, so finish what is open and do not start
-anything large. If something big is genuinely next, hand it over now instead of half-doing it.
+context-guard: this conversation is at ${k}k tokens, ~${per_req}k units per request. Past 300k an
+automatic compaction fires, so wrap up at the next finished sub-task, finish what is open and do
+not start anything large. If something big is genuinely next, hand it over now instead of half-doing it.
 Heavy reads, test runs and screenshot loops belong to a subagent from here on — measured, tool
 traffic held in the main context is 46% of all spend, and screenshots alone are 13%.
 EOF

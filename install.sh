@@ -85,6 +85,38 @@ print(f"  hooks: status guard registered ({added} new entr{'y' if added==1 else 
 PY
 fi
 
+# Register the compact steer. Added 2026-09-02 when the cut moved from a manual /clear at 200k to
+# an automatic compaction at 300k: a compaction is now routine rather than requested, so what the
+# summary keeps matters more. PreCompact only, both triggers — its stdout is appended to the
+# compaction instructions, so it prints a keep/drop list rather than doing anything itself.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/compact-steer.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+wanted = {"PreCompact": ["manual", "auto"]}
+added = 0
+for event, matchers in wanted.items():
+    entries = hooks.setdefault(event, [])
+    for matcher in matchers:
+        if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+            continue
+        entry = {"hooks": [{"type": "command", "command": script, "timeout": 10}]}
+        if matcher is not None:
+            entry["matcher"] = matcher
+        entries.append(entry); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: compact steer registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the deny guard. It names the built-in tools a project pays for in every request and
 # never calls; a denied built-in leaves the system prompt entirely, measured at 23 333 tokens for
 # four of them. Silent unless the project is established and the tool is genuinely unused, so
@@ -768,6 +800,36 @@ else:
 PY
 else
   echo "  output style: python3 missing — add \"outputStyle\": \"${STYLE}\" to ${SETTINGS} by hand"
+fi
+
+# Set the auto-compact window. 2026-09-02: the cut moved from a manual /clear at 200k to an
+# automatic compaction at 300k (context-guard.sh / handoff-auto.sh HARD=300000). The env block is
+# read from process.env and merged into it at startup; CLAUDE_CODE_AUTO_COMPACT_WINDOW sets the
+# window the auto-compact math uses, and the threshold is that window minus a 13k reserve, so
+# 313000 here is what makes the threshold land on 300000. Merge, never overwrite: any other env
+# vars already in the file survive.
+if [ -f "$SETTINGS" ] && command -v python3 >/dev/null 2>&1; then
+  python3 - "$SETTINGS" <<'PY'
+import json, sys, shutil
+path = sys.argv[1]
+with open(path) as f:
+    raw = f.read()
+try:
+    data = json.loads(raw) if raw.strip() else {}
+except json.JSONDecodeError as e:
+    sys.exit(f"  auto-compact window: {path} is not valid JSON ({e}); set env.CLAUDE_CODE_AUTO_COMPACT_WINDOW=\"313000\" by hand")
+env = data.setdefault("env", {})
+want = "313000"
+if env.get("CLAUDE_CODE_AUTO_COMPACT_WINDOW") == want:
+    print("  auto-compact window: already 313000")
+else:
+    shutil.copyfile(path, path + ".bak")
+    env["CLAUDE_CODE_AUTO_COMPACT_WINDOW"] = want
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    print(f"  auto-compact window: set to {want} (backup at {path}.bak)")
+PY
 fi
 
 # The shelf is served permanently on 8899, because that link updates itself in a tab he already

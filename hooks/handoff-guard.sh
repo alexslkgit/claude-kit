@@ -26,6 +26,14 @@ field() { printf '%s' "$payload" | /usr/bin/sed -n "s/.*\"$1\"[[:space:]]*:[[:sp
 
 event="$(field hook_event_name)"; [ -n "$event" ] || event="${1:-SessionStart}"
 cwd="$(field cwd)";              [ -n "$cwd" ]   || cwd="$PWD"
+# 2026-09-02: SessionStart carries "source" in {startup, resume, clear, compact, fork}. The
+# SessionStart branch below never gated on it — it always looks for a waiting handoff — which is
+# exactly right for "compact" too: an automatic compaction is now the more common way this branch
+# fires (context-guard.sh raises the alarm at 300k, CLAUDE_CODE_AUTO_COMPACT_WINDOW fires the
+# compaction itself, and this hook must re-inject the pointer to STATUS.md and the freshest
+# HANDOFF.md exactly as it does after a manual /clear). Read here so future branches can key off
+# it; not currently used to change behaviour because none is needed.
+source_kind="$(field source)"
 
 # Two markers, two different artefacts, and the walk looks for both:
 #   .git                → $DIR / $LEGACY, transient handoffs, consumed the moment they are read.
