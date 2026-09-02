@@ -758,7 +758,7 @@ project's handoff is ever consumed the same way.
 
 Evidence: sim2's policy table (`research/meter/SIM-2026-09.md` under `~/Tasks/browser-token-economy`),
 which re-ran the meter and found the manual `/clear` at 200k no longer earns its keystroke — compaction
-costs 0.66 meter-percent per cut against handoff's 0.57, but a cut at 300k runs 3.2 cuts/day against
+costs 0.47 meter-percent per cut against handoff's 0.45 (at output weight 60), but a cut at 300k runs 3.2 cuts/day against
 200k's 14.3, and the daily total lands within 0.1% of never cutting at all versus 200k's +1.5%/day. The
 200k rule was worth the ritual when the alternative was 21 cuts a day at 150k; it stops being worth it
 once compaction can be automatic and the keystroke count is the only thing left to optimize.
