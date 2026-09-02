@@ -453,3 +453,22 @@ The reader is deciding, not auditing. Write the smallest thing that lets them an
 
 The test before sending: delete each sentence in turn and ask whether the reader could still give
 the same answer. If they could, it was never needed.
+
+## A colleague is not an audience for a status report
+
+⭐ **His instruction, 2026-09-02**, verbatim: «Я бы ему ради нихуя просто так отчёты не писал. Ему
+неинтересно, что там к чему. Если от него что-то требуется, это значит требуется.» He was looking
+at a closing line that told a reviewer a branch had been rebased and his approval had survived.
+Nothing was being asked of him by it.
+
+**Every line in a message to a person must be something they have to act on, or something they need
+in order to act.** A line that is neither is deleted, however true and however hard-won.
+
+- "I rebased it", "I fixed the thing you mentioned", "the build is green again" — none of these are
+  messages. They are progress, and progress belongs on the board, not in someone's DMs.
+- The exception is narrow: a fact the reader needs in order to answer the one question you are
+  asking. "Auto-merge is on" earns its place next to "will you merge over the red gate", because it
+  changes what they do.
+- If there is nothing to ask, there is no message. Do not send one.
+
+Written as a colleague writes, not as a system reporting in.
