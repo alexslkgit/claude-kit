@@ -790,3 +790,49 @@ outputs, file bodies and screenshots.
 The window itself is set with `CLAUDE_CODE_AUTO_COMPACT_WINDOW=313000` in `install.sh`'s settings merge
 and directly in `~/.claude/settings.json` (313k minus the 13k reserve auto-compact reserves lands the
 real threshold on 300k, matching `HARD` above).
+
+## 2026-09-02 — the meter, not API dollars, is now the unit of everything measured here
+
+What actually caps a session on this account is percent of the Max 5-hour meter, not a dollar price.
+Fitted weights per 1M tokens now replace the price sheet in all forward-looking accounting; see
+`TOKEN-ECONOMY.md`'s new top section for the full table.
+
+Evidence: the runs table in `~/Tasks/browser-token-economy/research/meter/FACTS-2026-09-02.md`,
+eleven controlled `claude -p` sessions read against `api.anthropic.com/api/oauth/usage`.
+
+Cost of the experiment itself: about 60 percent of one 5-hour window, 15 points of this week's
+boosted all-models weekly meter, and 21 points of the separate Fable weekly meter.
+
+## 2026-09-02 — output is the lever on the meter, cache reads are not
+
+Evidence: `SIM-2026-09.md`'s class-share table. Output is 71 percent of the main-thread meter, 78
+percent of subagents, 75 percent combined; cache reads are 19 and 15 percent respectively.
+
+Consequence: the 08-25 and 08-31 findings that Bash tool output is 42 percent of tokens and the
+session-start floor is 58 percent of the bill were price-weighted artefacts of the old dollar
+accounting, where cache reads were priced disproportionately high. The floor is still worth
+cutting, for the write it forces on every compaction and for latency, but it is no longer the
+headline cost driver on the meter. Output composition is the new headline.
+
+## 2026-09-02 — Fable 5.1 at effort medium proposed as the main-thread default, pending his answer
+
+Fable 5.1 at effort medium produced comparable output at about the same per-token meter weight as
+Opus 5 default effort, using roughly half the output tokens per task in the one measured
+comparison (4.2k versus 9.8k for one essay). Proposed as the main-thread default for a one-week
+trial.
+
+Not yet decided: queued as a yes/no question for him on http://localhost:7654. The Fable weekly
+scoped meter, separate from the all-models meter and already moved from 3 to 24 by these
+experiments, is the guard: if the trial pushes it too close to its own cap, revert.
+
+## 2026-09-02 — dead ends from the meter experiment
+
+Random dictionary-word prompts got refused by the model (`stop_reason: refusal`) and did not
+exercise real context cost; replaced with Python stdlib source text, which was not refused.
+
+The first output-heavy run was contaminated by another of his chats active in the same window and
+is excluded from the fitted output weight; only the clean second run is used.
+
+`compact_boundary` records exist in only 3 session files out of the corpus (13 records total, 7
+inside the 31-day window), so every compaction-cost median in `SIM-2026-09.md` rests on 13 events,
+not on a large sample.

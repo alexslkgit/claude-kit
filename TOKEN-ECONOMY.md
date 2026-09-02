@@ -4,6 +4,91 @@ Everything measured about what this setup costs, newest first. Replaces the thre
 `TOKEN-AUDIT-*.md` files, which were three snapshots of one investigation and were being re-read
 as if they were three independent findings.
 
+## What is still true, 2026-09-02
+
+The unit changed: everything below is measured in **percent of the Max 5-hour meter per 1M
+tokens** (integer percents, read from `api.anthropic.com/api/oauth/usage` with up to about 2
+minutes of lag), fitted from controlled `claude -p` sessions, not in API dollars.
+
+Fitted weights, percent of the 5-hour meter per 1M tokens:
+
+| model | cache_read | cache_write (1h) | input | output |
+|---|---|---|---|---|
+| Opus 5 | 0.07 (range 0.05-0.10) | 1.6 (range 1.1-2.2) | 1.3 (assumed) | 60 (range 50-70) |
+| Fable 5.1 | unmeasured | 5.0 | not measured | about 60 at effort medium |
+| Sonnet 5 | pending, a row will be added | | | |
+
+The weekly meter moves at about 1/5.5 of the 5-hour meter this week; the weekly limit itself is
+boosted 50 percent until 2026-09-13, so this week's weekly percentages read low against a normal
+week.
+
+Runs table, from `research/meter/FACTS-2026-09-02.md`:
+
+| run | model | requests | cache_read | cache_write(1h) | output | 5h meter | weekly |
+|---|---|---|---|---|---|---|---|
+| C output-heavy | opus-5 | 13 | 0.80M | 0.09M | 88 663 | 23 to 31 (+8) | 5 to 6 |
+| C2 output-heavy, fresh 5h window | opus-5 | 21 | 3.08M | 0.21M | 205 829 | 0 to 12 (+12) | 16 to 19 |
+| C-fable output-heavy, effort medium | fable-5-1 | 11 | 0.51M | 0.06M | 45 773 | 15 to 18 (+3) | 19 to 20, Fable 23 to 24 |
+| Q quiet 3 min | none | 0 | (foreign ~0.8M) | | | 32 to 33 | 7 to 7 |
+| A1 read-heavy | opus-5 | 61 | 12.1M | 0.18M | 244 | 33 to 36 (+3) | 7 to 7 |
+| B1 4 fresh loads | opus-5 | 4 | 0.09M | 0.68M | 16 | 36 to 37 (+1) | 7 to 8 |
+| A2 read-heavy | opus-5 | 31 | 6.3M | 0.19M | 124 | 37 to 38 (+1) | 8 to 8 |
+| A-fable effort medium | fable-5-1 | 31 | 0.83M | 5.66M | 124 | 38 to 66 (+28) | 8 to 13, Fable 6 to 17 |
+| A3 read-heavy | opus-5 | 101 | 21.0M | 0.19M | 404 | 68 to 69 (+1) | 14 to 14 |
+| B2 8 fresh loads | opus-5 | 8 | 0.18M | 1.85M | 32 | 69 to 72 (+3) | 14 to 15 |
+| A-fable no effort flag | fable-5-1 | 6 | 0.16M | 1.10M | 24 | 72 to 78 (+6) | 15 to 16, Fable 18 to 20 |
+
+### What it means
+
+On the meter, not on the price sheet, output tokens are 75 percent of the combined spend (SIM
+class shares): cache reads are 15 percent, cache writes 10, input near zero. The 2026-08-25 dollar
+audit priced cache reads at 57 percent of the bill; on the meter they are a seventh of that share.
+Subagents are 56 percent of the combined meter, and 78 percent of their own spend is output, higher
+than the main thread's 71 percent.
+
+### The threshold table
+
+Headline table from `SIM-2026-09.md`, floor re-write charged on every cut:
+
+| threshold | delta vs never (meter-%/day) |
+|---|---|
+| 200k | +2.0 |
+| 300k | -0.2 |
+| 400k | -0.2 |
+| before-break | +3.0 |
+
+Compaction costs 0.47 meter-percent per cut against a plain handoff's 0.45. Idle expiry past the
+1h cache TTL produced 234 gaps over 31 days and 45M tokens re-written, under 0.4 points a day, so
+it barely moves the total either way.
+
+### The one rule
+
+Never cut by hand. Auto-compact fires at 300k (window set to 313k), and STATUS is re-injected
+after it the same way it already is after a manual clear. The lever worth pulling is output, not
+context: shorter replies, fewer and larger Bash scripts, the page-writer subagent for long files,
+effort medium, and subagents that return conclusions instead of raw material.
+
+State the uncertainty honestly: the output weight alone carries about plus or minus 15 percent on
+every total here, larger than the spread between any two of the policies above.
+
+### Pitfalls
+
+- Refusals do not move the meter: a run of random dictionary-word prompts got refused and left the
+  meter untouched even though the run reported real cache_write tokens.
+- Fable 5.1 under `claude -p --resume` with a 150k single-message context never hit the cache
+  (5.7M tokens rewritten every turn); a normal prompt on the same model cached fine. Do not
+  benchmark Fable through `-p --resume`.
+- The Fable weekly scoped meter has its own 50 percent cap, separate from the all-models weekly
+  meter, and the experiment moved it from 3 to 24.
+- Measuring needs an idle account: one run was contaminated by another of his chats active in the
+  same window.
+
+### Where the material lives
+
+`~/Tasks/browser-token-economy/research/meter/`: `meter-run.sh`, `usage.sh`, `meter.log`,
+`results.csv`, `FACTS-2026-09-02.md`, `sim2.py`, `breakdown.py`, `compaction.py`,
+`SIM-2026-09.md`. `gaps.py` is in `research/scripts`.
+
 ## What is still true, 2026-08-31
 
 - A request costs about $0.105 whatever tool it runs. The price is the context re-sent underneath
