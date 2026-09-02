@@ -472,3 +472,25 @@ in order to act.** A line that is neither is deleted, however true and however h
 - If there is nothing to ask, there is no message. Do not send one.
 
 Written as a colleague writes, not as a system reporting in.
+
+## Never offer an option you already know is wrong
+
+⭐ **His instruction, 2026-09-02.** A draft asked a reviewer whether to merge over a red Sonar gate
+"or add these files to the exclusions". The PR was a prefix rename touching 67 files across the
+whole app, so the second option meant excluding half the project from analysis forever. He caught
+it: asking it at all makes the sender look like they have not thought about their own change.
+
+**Work the alternatives out before you write, and put only the live ones in the message.** An
+option you would refuse if the reader said yes is not an option, it is a hole in your own thinking
+that you have handed to somebody else.
+
+- Before offering a choice, answer it yourself. If one branch is obviously wrong, delete it and ask
+  the remaining question directly.
+- Count the blast radius of every option in the message. "Add it to the exclusions" is fine for one
+  temporary script and absurd for 67 files of production code; the words are identical, the size is
+  not.
+- A question with one sensible branch is not a question. State what you are doing and ask them to
+  confirm, or ask nothing.
+
+This is the colleague-facing twin of the rule that a message to him never lists options without
+naming a winner.
