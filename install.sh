@@ -430,6 +430,31 @@ print("  hooks: board size guard registered (%d new)" % added)
 BGPY
 fi
 
+if [ -f "${CLAUDE_DIR}/hooks/draft-guard.sh" ]; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/draft-guard.sh" <<'DGPY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+entries = hooks.setdefault("PreToolUse", [])
+matcher = "Skill|Read|Bash|Write|Edit"
+for e in [e for e in entries if script in json.dumps(e) and e.get("matcher") != matcher]:
+    entries.remove(e)
+added = 0
+if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print("  hooks: draft guard registered (%d new)" % added)
+DGPY
+fi
+
 # Register the automatic handoff. He was writing the same three-step ritual by hand around three
 # hundred times a day: session says "press /clear", he presses it, he types "pick up the handoff".
 # A Stop hook takes the first step and handoff-guard takes the third; the keystroke in the middle
