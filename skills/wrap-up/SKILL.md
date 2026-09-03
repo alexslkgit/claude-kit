@@ -133,10 +133,11 @@ forever.
      this timestamp against the moment of the last context reset; without the touch, every future
      session is told the files are stale, and a warning that is always on is a warning nobody reads.
 7. **Check the auto-memory pointer** exists and still describes the files accurately.
-8. **Report in three lines or fewer**, then tell the user they can clear now, and give them the exact
-   phrase that resumes work (see below).
+8. **Report in three lines or fewer** and give the user the exact phrase that resumes work (see
+   below). Do not tell him to clear: since 2026-09-03 the kit compacts automatically through a hook,
+   and a wrap-up only makes sure the files are current before that happens.
 
-## Handing over the clear
+## Handing over to the compaction
 
 **You cannot clear the context yourself.** Hooks communicate through stdout, stderr and exit codes
 only — they cannot trigger a slash command or a tool call. A `SessionEnd` hook *does* fire on
@@ -151,7 +152,9 @@ files and says whether a wrap-up ran after the last reset. So a clear without a 
 silent: the next session is told the files may be missing whatever the last one learned. That is a
 tripwire, not a safety net; the writing still only happens here.
 
-Finish the write, touch the stamp, then say plainly that the files are current and the context can go.
+Finish the write, touch the stamp, then say plainly that the files are current. Nothing about
+clearing: the compaction is the hook's job, and the sentence "you can clear now" was retired on
+2026-09-03 at his request.
 
 Give the user the resume phrase, and keep it short enough to retype: **"прочитай статус"** (or
 "read the status file" — match the language they use). The next session starts by reading the file's

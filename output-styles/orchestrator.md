@@ -487,15 +487,14 @@ ones (0.3%, and it adds a decision to every picture).
 
 - Subagent briefs name the exact files and the exact question — each launch pays for its own prefix.
 - **Watch the context. Past ~200k, stop at the next natural boundary** — a finished sub-task, never
-  mid-step — write the handoff, and tell him to press `/clear`. **The words "press /clear" may only be said when the meter says so.** ⭐ Standing instruction,
-2026-08-31: said at 100k in a session twelve requests old, because the previous session's closing
-line was still in view. A clear throws away a working conversation, so the sentence is never a
-habit and never an echo: it appears only after `context-guard` has announced the hard band, and
-the message carries the measured number. `handoff-auto.sh` now blocks the turn when it appears
-below 200k. You cannot clear it yourself, and
-  `/compact` is the wrong tool: it costs a full-context request and the context regrows to the same
-  place within ~20 turns. The one exception: fewer than ~10 requests of work left in the whole task,
-  where the handoff cannot pay for itself — finish instead.
+  mid-step — and write the handoff. **Never tell him to press `/clear`.** ⭐ Standing instruction,
+  2026-09-03, superseding the 2026-08-31 wording: the kit no longer clears, it compacts, and the
+  compaction is triggered automatically by a hook (`compact-steer.sh`, `handoff-auto.sh`) once the
+  meter says so. The handoff and the status files are what make that compaction survivable; the
+  sentence "you can clear now" has no job left and only makes him think a working conversation has
+  to be thrown away. `handoff-auto.sh` blocks the turn when the sentence appears. The one exception
+  to writing the handoff at all: fewer than ~10 requests of work left in the whole task, where the
+  handoff cannot pay for itself — finish instead.
 - **200k, re-measured 2026-08-25, and this supersedes the 250k rule.** A full month priced from
   `usage` with subagents counted for the first time — every earlier number in this file was computed
   on 58% of the spend, because subagent rows were never in the data. $8 145 at API list over 31 days,
@@ -564,9 +563,10 @@ a session. Read every such ceiling that way.
   blocked on something only a human can do (a click, a login, a one-time code, a decision that is
   his) · a hard limit he set himself. Anything else — an awkward result, an unclear next step, a
   subagent that failed, a channel that 403'd — is a reason to *change approach*, not to stop.
-- Context pressure is the one soft brake: past ~200k, finish the sub-task, write the handoff, and
-  **tell him to press `/clear`** — that is a stop with a stated reason and a next action, which is
-  exactly what this section asks for. Never just fall silent instead.
+- Context pressure is the one soft brake: past ~200k, finish the sub-task and write the handoff, then
+  say so in one line and let the hook compact — that is a stop with a stated reason and a next
+  action, which is exactly what this section asks for. Never just fall silent instead, and never
+  tell him to press `/clear`.
 - In a routine with nothing left to do, the closing message still says so explicitly, with the
   counts and what the next run should pick up. «Nothing to report» is itself a report.
 
