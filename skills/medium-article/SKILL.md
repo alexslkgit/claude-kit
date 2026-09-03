@@ -10,7 +10,7 @@ description: Use whenever he asks to write, draft or publish a Medium article or
 | Account | Language | Style file | Status |
 |---|---|---|---|
 | https://medium.com/@alexslkmain | Ukrainian | styles/alexslkmain-uk.md | profiled |
-| second account | URL unknown | he has called it both Russian and English | missing, profile on first use; ask him only for the sign-in, never for the URL if it is visible in his Chrome profile switcher |
+| https://medium.com/@oleksandrslobodianiuk | English | styles/oleksandrslobodianiuk-en.md | profiled 2026-09-03, 3 articles, all translations of the Ukrainian ones; the English piece is written after the Ukrainian one and links back to it |
 
 He is signed in to one Medium account at a time. When the second account is needed, tell him in
 one line to re-login and carry on with other work while he does it.
