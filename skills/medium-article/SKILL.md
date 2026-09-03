@@ -74,3 +74,9 @@ translated and re-written into that account's own style.
 - 2026-09-03, first run: the style scout hit its 60-turn cap while collecting tags across all 12
   articles. Cap it at 40 turns and have it read only 3 articles in full.
 </content>
+- 2026-09-03, placement: the whole editor flow took one browser-scout-sonnet about 140 tool calls
+  across three 60-turn resumes. Brief it to batch, and expect to resume it twice. The `type`
+  action drops the first character or word in a freshly focused Medium field (title, subtitle,
+  captions): have the scout diff every typed field against the source and retype. Medium has no
+  subtitle toggle in the toolbar; the second line stays a paragraph. Rich HTML on the clipboard
+  via `«data HTML<hex>»` pastes with headings, lists and code intact.
