@@ -41,10 +41,13 @@ REPO="${SUPERVISE_REPO:-$PWD}"
 
 finished() { [ -f "$REPORT" ] && grep -qx "DONE" "$REPORT"; }
 
+# A missing report is measured from the attempt's start, not treated as infinitely old: the brief
+# gives the call two minutes to write it, and killing a healthy call at its first stall check for
+# having no report yet is exactly what happened on 2026-09-02.
 report_age_minutes() {
-  [ -f "$REPORT" ] || { echo 999; return; }
   local now mtime
   now=$(date +%s)
+  if [ ! -f "$REPORT" ]; then echo $(( (now - ATTEMPT_STARTED) / 60 )); return; fi
   mtime=$(stat -f %m "$REPORT" 2>/dev/null || stat -c %Y "$REPORT" 2>/dev/null || echo 0)
   echo $(( (now - mtime) / 60 ))
 }
@@ -76,6 +79,7 @@ report what was refused, and do the job another way or leave that one step for t
   copilot -p "$( [ -n "$PREAMBLE" ] && [ -f "$PREAMBLE" ] && { cat "$PREAMBLE"; echo; }; cat "$BRIEF"; echo "$EXTRA")" \
     --model "$MODEL" --allow-all-tools -C "$REPO" --add-dir "$REPO" >> "$LOG" 2>&1 &
   child=$!
+  ATTEMPT_STARTED=$(date +%s)
 
   # Watch the report file, not the process. A live process saying nothing is the failure mode that
   # cost thirteen hours; only the report moving proves the call is actually doing anything.
