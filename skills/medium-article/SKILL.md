@@ -80,3 +80,7 @@ translated and re-written into that account's own style.
   captions): have the scout diff every typed field against the source and retype. Medium has no
   subtitle toggle in the toolbar; the second line stays a paragraph. Rich HTML on the clipboard
   via `«data HTML<hex>»` pastes with headings, lists and code intact.
+- 2026-09-03, second placement: `browser-scout-sonnet` refused the editor job as read-only (the
+  first instance happened to comply). The placement agent is the `claude` catch-all on `model:
+  sonnet` with a `TIER-OK:` line saying the scouts are read-only by definition and the draft is
+  private. Step (f) above means that agent, not a scout.
