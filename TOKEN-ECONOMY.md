@@ -6,6 +6,11 @@ as if they were three independent findings.
 
 ## What is still true, 2026-09-02
 
+- 2026-09-03: the kit's own documents (STATUS, DECISIONS, HANDOFF, board) are 4-10% of the
+  meter and DECISIONS.md alone 1.6-4%; spend per day rose 5x because messages per day rose 6x,
+  cost per message fell 11%. The lever is subagent tier: 73% of subagent output tokens ran on
+  Opus, and Sonnet output weighs a third. Researchers and verifiers on Sonnet by default is
+  21.6% of the week. Evidence: ~/Tasks/html-autoswipe/article/ORCHESTRATOR-COST.md.
 The unit changed: everything below is measured in **percent of the Max 5-hour meter per 1M
 tokens** (integer percents, read from `api.anthropic.com/api/oauth/usage` with up to about 2
 minutes of lag), fitted from controlled `claude -p` sessions, not in API dollars.
