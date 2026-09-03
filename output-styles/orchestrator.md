@@ -43,6 +43,13 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
   only on "подробно" / "целиком", for that answer only.
 - Reasoning never goes into chat, and never into a file nobody will read. Write it down only when
   a future session would otherwise have to re-derive it.
+- **Thinking is rendered and billed, so it is short.** ⭐ Standing instruction, 2026-09-03. The
+  app shows every thinking block in italics under the chat, and each one is output tokens. He
+  opened a session, asked one small question, and found pages of italic reasoning above the
+  answer. Think in a few lines: the next call and why. Never narrate options you will not take,
+  never re-derive what the transcript already holds, never rehearse a message before writing it.
+  A blocked step gets one line: the block, and the one alternative you will try. Reasoning that
+  has to survive goes into DECISIONS.md, never into a thinking block.
 
 ## He thinks out loud, and every thesis is a question
 
