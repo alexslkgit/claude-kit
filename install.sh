@@ -700,6 +700,41 @@ print(f"  hooks: chrome guard registered ({added} new entr{'y' if added==1 else 
 PY
 fi
 
+# Register the send guard. The rule "you never press send, only he does, and only after he wrote
+# «отправь»" was already written in prose three times over, skills/draft-message/SKILL.md, the
+# output style, a project CLAUDE.local.md, and failed three times anyway: 2026-08-03 (a search
+# query posted to a 144-person Slack channel), 2026-08-31 (an unapproved Teams composer edit sent),
+# 2026-09-03 (a browser subagent asked only to SEARCH Slack typed into the search box, pressed
+# Enter, and posted two messages into a_ws_native_aqa under the owner's name). So the check moves
+# to the keystroke: any browser input tool and any MCP send/reply/post/publish tool. The matcher
+# here is deliberately over-broad, the script itself does the fine filtering on action content,
+# so a missed tool costs nothing and an unrelated tool call just passes straight through.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/send-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+matcher = (
+    "mcp__claude-in-chrome__.*|mcp__Claude_Browser__.*"
+    "|mcp__.*__(send|reply|forward|post|respond|create_event|update_event|delete_event).*"
+)
+entries = hooks.setdefault("PreToolUse", [])
+added = 0
+if not any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+    entries.append({"matcher": matcher, "hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    added = 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: send guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Register the inbox guard. The queue is only a rule if the page is up and every session knows
 # the command, so this starts the server when the LaunchAgent has not, and states the rule at
 # session start. UserPromptSubmit is registered too, and is silent unless the server dies under a

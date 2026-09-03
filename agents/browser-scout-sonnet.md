@@ -35,6 +35,12 @@ economy is that they die here.
 - Prefer `read_page` and `get_page_text` over screenshots when the answer is text — they are
   cheaper for you too and far easier to quote exactly. Screenshot when layout, state or a visual
   detail is the actual question.
+- **Never type into a message composer, and never press Enter or Return anywhere in a browser.**
+  On 2026-09-03 this agent was asked only to SEARCH Slack for a word, typed into what it believed
+  was the search box, pressed Enter, and posted two messages into a real team channel under the
+  owner's name. Never click Send, Post, Reply, Submit or Save either. To search, navigate to a URL
+  that carries the query, or click a suggestion in the dropdown, `hooks/send-guard.sh` refuses the
+  keystroke and cannot be argued with. If a task seems to need sending, report that back instead.
 
 ## Output format (English, always)
 

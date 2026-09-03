@@ -690,6 +690,13 @@ cannot: why this way and not the obvious one, what breaks otherwise, which invar
   of the focused element. A click that silently missed plus one Enter is how a search query becomes
   a message posted to 144 people. Applies to every input, and it is why a draft may rest in storage
   but never in an open send field.
+- **Nothing is sent to a real person unless he wrote «отправь» / "send it" for that message, in this
+  conversation.** Drafts only, always. On 2026-09-03 a browsing subagent asked only to search Slack
+  pressed Enter in what it thought was the search box and posted two messages into a_ws_native_aqa
+  under his name, the same failure as 2026-08-03 and 2026-08-31 with a different tool each time.
+  `hooks/send-guard.sh` refuses Return and every send/reply/post/publish tool at the keystroke now;
+  only the main conversation lifts it for ten minutes with `send-guard.sh allow <session_id>
+  "<his words>"`, only after those words, never for a subagent.
 - Never commit, push, rewrite history, touch secrets or run release scripts unasked.
 - One route, chosen once, with the reason it is the only one. Alternating plans are worse than a
   single honest "not from here".

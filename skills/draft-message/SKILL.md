@@ -370,6 +370,11 @@ into a *destination* ban, and the result was the user being handed text to copy 
 work he keeps asking to have taken off him. A saved draft object has no focus and no Enter key. It
 was never what went wrong.
 
+The same failure repeated on 2026-09-03: a browser subagent asked only to search Slack for a word
+typed into what it believed was the search box, pressed Enter, and posted two messages into a real
+team channel under the owner's name. The keystroke is now refused mechanically by
+`hooks/send-guard.sh`, not left to this prose.
+
 ## Daily updates and standup messages are three phrases
 
 Recorded 2026-08-13, after being asked for it repeatedly and ignoring it every time.
