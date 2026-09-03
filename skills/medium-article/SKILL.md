@@ -84,3 +84,10 @@ translated and re-written into that account's own style.
   first instance happened to comply). The placement agent is the `claude` catch-all on `model:
   sonnet` with a `TIER-OK:` line saying the scouts are read-only by definition and the draft is
   private. Step (f) above means that agent, not a scout.
+- 2026-09-03, third placement: editing the editor DOM with javascript (execCommand, innerHTML)
+  makes Medium show "Something is wrong and we cannot save your story" and the work is lost; the
+  agent then blamed a Grammarly extension, which was not the cause. Only real input saves:
+  clicks, keys, cmd+v of rich HTML, file_upload. And exactly one tab per draft: a second tab on
+  the same draft autosaves its stale copy over the edits, and cannot be closed by automation
+  because of the "Leave site?" dialog. Replacing a whole body is dearer than a fresh draft plus
+  one delete click from him.
