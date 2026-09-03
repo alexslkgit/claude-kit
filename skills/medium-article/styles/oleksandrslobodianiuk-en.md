@@ -88,3 +88,10 @@ Article 2 (the how-to) omits the Discord pitch and keeps only the translation no
 8. Avoid code blocks; explain technical symbols and terms inline in prose.
 9. Caption images only when they carry unique data; otherwise a plain photo credit is enough.
 10. End with a two-part outro: an invitation to his Ukrainian iOS Discord community (essays only) plus a note on the piece being translated from a Ukrainian original, with a link back to it.
+
+## Published by the kit
+- 2026-09-03: "I Measured the Claude Max Meter. Here Is What a Token Actually Weighs",
+  https://medium.com/@oleksandrslobodianiuk/i-measured-the-claude-max-meter-here-is-what-a-token-actually-weighs-d3385a226d7c
+  English re-write of the Ukrainian article, same numbers, lead chart re-drawn as one stacked
+  bar after he called the three-block version crooked. Charts: one clean stacked bar beats
+  three blocks of different heights; label every segment under the bar, put the caveat on the image.
