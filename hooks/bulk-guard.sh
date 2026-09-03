@@ -81,6 +81,11 @@ print("\t".join([
 
 mkdir -p "$STATE_DIR" 2>/dev/null || true
 [ -e "$STATE_DIR/$sid.bypass" ] && exit 0
+# A subagent shares the parent's session_id, so its screenshots were counted against the main
+# conversation's budget of two and a browser flow delegated exactly as this hook asks got refused
+# on its third step (2026-09-03, Medium editor). Subagent calls are recognised by the agent_id field
+# or by the transcript path under <session>/subagents/, and are not this hook's business.
+printf '%s' "$payload" | grep -q '"agent_id"\|/subagents/agent-' && exit 0
 /usr/bin/find "$STATE_DIR" -type f -mtime +7 -delete 2>/dev/null || true
 
 case "$tool" in
