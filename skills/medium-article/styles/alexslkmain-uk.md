@@ -128,3 +128,10 @@ Pattern: short technical titles with no clickbait, often with a colon ("topic: d
 9. End the article with a reflective conclusion or a direct question to readers.
 10. If the article is a translation, explicitly name the source and recommend reading the original.
 </content>
+
+## Published by the kit
+- 2026-09-03: "Вага токена в ліміті Claude Max: заміри лічильника і що вони змінили",
+  https://medium.com/@alexslkmain/вага-токена-в-ліміті-claude-max-заміри-лічильника-і-що-вони-змінили-f0b000ba9d6a
+  His verdict on the first draft: yellow press; the accepted version is a measurement report
+  (Контекст / Метод / Результати / Обмеження / Висновок) whose opening explains the situation
+  to a reader who knows nothing of it. Start every article that way.

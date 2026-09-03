@@ -91,3 +91,8 @@ translated and re-written into that account's own style.
   the same draft autosaves its stale copy over the edits, and cannot be closed by automation
   because of the "Leave site?" dialog. Replacing a whole body is dearer than a fresh draft plus
   one delete click from him.
+- 2026-09-03, after publishing: "Save and publish" on a published story applies at once, no
+  panel. The ⋯ menu on medium.com/me/stories does not open under automation; deleting a draft
+  goes through its editor's ⋯ menu, and an automated navigation to an editor URL can hit a
+  Cloudflare human check, which is his click. Register-wise he rejected the first draft as
+  yellow press: the opening must explain the situation to a newcomer before any number.
