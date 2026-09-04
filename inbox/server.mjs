@@ -62,24 +62,67 @@ button:hover{opacity:.85}
 code{font-size:13px;background:rgba(154,98,7,.09);color:var(--accent);
 padding:3px 7px;border-radius:6px;word-break:break-all}
 .empty{color:var(--muted);font-size:17px;padding:40px 0;font-family:Literata,Georgia,serif}
+.grp{display:flex;align-items:baseline;gap:10px;margin:30px 0 12px;
+padding-bottom:7px;border-bottom:1px solid var(--line)}
+.grp:first-child{margin-top:0}
+.grp .nm{font:600 17px/1.2 Literata,Georgia,serif}
+.grp .k{font-size:13px;color:var(--muted)}
+.sub{font-size:12.5px;color:var(--muted);letter-spacing:.04em;margin:14px 0 8px}
+.age{font-weight:600}
+.age.old{color:var(--accent)}
 .foot{margin-top:34px;font-size:12.5px;color:var(--muted)}
 </style></head><body><div class="wrap">
 <h1>Ждёт тебя</h1><div class="count" id="n">…</div><div id="list"></div>
 <div class="foot">Страница сама обновляется. Любая сессия на этом маке кладёт сюда то, что уперлось в тебя, и твой клик возвращается в неё и снимает блокировку.</div>
 </div><script>
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-async function load(){
- const r=await fetch('/api/pending'),items=await r.json();
- document.getElementById('n').textContent=items.length||'ничего';
- document.getElementById('list').innerHTML=items.length?items.map(i=>\`
-  <div class="card">
-   <div class="meta">\${esc(i.project)}\${i.session?' · '+esc(i.session):''} · \${esc((i.created||'').slice(0,16).replace('T',', '))}</div>
+const plural=(n,one,few,many)=>n%10===1&&n%100!==11?one:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?few:many);
+// How long it has been waiting. The whole reason it is on the card: a request that has sat for
+// days is usually answered by deleting it, and nothing on this page used to say that out loud.
+function age(iso){
+ const ms=Date.now()-new Date(iso).getTime();
+ if(!isFinite(ms)||ms<0) return '';
+ const m=Math.round(ms/6e4); if(m<60) return Math.max(1,m)+' мин';
+ const h=Math.round(ms/3.6e6); if(h<24) return h+' '+plural(h,'час','часа','часов');
+ const d=Math.round(ms/8.64e7); return d+' '+plural(d,'день','дня','дней');
+}
+function card(i){
+ const a=age(i.created), old=(Date.now()-new Date(i.created).getTime())>1.728e8; // two days
+ return \`<div class="card">
+   <div class="meta">\${i.session?esc(i.session)+' · ':''}\${esc((i.created||'').slice(0,16).replace('T',', '))}\${a?' · <span class="age'+(old?' old':'')+'">'+a+'</span>':''}</div>
    <div class="t">\${esc(i.title)}</div>
    \${i.why?'<p class="why">'+esc(i.why)+'</p>':''}
    \${i.open?'<p class="why"><code>'+esc(i.open)+'</code></p>':''}
    <div class="row">\${(i.options||['Да','Нет']).map((o,k)=>
      '<button class="'+(k===0?'p':'')+'" onclick="say(\\''+esc(i.id)+'\\',\\''+esc(o)+'\\')">'+esc(o)+'</button>').join('')}
-   </div></div>\`).join(''):'<div class="empty">Пусто. Ни одна сессия сейчас тебя не ждёт.</div>';
+   </div></div>\`;
+}
+async function load(){
+ const r=await fetch('/api/pending'),items=await r.json();
+ document.getElementById('n').textContent=items.length||'ничего';
+ if(!items.length){
+  document.getElementById('list').innerHTML='<div class="empty">Пусто. Ни одна сессия сейчас тебя не ждёт.</div>';
+  return;
+ }
+ // The server hands them over sorted by created, ascending, and that order is kept inside a group
+ // on purpose: what has waited longest sits at the top of its project, where it is hardest to skip.
+ const g={};
+ for(const i of items){ const k=i.project||'без проекта'; (g[k]=g[k]||[]).push(i); }
+ // Projects are ordered by their freshest request, newest first, so a project that just asked for
+ // something is at the top rather than buried under one that has been waiting since Monday.
+ const order=Object.keys(g).sort((a,b)=>
+   String(g[b][g[b].length-1].created).localeCompare(String(g[a][g[a].length-1].created)));
+ document.getElementById('list').innerHTML=order.map(name=>{
+  const list=g[name], n=list.length;
+  // A second level only when it earns its place: one session in a project needs no subheading,
+  // and it is already on every card.
+  const sessions=[...new Set(list.map(i=>i.session||''))].filter(Boolean);
+  const body=(sessions.length>1)
+   ? sessions.map(s=>'<div class="sub">'+esc(s)+'</div>'+list.filter(i=>i.session===s).map(card).join('')).join('')
+     + list.filter(i=>!i.session).map(card).join('')
+   : list.map(card).join('');
+  return '<div class="grp"><span class="nm">'+esc(name)+'</span><span class="k">'+n+' '+plural(n,'вопрос','вопроса','вопросов')+'</span></div>'+body;
+ }).join('');
 }
 async function say(id,value){
  await fetch('/api/answer',{method:'POST',headers:{'content-type':'application/json'},
