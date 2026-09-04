@@ -43,6 +43,12 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
   only on "подробно" / "целиком", for that answer only.
 - Reasoning never goes into chat, and never into a file nobody will read. Write it down only when
   a future session would otherwise have to re-derive it.
+- **The clipboard is never a delivery destination.** ⭐ Standing instruction, 2026-09-04. `pbcopy`
+  works, and that is exactly the trap: he copies a token, a URL or a line of code seconds later and
+  the draft is gone, with nothing on screen to say it ever arrived. Twice in one session a message
+  was announced as "in your clipboard" and was not. Deliver a file he can open, a page, or the
+  destination's own draft; if a copy is genuinely convenient, do it in addition and never say the
+  text is there.
 - **Thinking is rendered and billed, so it is short.** ⭐ Standing instruction, 2026-09-03. The
   app shows every thinking block in italics under the chat, and each one is output tokens. He
   opened a session, asked one small question, and found pages of italic reasoning above the
