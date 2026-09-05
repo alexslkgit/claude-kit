@@ -10,7 +10,7 @@ git clone https://github.com/alexslkgit/claude-kit.git ~/Developer/claude-kit &&
 ```
 
 Then `/clear`. That is all — `install.sh` also selects the output style for you by merging
-`"outputStyle": "orchestrator"` into `~/.claude/settings.json` (your other settings are kept,
+`"outputStyle": "orchestrator-slim"` into `~/.claude/settings.json` (your other settings are kept,
 and a `.bak` is written). Styles are read once at session start, hence the `/clear`.
 
 Nothing to pick by hand: `/output-style` was removed in recent versions and `/config` is a
@@ -98,7 +98,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 |---|---|
 | `agents/` | researcher (haiku/sonnet/opus/fable), planner (opus), implementer (sonnet/opus), verifier (opus) |
 | `skills/` | procedures loaded on demand — `board`, `chew`, `record-demo`, `ticket-intake`, `bug-fix`, `handoff`, `draft-message`, `pr-review`, `project-sources`, `kit-update`, `company-brief` |
-| `output-styles/orchestrator.md` | main-conversation persona + the model routing table |
+| `output-styles/orchestrator-slim.md` | the live main-conversation persona + the model routing table |
 | `plan-shell/` | `plan.css` + `plan.js`, the renderer the `chew` skill copies into a repo's `.claude/tasks/_shell/` |
 | `board-shell/` | `board.css` + `board.js`, the board's look and its renderer. A board page is one JSON block; the renderer draws the markup and counts the percentages |
 | `tools/kit-sync.sh` | gets a kit file from the clone, or from a cache checked at most every 3 h with a conditional request. Prints one line; the file is read only when it says CHANGED |
@@ -141,7 +141,7 @@ conclusion.
 
 The tier is fixed inside each agent's file — the parent cannot choose it at call time, so
 each role exists at several tiers and **choosing the agent is choosing the model**. The
-routing table lives in `output-styles/orchestrator.md`.
+routing table lives in `output-styles/orchestrator-slim.md`.
 
 Policy: predict the minimum tier that will do the job *well*, before the run. Cheap-first-
 then-escalate is deliberately rejected. Re-running on a higher tier is a reaction to a

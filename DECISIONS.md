@@ -836,3 +836,31 @@ is excluded from the fitted output weight; only the clean second run is used.
 `compact_boundary` records exist in only 3 session files out of the corpus (13 records total, 7
 inside the 31-day window), so every compaction-cost median in `SIM-2026-09.md` rests on 13 events,
 not on a large sample.
+
+## 2026-09-05 — audit package for the Tree pipeline (Tree_storage D-017/D-018): eight harness changes
+
+Applied in one session from `Tree_storage/.claude/tasks/audit/HANDOFF-audit-fixes.md`, evidence in
+`Tree_storage/.claude/tasks/audit/harness.md`. Measured before and after, not estimated.
+
+- Output style trimmed 33 272 to 29 209 bytes. Ten blocks whose rule a hook enforces verbatim became one-line
+  pointers naming the hook; the parts no hook covers (the tell family, background-task reconciliation, board
+  rewrite frequency, focus check before typing) stayed as prose. Target was 6 to 8 KB; 4 KB reached, and the
+  honest way to the rest is a hook for background-task reconciliation, not more cutting. Two stale numbers
+  dropped: Write is refused at 24 000 chars in bulk-guard, not 12 000; handoff-auto blocks at 300k, not 200k.
+- 200k became 300k in the style and in TOKEN-ECONOMY.md:115. The hooks already said 300k; only the prose lagged.
+- Copilot is conditional: install.sh adds the CLAUDE.md section and copilot-guard wiring only when
+  `command -v copilot` succeeds and removes both otherwise. On this Mac they are gone: 937 tokens per request
+  for a rule that could not apply. unattended-guard stays unconditional, it also protects backgrounded xcodebuild.
+- handoff-guard prints a pointer, never the body: 12 578 to 773 bytes at SessionStart. The archive_handoff calls
+  at those sites had to go with it, since a pointer to an archived file is a broken pointer. Finding for a
+  separate ticket: the 75 timeouts in 340 starts come from resolve_chat's bounded wait (about 10 s when the
+  mapping file has not landed), not from printing; a resolving session id returns in 0.4 s.
+- context-guard off PostToolUse (27 000 invocations a month at 123 ms), UserPromptSubmit only.
+- page-sweep at most once per 24 h via ~/.claude/.last-page-sweep: 4.8 s to 0.014 s on the second start.
+- orchestrator.md deleted; README.md and install.sh STYLE now name orchestrator-slim. The installed copy at
+  ~/.claude/output-styles/orchestrator.md is left in place: install.sh does not delete, and nothing loads it.
+- figma and atlassian MCP tool globs removed from four agents (researcher-opus, -fable, -sonnet, planner-opus).
+
+Not done: merging duplicate hook wiring (17 PreToolUse entries for 11 scripts) is its own session, one hook at a
+time with a test after each; computer-use and Apify are toggled in the desktop app, not in files.
+Pushed only after the owner's yes; the standing kit-update rule to push at once is overridden for this package.

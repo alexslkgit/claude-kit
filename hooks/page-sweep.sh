@@ -18,6 +18,19 @@
 set -uo pipefail
 command -v python3 >/dev/null 2>&1 || exit 0
 
+# At most one sweep per 24 hours, gated by ~/.claude/.last-page-sweep, a sibling of the existing
+# ~/.claude/.last-cleanup stamp. Measured over 531 sessions: it ran on every SessionStart at 3.8 s
+# p50 and 5.9 s p95, and produced output 19 times in all 531. A whole-disk sweep does not need to
+# run more often than the disk meaningfully changes, and a regression is still caught the same day.
+STAMP="$HOME/.claude/.last-page-sweep"
+if [ -f "$STAMP" ]; then
+  now=$(date +%s)
+  mt=$(stat -f %m "$STAMP" 2>/dev/null || stat -c %Y "$STAMP" 2>/dev/null || echo 0)
+  [ $(( now - mt )) -lt 86400 ] && exit 0
+fi
+mkdir -p "$(dirname "$STAMP")" 2>/dev/null || true
+touch "$STAMP" 2>/dev/null || true
+
 python3 <<'PY' 2>/dev/null
 import json, os, re, sys
 

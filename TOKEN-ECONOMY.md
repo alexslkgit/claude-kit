@@ -112,8 +112,10 @@ every total here, larger than the spread between any two of the policies above.
   skill was still described in full, because the listing is built before permissions apply. Roll out with `tools/deny-tools.py <project-dir> <Tool>...`,
   per project and by measured use, never globally: `Artifact` is genuinely used in
   `energy-tracker`, `Rodovid_business` and `Downloads`.
-- The cutting threshold is 200k, about twelve cuts a day. 150k is the arithmetic optimum; he
-  refused twenty-one cuts a day as unlivable on 2026-08-25 and that veto stands.
+- The cutting threshold is 300k, about three cuts a day, matching `context-guard.sh` HARD=300000
+  and `CLAUDE_CODE_AUTO_COMPACT_WINDOW` 313000. Measured 2026-09-02 (threshold table above):
+  cutting at 200k came out 2.0 meter-percent per day WORSE than never cutting, and 300k was minus
+  0.2, so the old 200k rule was paying for cuts that bought nothing.
 - Tool traffic held in main contexts is 46% of the conversation half. Ranked: screenshots 13%,
   Bash 13% from call count alone, Read 5%, Write 4%.
 - Subagents are 39% of the bill. Delegation moves cost, it does not remove it. Fanning out small
@@ -899,7 +901,7 @@ Peaks of 526,798 and 412,000 tokens were measured, so the window on those sessio
 ## Collision to resolve before anything is committed
 
 The work Mac's session slimmed **the same file** we are slimming here — it reports
-`output-styles/orchestrator.md` going 30,267 → 22,144 characters. The file at kit HEAD
+`output-styles/orchestrator.md` (deleted 2026-09-05) going 30,267 → 22,144 characters. The file at kit HEAD
 (`5735aac`) is **19,423 characters**, so that machine started from a stale copy and has not pulled
 `b34a9c6` / `09fd021`. Its diff must not be committed as-is. Resolution: pull there first, then
 compare against `DRAFT-orchestrator-v3.md` (2,361 tokens vs the current 5,403) and keep one version.

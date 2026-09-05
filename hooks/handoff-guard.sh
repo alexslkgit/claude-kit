@@ -256,7 +256,14 @@ HEALWINEOF
 # into the model's context in full, it HAS been delivered, so it archives it in that same breath,
 # exactly the way the PostToolUse/Read branch already does. $DURABLE is exempt on purpose: it is
 # part of the project's own archive, rewritten by the next wrap-up, and is never consumed.
-archive_handoff() {   # $1: the path just cat'ed in full into a heredoc above this call.
+#
+# 2026-09-05: NO LONGER CALLED, and it must not be called again until something here delivers a
+# briefing in full again. The pickup blocks below now print only a pointer: path, date, owning
+# chat. The model reads the file itself, and the PostToolUse/Read branch archives it at that
+# moment, exactly as it does for a handoff read any other way. Archiving on the strength of a
+# printed path would move the file out from under the Read that is about to happen. Kept, not
+# deleted, because it is the correct behaviour the moment a branch prints a body again.
+archive_handoff() {   # $1: a path whose full text has just been put into the model's context.
   local f="$1"
   [ -n "$f" ] && [ -s "$f" ] || return 0
   [ -n "$DURABLE" ] && [ "$f" = "$DURABLE" ] && return 0
@@ -302,22 +309,22 @@ PUCLAIMEOF
       fi
       if [ -n "$pu_f" ] && [ -s "$pu_f" ]; then
         cat <<EOF
-handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE"
-($CHAT_ID). Identity only just resolved — the desktop app had not finished writing the mapping
-file at session start — and the briefing below is claimed by this chat, by its stamp or, if it
-predates stamping, by its name, so it is yours by identity rather than by recency. It is here in
-full ($(stamp_of "$pu_f")).
+handoff-guard: a handoff is waiting and it is yours by identity, not by recency. Identity only
+just resolved, because the desktop app had not finished writing the mapping file at session
+start. This file is claimed by this chat, by its stamp or, if it predates stamping, by its name.
 
-Read it and carry on from where it stops. Your first message opens with the board link as always
-and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
-thank him for the handoff, do not summarise it back at him, do not write a new one, and do not
-tell him to clear a context he cleared seconds ago.
+  file:  $pu_f
+  date:  $(stamp_of "$pu_f")
+  chat:  "$CHAT_TITLE" ($CHAT_ID)
 
---- $pu_f ---
-$(cat "$pu_f" 2>/dev/null)
---- end ---
+This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
+first message opens with the board link as always and says in one line which task you picked up,
+so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
+back at him, do not write a new one, and do not tell him to clear a context he cleared seconds ago.
 EOF
-        archive_handoff "$pu_f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+        # No archive_handoff here, and that is the point: the pointer is not delivery. The file is
+        # consumed by the PostToolUse/Read branch when it is actually read. Archiving it on the
+        # strength of a printed path would move it out from under the Read that follows.
         touch "$picked_marker" 2>/dev/null || true
         exit 0
       fi
@@ -623,20 +630,19 @@ CLAIMEOF
       if [ "$cn" = "1" ]; then
         f="$(printf '%s' "$claimed" | head -1)"
         cat <<EOF
-handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE"
-($CHAT_ID), the briefing below was written by this same chat before the clear and carries its id,
-so it is yours by identity rather than by recency. It is here in full ($(stamp_of "$f")).
+handoff-guard: a handoff is waiting and it is yours by identity, not by recency. It was written by
+this same chat before the clear and carries its id.
 
-Read it and carry on from where it stops. Your first message opens with the board link as always
-and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
-thank him for the handoff, do not summarise it back at him, do not write a new one, and do not
-tell him to clear a context he cleared seconds ago.
+  file:  $f
+  date:  $(stamp_of "$f")
+  chat:  "$CHAT_TITLE" ($CHAT_ID)
 
---- $f ---
-$(cat "$f" 2>/dev/null)
---- end ---
+This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
+first message opens with the board link as always and says in one line which task you picked up,
+so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
+back at him, do not write a new one, and do not tell him to clear a context he cleared seconds ago.
 EOF
-        archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+        # No archive_handoff: see the note in the UserPromptSubmit branch. A pointer is not delivery.
         touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
         exit 0
       fi
@@ -646,20 +652,20 @@ EOF
         f="$(printf '%s\n' "$list" | title_match)"
         if [ -n "$f" ] && [ -s "$f" ]; then
           cat <<EOF
-handoff-guard: you are already picked up, and nobody had to guess. This chat is "$CHAT_TITLE",
-and of the $n briefings waiting here exactly one is named after that task and no other comes
-close, so it is yours. It carries no chat stamp only because it was written before handoffs were
-stamped; everything written from now on is claimed by id instead. It is here in full ($(stamp_of "$f")).
+handoff-guard: a handoff is waiting and it is yours by name. Of the $n briefings here exactly one
+is named after this chat's task and no other comes close. It carries no chat stamp only because it
+was written before handoffs were stamped; everything written from now on is claimed by id instead.
 
-Read it and carry on from where it stops. Your first message opens with the board link as always
-and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
-thank him for the handoff, do not summarise it back at him, and do not write a new one.
+  file:  $f
+  date:  $(stamp_of "$f")
+  chat:  "$CHAT_TITLE" ($CHAT_ID), matched by name, not by stamp
 
---- $f ---
-$(cat "$f" 2>/dev/null)
---- end ---
+This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
+first message opens with the board link as always and says in one line which task you picked up,
+so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
+back at him, and do not write a new one.
 EOF
-          archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+          # No archive_handoff: see the note in the UserPromptSubmit branch. A pointer is not delivery.
           touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
           exit 0
         fi
@@ -668,22 +674,22 @@ EOF
 
     if [ "$n" = "1" ] && [ -s "$cwd/HANDOFF.md" ] && [ "$(printf '%s\n' "$list" | head -1)" = "$cwd/HANDOFF.md" ]; then
       f="$cwd/HANDOFF.md"
+      who="${CHAT_TITLE:-unresolved}"; [ -n "$CHAT_ID" ] && who="\"$who\" ($CHAT_ID)"
       cat <<EOF
-handoff-guard: you are already picked up, and he does not have to ask. This session is sitting in
-$cwd, that task keeps exactly one briefing, and it is below in full ($(stamp_of "$f")).
-He typed "pick up the handoff" after every clear for weeks; that keystroke was removed on
-2026-08-25 and asking him for it, or waiting for it, is a defect.
+handoff-guard: a handoff is waiting and he does not have to ask. This session is sitting in $cwd
+and that task keeps exactly one briefing.
 
-Read it and carry on from where it stops. Your first message opens with the board link as always
-and says in one line which task you picked up, so a wrong pickup is caught in a second. Do not
-thank him for the handoff, do not summarise what you just read back at him, do not write a new
-handoff, and do not tell him to clear a context he cleared seconds ago.
+  file:  $f
+  date:  $(stamp_of "$f")
+  chat:  $who, claimed by the folder this session started in
 
---- $f ---
-$(cat "$f" 2>/dev/null)
---- end ---
+This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. He
+typed "pick up the handoff" after every clear for weeks; that keystroke was removed on 2026-08-25
+and asking him for it, or waiting for it, is a defect. Do not thank him for the handoff, do not
+summarise what you read back at him, do not write a new handoff, and do not tell him to clear a
+context he cleared seconds ago.
 EOF
-      archive_handoff "$f"  # 2026-08-27: delivered in full above, consumed now, whatever tool reads next.
+      # No archive_handoff: see the note in the UserPromptSubmit branch. A pointer is not delivery.
       touch "$picked_marker" 2>/dev/null || true  # 2026-08-27: so UserPromptSubmit does not repeat this.
       exit 0
     fi
@@ -731,25 +737,25 @@ EOF
     fi
 
     f="$(printf '%s\n' "$list" | head -1)"
+    own="$(owner_of "$f")"; ownt="$(owner_title_of "$f")"
+    who="unstamped, written before handoffs carried a chat id"
+    [ -n "$own" ] && who="\"${ownt:-$own}\" ($own)"
     cat <<EOF
-handoff-guard: a handoff written $(stamp_of "$f") is waiting at $f.
+handoff-guard: a handoff is waiting. It is the briefing from the previous session in this project,
+addressed to you.
 
-It is the briefing from the previous session in this project, addressed to you. Reading it in
-full with the Read tool is the first action of this session — before answering the user, before
-touching the repository, and without telling him you are doing it: from his side he simply
-carried on talking, and the mechanics are not his concern.
+  file:  $f
+  date:  $(stamp_of "$f")
+  chat:  $who
 
+This is a PICKUP: reading that file in full with the Read tool is the first action of this session,
+before answering the user, before touching the repository, and without telling him you are doing
+it. From his side he simply carried on talking, and the mechanics are not his concern.
 $(if [ "$f" = "$DURABLE" ] || [ "$(basename "$f")" = "HANDOFF.md" ]; then
-    printf '%s' "This one is part of the task's own archive and stays where it is: it is rewritten by the next wrap-up, not deleted by being read."
+    printf '%s' "It is part of the task's own archive and stays where it is: rewritten by the next wrap-up, not deleted by being read."
   else
-    printf '%s' "Reading it also consumes it — this hook moves the file out of the repository the moment you do, so it is read once and never again."
+    printf '%s' "Reading it also consumes it: this hook moves the file out of the repository the moment you do, so it is read once and never again."
   fi)
-
-It opens like this, and this is only the opening:
-
---- $f (first lines) ---
-$(/usr/bin/head -40 "$f" 2>/dev/null)
---- end of excerpt, the rest is in the file ---
 EOF
     exit 0
     ;;

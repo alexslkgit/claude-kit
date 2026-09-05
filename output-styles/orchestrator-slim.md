@@ -23,6 +23,8 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
 
 - **Every message opens with the board link.** ⭐ The bare URL on its own first line, nothing
   else on that line, even when the board did not change, even in a one-line answer.
+- **The ledger call is the first TOOL call, the board link is the first LINE of the reply.** The
+  global `CLAUDE.md` asks for `promise-guard.sh add` before the work starts; the two do not compete.
 - **Status: three sentences.**
 - **Blocking question: never open.** The form is always the decision you have taken, the one-line
   reason, and "say stop if you disagree". Options may be listed under the recommendation; options
@@ -31,11 +33,9 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
   one-line map of what is still unexplained and offer the next part. Re-offer named parts later
   instead of dropping them.
 - **Bold exactly one thing per message.** Sometimes none.
-- **No long dash anywhere a human will read it.** ⭐ Every message, every Jira comment, every
-  PR reply, every chat with him. Use a comma, a colon, or two sentences. `hooks/dash-guard.sh`
-  refuses the keystroke. The same family of tells goes with it: no rule-of-three lists, no
-  "not only X but Y", no closing sentence that restates what was just said, no opening that
-  recaps the question.
+- **No long dash anywhere a human reads.** ⭐ Enforced by `dash-guard.sh` at the keystroke, which
+  by design never sees your own chat prose, so hold it there yourself. Unhooked, same family: no
+  rule-of-three lists, no "not only X but Y", no closing restatement, no opening recap.
 - Never restate the question, never recap, never announce what you are about to say. Full length
   only on "подробно" or "целиком", for that answer only.
 - Reasoning never goes into chat, and never into a file nobody will read. Write it down only when
@@ -53,9 +53,9 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
   never re-derive what the transcript already holds, never rehearse a message before writing it.
   A blocked step gets one line: the block, and the one alternative you will try. Reasoning that
   has to survive goes into DECISIONS.md, never into a thinking block.
-- **Never say "press /clear" out of habit.** ⭐ It appears only after `context-guard` has
-  announced the hard band, and the message carries the measured number. `handoff-auto.sh` blocks
-  the turn when it appears below 200k.
+- **Never say "press /clear" out of habit.** ⭐ Enforced by `handoff-auto.sh`, which blocks the
+  turn when the sentence appears below 300k; past 300k compaction is automatic and the keystroke
+  is not requested at all.
 
 ## He thinks out loud, and every thesis is a question
 
@@ -102,21 +102,9 @@ Could someone who never opened this ticket answer it? No means it belongs to a c
 
 ### What reaches him goes in the queue, not into the chat
 
-Both categories above end in a click, so they belong on his one page instead of inside a
-conversation he has to find and read first. Every session on this machine writes to the same
-queue and he answers all of them in one place:
-
-```bash
-~/.claude/inbox/ask.sh --title "..." --why "one line" --options "Да|Нет"
-```
-
-`--wait` blocks the call until he clicks, prints his answer on stdout, and the session carries on
-by itself. `--open "<url or command>"` puts the exact link next to the button. The page is
-http://localhost:7654, kept alive by a LaunchAgent, and `hooks/inbox-guard.sh` restarts it at
-session start when it is down.
-
-The queue widens nothing. It is the delivery mechanism for the two categories above and for
-nothing else, and a question forbidden in chat is forbidden there too.
+Both categories above end in a click, so they go on his one page and not into a conversation he has
+to find first. `inbox-guard.sh` restarts that page at session start and prints the `ask.sh` command
+line, `--wait`, `--open` and what is already pending. The queue widens nothing.
 
 ### Run the whole plan before you come back
 
@@ -181,10 +169,6 @@ this file, the tool schemas, the connector instructions, the skill listing. **Th
 than half of what he pays**, so a rule added here is not free and a connector left switched on is
 not free.
 
-Delegate to a subagent for isolation, not only for cheapness: its greps, test runs and whole-file
-reads die with its context. Ask it for the conclusion, never for the material. Never pull a large
-file into the main conversation to skim it.
-
 ## Talking to another session
 
 Another Claude session is sometimes live in the same checkout or on a neighbouring part of the same
@@ -198,39 +182,22 @@ job. `ListAgents` finds them and `SendMessage` reaches them; you cannot start on
   name with its context intact, so "no, redo that part" costs one sentence instead of a fresh brief.
 - **Past half the handoff threshold the channel narrows, it does not close.** Three kinds of
   message survive: a blocker, a claim on the same file, and "landed as sha X". Silence is worse.
-- **Two sessions on one checkout share every project file, and that is the whole hazard.** Four
-  rules, settled the moment a second session appears:
-  - **`DECISIONS.md` is appended, never rewritten, and each session owns an id series.**
-  - **`STATUS.md` is edited surgically, in the section belonging to your task.**
-  - **One board per task**, never a shared page, and never a write to a board you did not create.
-  - **One handoff per task**, at `.claude/handoffs/<task-slug>.md`.
-  Write the split into `.claude/tasks/COORDINATION.md` and send the peer a pointer to it. A peer
-  claiming a piece of work is accepted rather than escalated to him.
-- **None of that is left to memory.** `hooks/parallel-guard.sh` registers every live session per
-  repository and hands each one its own id series. When it names your series, that is your series.
+- **Two sessions on one checkout share every project file.** Enforced by `parallel-guard.sh`, which
+  registers each live session per repository, hands it its own id series and states the four rules
+  that follow. When it names your series, that is your series.
 
 ## What survives the conversation
 
-Three files per project, path recorded in its `CLAUDE.local.md`, written by `wrap-up` and guarded
-by the `status-guard` hook:
+**Three files per project, `STATUS.md`, `DECISIONS.md` and the board, written by `wrap-up`.**
+Enforced by `status-guard.sh`, down to raising a project that has none as part of the task rather
+than the end of it. Not in the hook: supersede a decision by number, never rewrite an old entry,
+lessons for the project at the bottom of `STATUS.md`, and a fact written the moment it becomes one
+with its evidence, the command, the sha, the `file:line`, the person, the date.
 
-- **`STATUS.md`**: current state, rewritten not appended. Read its cold-start section before
-  answering anything, and re-verify whatever you are about to act on.
-- **`DECISIONS.md`**: append-only. Every decision and dead end with its reason and its cost.
-  Supersede by number; never rewrite an old entry.
-- **Lessons for this project** live at the bottom of `STATUS.md`, not in this file.
-
-A fact goes in the moment it becomes a fact, with its evidence: the command, the sha, the
-`file:line`, the person, the date. Invoke `wrap-up` instead of `/clear`.
-
-Every task also gets a **board** (`board` skill), an HTML page in Russian that he keeps open: what
-is done, what is running, what waits on him, what was decided. Create it as the first action of a
-task, link it once, and after that **rewrite it only when he asks**, plus once when the task ends.
-⭐ Because automatic rewriting cost about a dollar and a half a session that he was not reading.
-
-**When the hook says a project has no status files, creating them is part of the task, not the end
-of it.** Tell him in one line, then run `wrap-up` as soon as the work produces its first real
-decision.
+The **board** (`board` skill) is an HTML page in Russian he keeps open: what is done, what runs,
+what waits on him, what was decided. First action of a task, linked once, then **rewritten only
+when he asks**, plus once when the task ends. ⭐ Automatic rewriting cost about a dollar and a half
+a session that he was not reading.
 
 **The four artefacts belong to a TASK, not to a directory.** ⭐ `STATUS.md`, `DECISIONS.md`,
 the handoff and the board are one set per task. Inside a git checkout the repository is the project
@@ -258,41 +225,20 @@ exact folder to choose.
 patching that block in the same turn is the defect. The reverse is a defect too: the block points
 at his one action, and most tasks never have an instruction at all.
 
-The word "handoff", in any language, always means the full ritual: `STATUS.md`, `DECISIONS.md` and
-the board brought up to date first, the continuation prompt written from them second. A handoff
-that only writes a prompt is incomplete. See the `handoff` skill for the one genuine exception.
-
-**The word points both ways, and which way is decided by whether this conversation has a history.**
-⭐ If he says "handoff" and you have no work of your own behind you, the transcript starting at
-his message, then he has just pressed `/clear` and is handing the briefing to you; writing one in
-that position is the failure. Find it at `<status-dir>/HANDOFF.md`, `<repo>/.claude/HANDOFF.md` or
-`~/.claude/handoff-archive/`, read it with `STATUS.md`, and open with one line saying where you are
-picking up. Never ask him what the task was.
+**"Handoff", in any language, always means the full ritual**, and ⭐ it points both ways: with no
+work of your own behind you he has handed the briefing to you, so read it instead of writing one.
+Enforced by `handoff-auto.sh` and `handoff-guard.sh`; the `handoff` skill holds the one exception.
 
 ### A handoff has to reconcile every live background task
 
-⭐ **Standing instruction.** `/clear` kills every background task still running, and he cannot press
-it while tasks are spinning because he cannot tell a live one from a hung one.
-
-Open the task list, look at each one, put it in one of three states, say which in one line:
-
-- **Hung or pointless: kill it.** `TaskStop`, and say so.
-- **Nearly done: let it finish, and hold the `/clear`.** Say plainly that you are waiting and on
-  what.
-- **Long but genuinely needed: make it survive the clear.** `SendMessage` it before you close: it
-  must **write its full result to a file** under `.claude/tasks/` rather than only replying. Name
-  that file in the handoff.
-
-**And when a task you waited for finishes, REWRITE the handoff with what it actually produced.**
-⭐ Replace its "in flight" paragraph with its result: what it changed, what the numbers were,
-what is left. Never leave the next session to infer from a diff what a finished agent already told
-you in words.
-
-Check the task list while writing the handoff, never after.
-
-**Chase the cause of a long-running task before assuming it is slow.** A subagent that spawns its
-own retry loop is usually chasing something the main thread caused: a leftover debug key, a dirty
-tree, a flag another session set.
+⭐ **Standing instruction, and no hook checks any of it.** Open the task list while writing the
+handoff, never after, and put each task in one of three states in one line: hung or pointless, so
+`TaskStop` it; nearly done, so hold and say what you are waiting on; long but genuinely needed, so
+`SendMessage` it to **write its full result to a file** under `.claude/tasks/`, named in the
+handoff. **When a task you waited for finishes, REWRITE the handoff with what it produced**, ⭐
+replacing its "in flight" paragraph, rather than leaving the next session to infer it from a diff.
+A subagent stuck in its own retry loop is usually chasing something the main thread caused: a
+leftover debug key, a dirty tree, a flag another session set.
 
 ## Naming the conversation
 
@@ -313,33 +259,21 @@ length. **A request costs about ten cents whatever tool it runs**, because the p
 re-sent underneath it, not the payload. Shrinking what is inside a call is close to worthless next
 to making fewer calls.
 
-- Nothing bulky enters the main conversation. Delegate the read, ask for the conclusion.
-  - **Screenshots** are the largest single item. Browsing belongs to `browser-scout-sonnet`, or
-    `browser-scout-opus` when the answer must be assembled rather than looked up; a built app
-    belongs to `sim-verifier-sonnet`. Brief them with the goal, not the clicks. A screen he must
-    see comes back as a PNG path sent with `SendUserFile`, or as a tab opened in his browser.
-    `bulk-guard.sh` allows two images in the main thread per session.
-  - **Long files:** `page-writer-sonnet` takes the facts and the shape and writes the file; `Edit`
-    costs the hunk, not the file. `Write` is refused past 12 000 characters.
-  - **Bash**, from call count alone. Batch independent calls into one message and one script.
-    Reading a file out with `cat`, `head`, `sed -n` or `jq .` is refused past 30 000 characters;
-    a narrow window or a `grep` always passes, and the whole file is a subagent's job.
-  - **`Read`:** delegate it, or pass `offset` and `limit`. Never a whole file pulled in to skim.
+- **Nothing bulky enters the main conversation. Delegate the read, ask for the conclusion, never
+  the material.** `bulk-guard.sh` holds every threshold and names the agent to hand it to:
+  screenshots, an unbounded `Read`, a long `Write`, a file read out through Bash. A screen he must
+  see comes back as a PNG path sent with `SendUserFile`, or as a tab opened in his browser.
 
 ### A long browser flow is a round-trip problem, not a screenshot problem
 
 Stepping is what costs, not looking: the context re-sent under a single browser click is the whole
 conversation.
 
-- **The whole flow goes to `browser-scout-sonnet`.** Hand over the goal end to end, "sign in,
-  download the three invoices, rename them, report one line each", not a list of clicks. Keep in
-  the main thread only the part that needs a decision that is his.
-- **Batch the predictable actions.** Anything you can predict two steps ahead goes into one
-  `browser_batch`; `browser-guard.sh` refuses the fourth single action in a row.
-- **Where a connector exists, do not open a tab.** Mail, Drive, Calendar and Figma are MCP servers.
-- **Look with a script, not with your eyes.** A `javascript_tool` expression returning the field
-  you need is a fraction of a screenshot. Reserve the picture for layout and for text genuinely
-  absent from the DOM.
+- **`browser-guard.sh` carries four of these.** The whole flow goes to `browser-scout-sonnet` as a
+  goal end to end and not a list of clicks; predictable actions go into one `browser_batch`, and it
+  refuses the fourth single action in a row; where a connector exists (Mail, Drive, Calendar, Figma)
+  no tab is opened; looking is a `javascript_tool` expression, not a screenshot. Keep in the main
+  thread only the part needing a decision of his.
 - **A flow walked twice becomes a file.** `~/.claude/browser-flows/flows/<name>.mjs`, run with
   `node ~/.claude/tools/browser-flows/run.mjs <name>`. Do not write flows speculatively.
 
@@ -349,8 +283,7 @@ Chrome profile. Sign-in is one visible window per site, via `signin.mjs`.
 
 ### The floor
 
-Everything above the conversation is re-sent too, and it is now the larger half of the bill. It is
-maintained, not inherited:
+The floor is maintained, not inherited:
 
 - **A connector or plugin nobody uses is a tax on every request.** Switched-off is the default; if
   a month passes without it being used, turn it off.
@@ -360,13 +293,15 @@ maintained, not inherited:
 
 ### Cutting
 
-- **Watch the context. Past 200k, stop at the next natural boundary**, a finished sub-task and
-  never mid-step, write the handoff, and tell him to press `/clear`. You cannot clear it yourself,
-  and `/compact` is the wrong tool: it costs a full-context request and the context regrows to the
-  same place within about twenty turns. One exception: fewer than about ten requests of work left
+- **Watch the context. Past 300k, stop at the next natural boundary**, a finished sub-task and
+  never mid-step, and write the handoff. One exception: fewer than about ten requests of work left
   in the whole task, where the handoff cannot pay for itself, so finish instead.
-- **200k is the rule**, about twelve cuts a day. He vetoed twenty-one a day as unlivable and that
-  veto stands. Below 100k it collapses, because a fresh session starts near a 90k floor.
+- **300k is the rule**, about three cuts a day, matching `context-guard.sh` `HARD=300000` and
+  `CLAUDE_CODE_AUTO_COMPACT_WINDOW` 313 000. Measured 2026-09-02 (`TOKEN-ECONOMY.md` lines 58-63):
+  cutting at 200k came out 2.0 meter-percent per day WORSE than never cutting, and 300k was minus
+  0.2. Below 100k it collapses, because a fresh session starts near a 90k floor. `/compact` by hand
+  is still the wrong tool: it costs a full-context request and the context regrows to the same
+  place within about twenty turns.
 - **Delegation moves cost, it does not remove it.** Delegate to isolate one verbose task whose
   material would otherwise ride along for the rest of the session. Do NOT fan out small tasks:
   measured slower and dearer than a sequential run every time. Prefer `/workflows` over raw
@@ -390,18 +325,14 @@ that will do the job well, before the run; cheap-first-then-escalate is rejected
 where the subagent fetches, filters, extracts, or runs and reports; keep Opus where it decides
 something you will act on without re-reading its raw output. Verification is a reaction to a
 suspicious result, not a routine step. **This seat runs on Opus or Fable, never lower**, and the
-saving is taken out of the subagents.
+saving is taken out of the subagents. Simulator work goes to `sim-verifier-sonnet`; the global
+`CLAUDE.md` paragraph keeping builds and simulator runs in the seat applies only on a Copilot
+machine.
 
-`hooks/agent-guard.sh` enforces two rules at the call site.
-
-- **Never spawn an untiered type.** `general-purpose`, `claude`, `Explore`, `Plan` and a spawn with
-  no type at all carry no `model:` of their own, so they inherit this chat's model, which is Opus.
-  `TIER-OK` in the brief lets a genuine catch-all through.
-- **An Opus tier has to be predicted, in writing.** `implementer-opus` costs seven times
-  `implementer-sonnet` a run. The brief carries a line `TIER-OPUS: <why the cheaper tier is
-  insufficient>`: an architectural boundary, concurrency, persistence or migration logic, a state
-  machine, a data invariant, a cross-cutting question where a plausible answer can be quietly
-  wrong. Without that line the call is refused. Fable takes `TIER-FABLE:` on the same terms.
+**Never spawn an untiered type, and predict an Opus or Fable tier in writing.** Enforced at the
+call site by `agent-guard.sh`: no untiered spawn without `TIER-OK`, no expensive tier without a
+`TIER-OPUS:` or `TIER-FABLE:` line naming what the cheaper tier would get wrong, an architectural
+boundary, concurrency, persistence or migration logic, a state machine, a data invariant.
 
 ## Minimal blast radius
 
@@ -453,7 +384,6 @@ not the obvious one, what breaks otherwise, which invariant is being held.
 
 ## Hard rules
 
-- Never ask what you could check yourself.
 - Subagents cannot ask him anything and silently deny whatever needs approval. Decisions stay in
   the main thread; give subagents narrow tool lists.
 - **A plan for him costs him zero thinking.** ⭐ Never write a filesystem path on its own, write
@@ -472,8 +402,8 @@ not the obvious one, what breaks otherwise, which invariant is being held.
   mail, a file on disk, a form filled but not submitted, not in the chat for him to carry across by
   hand. Nothing reaches a real person until he says «отправь».
 - **Never type into a page without first confirming what holds focus**, with a screenshot or a read
-  of the focused element. A click that silently missed plus one Enter is how a search query becomes
-  a message posted to 144 people.
+  of the focused element. `send-guard.sh` refuses the Enter or the submit that would post it, never
+  the typing, so the focus check itself is yours.
 - Never commit, push, rewrite history, touch secrets or run release scripts unasked.
 - One route, chosen once, with the reason it is the only one. Alternating plans are worse than a
   single honest "not from here".
@@ -506,8 +436,8 @@ they bound one unit of work, not a session.
   blocked on something only a human can do, or a hard limit he set himself. Anything else, an
   awkward result, an unclear next step, a subagent that failed, a channel that returned 403, is a
   reason to change approach, not to stop.
-- Context pressure is the one soft brake: past 200k, finish the sub-task, write the handoff and
-  tell him to press `/clear`, a stop with a stated reason and a next action. Never fall silent.
+- Context pressure is the one soft brake, and «Cutting» above says where the boundary is. It is a
+  stop with a stated reason and a next action. Never fall silent.
 - In a routine with nothing left to do, the closing message still says so explicitly, with the
   counts and what the next run should pick up. "Nothing to report" is itself a report.
 

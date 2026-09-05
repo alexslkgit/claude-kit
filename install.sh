@@ -142,14 +142,21 @@ else:
 PY
 fi
 
-# Register the copilot guard. It keeps bulk work on an employer-funded Copilot licence instead
-# of the user's personal subscription. The script checks that licence itself and says nothing on
-# a machine without it, so registering it everywhere is safe. PreToolUse is matched on the Agent
-# tool because that is the one call the rule cannot otherwise reach.
+# Register the copilot guard, but ONLY on a machine that actually has the Copilot CLI. It keeps
+# bulk work on an employer-funded Copilot licence instead of the user's personal subscription, and
+# without the binary there is no licence to keep it on: the rule is inert, and three hook entries
+# fire a process on every session start, every prompt and every Agent call to say nothing. So the
+# presence of `copilot` is the switch. When it is absent this ACTIVELY REMOVES what an earlier run
+# on this machine installed, rather than leaving a dead guard behind; the same $HAS_COPILOT also
+# drops machine-rules/copilot-delegation.md from the assembled ~/.claude/CLAUDE.md further down,
+# which is why the line printed here speaks for both halves. The kit keeps both files either way,
+# so on the corporate Mac the rule returns by itself on the next install.
+# PreToolUse is matched on the Agent tool because that is the one call the rule cannot otherwise reach.
+if command -v copilot >/dev/null 2>&1; then HAS_COPILOT=1; else HAS_COPILOT=0; fi
 if command -v python3 >/dev/null 2>&1; then
-  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/copilot-guard.sh" <<'PY'
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/copilot-guard.sh" "$HAS_COPILOT" <<'PY'
 import json, os, sys
-path, script = sys.argv[1], sys.argv[2]
+path, script, present = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 data = {}
 if os.path.exists(path):
     try:
@@ -158,19 +165,31 @@ if os.path.exists(path):
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
 wanted = {"SessionStart": [None], "UserPromptSubmit": [None], "PreToolUse": ["Agent"]}
-added = 0
-for event, matchers in wanted.items():
-    entries = hooks.setdefault(event, [])
-    for matcher in matchers:
-        if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+added = removed = 0
+if present:
+    for event, matchers in wanted.items():
+        entries = hooks.setdefault(event, [])
+        for matcher in matchers:
+            if any(script in json.dumps(e) and e.get("matcher") == matcher for e in entries):
+                continue
+            entry = {"hooks": [{"type": "command", "command": script, "timeout": 10}]}
+            if matcher is not None:
+                entry["matcher"] = matcher
+            entries.append(entry); added += 1
+else:
+    # Every event, not just the three above: an entry left by an older layout is just as dead.
+    for event in list(hooks):
+        entries = hooks.get(event)
+        if not isinstance(entries, list):
             continue
-        entry = {"hooks": [{"type": "command", "command": script, "timeout": 10}]}
-        if matcher is not None:
-            entry["matcher"] = matcher
-        entries.append(entry); added += 1
-if added:
+        for e in [e for e in entries if script in json.dumps(e)]:
+            entries.remove(e); removed += 1
+if added or removed:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
-print(f"  hooks: copilot guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+if present:
+    print(f"  copilot: present, guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+else:
+    print(f"  copilot: absent, guard and section removed ({removed} hook entr{'y' if removed==1 else 'ies'} dropped)")
 PY
 fi
 
@@ -178,6 +197,9 @@ fi
 # watching, and a backgrounded build with no marker file to poll. Both shapes lost a full night of
 # unattended work on 2026-09-01; the rule they enforce is in machine-rules/copilot-delegation.md,
 # and it is a hook for the same reason the copilot guard is one.
+# NOT gated on $HAS_COPILOT, checked 2026-09-05: only the first of its two shapes is about
+# `copilot -p`. The second, a backgrounded xcodebuild/xcrun/simctl with no marker file to poll,
+# has nothing to do with the licence and cost a counted test run on a machine that has no Copilot.
 if command -v python3 >/dev/null 2>&1; then
   python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/unattended-guard.sh" <<'UG'
 import json, os, sys
@@ -238,9 +260,14 @@ fi
 
 # Register the context guard. It reads the real token count out of the transcript and raises the
 # clear-at-250k rule itself, because measured over 173 sessions the rule-as-prose was ignored for a
-# month. UserPromptSubmit catches the start of a turn; PostToolUse is unmatched — it must see every
-# tool call, since a turn is a median of 25 requests and can cross the threshold without ever
-# passing a prompt boundary. The script announces each band once per session on the tool path.
+# month. UserPromptSubmit ONLY.
+#
+# It used to be registered on PostToolUse as well, with no matcher, and that half is removed here
+# rather than merely not added, because a stale entry keeps firing. With no matcher it ran after
+# every tool call: about 27 000 invocations a month, each one tailing and JSON-parsing ~400 KB of
+# transcript at 123 ms mean. It bought nothing. The announcement is throttled to one per band per
+# session anyway (context-guard.sh ~89-97), and the threshold can only be crossed between turns,
+# which UserPromptSubmit already catches (audit 2026-09-05). Do not put it back.
 if command -v python3 >/dev/null 2>&1; then
   python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/context-guard.sh" <<'PY'
 import json, os, sys
@@ -252,15 +279,17 @@ if os.path.exists(path):
     except Exception:
         print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
 hooks = data.setdefault("hooks", {})
-added = 0
-for event in ("UserPromptSubmit", "PostToolUse"):
-    entries = hooks.setdefault(event, [])
-    if any(script in json.dumps(e) and e.get("matcher") is None for e in entries):
-        continue
+added = removed = 0
+entries = hooks.setdefault("UserPromptSubmit", [])
+if not any(script in json.dumps(e) and e.get("matcher") is None for e in entries):
     entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]}); added += 1
-if added:
+post = hooks.get("PostToolUse")
+if isinstance(post, list):
+    for e in [e for e in post if script in json.dumps(e) and e.get("matcher") is None]:
+        post.remove(e); removed += 1
+if added or removed:
     with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
-print(f"  hooks: context guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+print(f"  hooks: context guard registered ({added} new, {removed} stale PostToolUse removed)")
 PY
 fi
 
@@ -766,12 +795,19 @@ fi
 # holds whatever the user wrote by hand, so this replaces only the marked block, never the file.
 # Each rule states its own precondition and is inert on a machine where it does not apply.
 if command -v python3 >/dev/null 2>&1 && [ -d "${KIT_DIR}/machine-rules" ]; then
-  python3 - "${CLAUDE_DIR}/CLAUDE.md" "${KIT_DIR}/machine-rules" <<'PY'
+  python3 - "${CLAUDE_DIR}/CLAUDE.md" "${KIT_DIR}/machine-rules" "${HAS_COPILOT:-0}" <<'PY'
 import os, sys, glob
 path, src = sys.argv[1], sys.argv[2]
+has_copilot = sys.argv[3] == "1"
 BEGIN, END = "<!-- kit:machine-rules BEGIN -->", "<!-- kit:machine-rules END -->"
 parts = []
 for f in sorted(glob.glob(os.path.join(src, "*.md"))):
+    # The delegation rule is only a rule where the binary exists; on a machine without it the text
+    # is 7 KB of every session's system prompt describing a command that is not installed. Skipping
+    # it here is also how the section is actively REMOVED from a machine that had it before: the
+    # block between the markers is regenerated whole on every run, so what is left out disappears.
+    if not has_copilot and os.path.basename(f) == "copilot-delegation.md":
+        continue
     with open(f) as fh: parts.append(fh.read().rstrip())
 if not parts:
     raise SystemExit(0)
@@ -803,7 +839,7 @@ fi
 # `orchestrator` on a machine that was already set up. The default is only for a settings.json that
 # has no opinion yet: the key is absent, or it names a style this kit does not ship at all. A style
 # the kit ships, chosen already, survives a re-run of this script untouched.
-STYLE="orchestrator"
+STYLE="orchestrator-slim"
 SETTINGS="${CLAUDE_DIR}/settings.json"
 if [ ! -f "$SETTINGS" ]; then
   mkdir -p "$CLAUDE_DIR"
