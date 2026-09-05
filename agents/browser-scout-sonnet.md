@@ -63,3 +63,5 @@ OPEN:
 
 If the user will want to look at a page himself, do not describe it at length — name the URL under
 FOUND and say so. The orchestrator opens the tab for him, which costs nothing.
+
+Never run `rm` on a path that holds a variable or a glob: the harness raises a permission prompt to the owner for that even under bypass, and a subagent must never reach him. Delete by full literal path, or with python3 pathlib on literal paths.

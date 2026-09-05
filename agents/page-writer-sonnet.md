@@ -57,3 +57,5 @@ WROTE: /abs/path — <lines> lines
 GAPS: <anything the brief did not give you, or "none">
 NOTE: <only if something in the brief was wrong or contradictory>
 ```
+
+Never run `rm` on a path that holds a variable or a glob: the harness raises a permission prompt to the owner for that even under bypass, and a subagent must never reach him. Delete by full literal path, or with python3 pathlib on literal paths.

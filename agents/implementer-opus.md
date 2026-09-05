@@ -56,3 +56,5 @@ BLOCKED:
 NOTES:
   - <rejected alternatives, assumptions, follow-ups, smells found>
 ```
+
+Never run `rm` on a path that holds a variable or a glob: the harness raises a permission prompt to the owner for that even under bypass, and a subagent must never reach him. Delete by full literal path, or with python3 pathlib on literal paths.
