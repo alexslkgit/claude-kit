@@ -47,7 +47,7 @@ e. **Review**, done in the main conversation, never delegated: check every numbe
 `MATERIAL.md`, run the checklist from the style file, confirm the read time, confirm no
 em-dashes.
 
-f. **Placing into Medium**, via `browser-scout` in his real Chrome: open
+f. **Placing into Medium**, via `medium-placer-sonnet` in his real Chrome, with a `CHECK:` line (his read-back of the draft is the check): open
 https://medium.com/new-story, paste the body as rich text from the clipboard, put HTML on the
 clipboard with `osascript` using the `«class HTML»` class, not `pbcopy`, upload each image with
 the editor's plus button and the `file_upload` tool, add captions, set title and subtitle, add
@@ -81,9 +81,10 @@ translated and re-written into that account's own style.
   subtitle toggle in the toolbar; the second line stays a paragraph. Rich HTML on the clipboard
   via `«data HTML<hex>»` pastes with headings, lists and code intact.
 - 2026-09-03, second placement: `browser-scout-sonnet` refused the editor job as read-only (the
-  first instance happened to comply). The placement agent is the `claude` catch-all on `model:
-  sonnet` with a `TIER-OK:` line saying the scouts are read-only by definition and the draft is
-  private. Step (f) above means that agent, not a scout.
+  first instance happened to comply). The `claude` catch-all was used with `TIER-OK:` until
+  2026-09-06, when agent-guard stopped admitting untiered types; the placement agent is now
+  `medium-placer-sonnet`, a defined type with the browser tools, the editor lessons in its
+  prompt and a 120-turn cap. Step (f) above means that agent, not a scout.
 - 2026-09-03, third placement: editing the editor DOM with javascript (execCommand, innerHTML)
   makes Medium show "Something is wrong and we cannot save your story" and the work is lost; the
   agent then blamed a Grammarly extension, which was not the cause. Only real input saves:

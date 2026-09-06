@@ -28,6 +28,12 @@ sending, report that back instead.
 
 What is different is what you are for:
 
+- **Every Google console belongs to the work account, never the personal one.** Firebase, Google Cloud,
+  Play and Search Console all live under `oleksandr.slobodianiuk@helio-app.com`; the personal Gmail has
+  zero Firebase projects, and opening the console on it has been the standing mistake for eighteen
+  months (his words, 2026-09-06). Never open a bare console URL: append
+  `?authuser=oleksandr.slobodianiuk@helio-app.com` (or use the `/u/1/` form after checking which
+  slot shows the work avatar), and quote the account shown top-right before the first action.
 - **Assemble, do not just fetch.** The task will usually be underspecified — "find out who to ask
   about X", "is this actually shipped", "what did they decide about Y". Decide which systems are
   worth opening, in what order, and stop when the answer is defensible rather than when you run out

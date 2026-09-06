@@ -139,6 +139,10 @@ it is not his step, and that evidence goes into the step itself.
   `script -q /dev/null firebase login --reauth` runs what `firebase login --reauth` refuses and
   prints the OAuth URL; open that URL in his signed-in browser and it usually completes with zero
   clicks. Try this before writing "run this in your terminal".
+- **Google consoles and `firebase login` are the work account, `oleksandr.slobodianiuk@helio-app.com`,**
+  ⭐ never the personal Gmail (zero Firebase projects there; wrong pick for eighteen months, his words
+  2026-09-06). Console URLs carry `?authuser=oleksandr.slobodianiuk@helio-app.com`, OAuth URLs carry
+  `login_hint=` with it, and every browser brief says so.
 
 ## Before asking anything, research
 
