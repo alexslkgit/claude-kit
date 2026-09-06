@@ -10,7 +10,7 @@ description: Use whenever he asks to write, draft or publish a Medium article or
 | Account | Language | Style file | Status |
 |---|---|---|---|
 | https://medium.com/@alexslkmain | Ukrainian | styles/alexslkmain-uk.md | profiled |
-| https://medium.com/@oleksandrslobodianiuk | English | styles/oleksandrslobodianiuk-en.md | profiled 2026-09-03, 3 articles, all translations of the Ukrainian ones; the English piece is written after the Ukrainian one and links back to it |
+| https://medium.com/@oleksandrslobodianiuk | English | styles/oleksandrslobodianiuk-en.md | profiled 2026-09-03, 3 articles, all translations of the Ukrainian ones; the English piece is written after the Ukrainian one and links back to it; published 2026-09-06: https://medium.com/@oleksandrslobodianiuk/step-width-and-the-price-of-a-redo-a-second-round-of-meter-measurements-e79e4abb4749 (EN first this time, UA pending) |
 
 He is signed in to one Medium account at a time. When the second account is needed, tell him in
 one line to re-login and carry on with other work while he does it.
@@ -97,3 +97,4 @@ translated and re-written into that account's own style.
   goes through its editor's ⋯ menu, and an automated navigation to an editor URL can hit a
   Cloudflare human check, which is his click. Register-wise he rejected the first draft as
   yellow press: the opening must explain the situation to a newcomer before any number.
+- 2026-09-06, fourth placement: a tab in his real Chrome freezes within minutes when the Claude window covers it (CDP "Runtime.evaluate timed out"); `navigate` to the same draft URL thaws it, so brief the placer to re-navigate on every timeout and give up only after three in a row. Restructuring a placed draft (move two images, edit two sentences, add five tags) took one placer 90 tool calls. Medium turns digit ranges ("50-70") and dates into en-dashes on paste: write ranges in words in the source. The opening image must carry a visible surprise; a stacked weekly bar chart was rated 4/10 by him, the tier price chart with the redo reversal won.
