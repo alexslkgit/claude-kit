@@ -61,6 +61,17 @@ button.p{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)
 button:hover{opacity:.85}
 code{font-size:13px;background:rgba(154,98,7,.09);color:var(--accent);
 padding:3px 7px;border-radius:6px;word-break:break-all}
+.chunk{display:inline-flex;align-items:center;gap:6px;margin:2px 4px 2px 0;vertical-align:middle}
+.chunk a{text-decoration:none}
+.cp{font:500 12px Commissioner,sans-serif;padding:3px 9px;border-radius:7px;
+border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.openrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.openbtn{font:600 14px Commissioner,sans-serif;padding:8px 18px;border-radius:9px;
+background:var(--btn-bg);color:var(--btn-fg);text-decoration:none;border:1px solid var(--btn-bg)}
+.steps{margin:0 0 14px;padding-left:22px}
+.steps li{margin:6px 0}
+.steps label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+.steps input{margin-top:4px}
 .empty{color:var(--muted);font-size:17px;padding:40px 0;font-family:Literata,Georgia,serif}
 .grp{display:flex;align-items:baseline;gap:10px;margin:30px 0 12px;
 padding-bottom:7px;border-bottom:1px solid var(--line)}
@@ -77,6 +88,57 @@ padding-bottom:7px;border-bottom:1px solid var(--line)}
 </div><script>
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const plural=(n,one,few,many)=>n%10===1&&n%100!==11?one:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?few:many);
+const isUrl=s=>/^https?:\\/\\//.test(s);
+// One copyable thing, one chunk: a code span with its own «копировать» button, and a real
+// link when the value is a URL, so a click never has to select text by hand first.
+function chunk(val){
+ const code=isUrl(val)?'<a href="'+esc(val)+'" target="_blank" rel="noopener"><code>'+esc(val)+'</code></a>':'<code>'+esc(val)+'</code>';
+ return '<span class="chunk">'+code+'<button class="cp" type="button" data-v="'+esc(val)+'" onclick="copyChunk(this)">копировать</button></span>';
+}
+// Finds backtick spans, http(s) URLs and absolute paths (/… or ~/…) inside free text and turns
+// each into its own chunk, leaving the rest of the sentence as plain text around them.
+function chunkify(text){
+ if(text==null||text==='') return '';
+ const re=/\`([^\`]+)\`|(https?:\\/\\/[^\\s)]+)|((?:~\\/|\\/)[^\\s\`,;:()]+)/g;
+ let out='',last=0,m;
+ while((m=re.exec(text))){
+  out+=esc(text.slice(last,m.index));
+  out+=chunk(m[1]||m[2]||m[3]);
+  last=re.lastIndex;
+ }
+ out+=esc(text.slice(last));
+ return out;
+}
+function copyChunk(btn){
+ const v=btn.getAttribute('data-v');
+ const done=()=>{btn.textContent='скопировано';setTimeout(()=>{btn.textContent='копировать'},2000)};
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+  navigator.clipboard.writeText(v).then(done).catch(()=>fallbackCopy(v,done));
+ } else fallbackCopy(v,done);
+}
+function fallbackCopy(v,done){
+ const ta=document.createElement('textarea');
+ ta.value=v; ta.style.position='fixed'; ta.style.opacity='0';
+ document.body.appendChild(ta); ta.select();
+ try{document.execCommand('copy')}catch(e){}
+ document.body.removeChild(ta); done();
+}
+// One checkbox per step, remembered per item so ticking one off while working survives a reload.
+function stepsState(id){
+ try{return JSON.parse(localStorage.getItem('inbox-steps:'+id)||'{}')}catch(e){return {}}
+}
+function toggleStep(id,idx,val){
+ const st=stepsState(id); st[idx]=val;
+ localStorage.setItem('inbox-steps:'+id,JSON.stringify(st));
+}
+function stepsHtml(i){
+ if(!i.steps||!i.steps.length) return '';
+ const st=stepsState(i.id);
+ return '<ol class="steps">'+i.steps.map((s,idx)=>
+   '<li><label><input type="checkbox" '+(st[idx]?'checked':'')+
+   ' onchange="toggleStep(\\''+esc(i.id)+'\\','+idx+',this.checked)"> '+chunkify(s)+'</label></li>'
+ ).join('')+'</ol>';
+}
 // How long it has been waiting. The whole reason it is on the card: a request that has sat for
 // days is usually answered by deleting it, and nothing on this page used to say that out loud.
 function age(iso){
@@ -91,8 +153,9 @@ function card(i){
  return \`<div class="card">
    <div class="meta">\${i.session?esc(i.session)+' · ':''}\${esc((i.created||'').slice(0,16).replace('T',', '))}\${a?' · <span class="age'+(old?' old':'')+'">'+a+'</span>':''}</div>
    <div class="t">\${esc(i.title)}</div>
-   \${i.why?'<p class="why">'+esc(i.why)+'</p>':''}
-   \${i.open?'<p class="why"><code>'+esc(i.open)+'</code></p>':''}
+   \${i.open?'<div class="openrow">'+chunk(i.open)+(isUrl(i.open)?'<a class="p openbtn" href="'+esc(i.open)+'" target="_blank" rel="noopener">Открыть</a>':'')+'</div>':''}
+   \${i.why?'<p class="why">'+chunkify(i.why)+'</p>':''}
+   \${stepsHtml(i)}
    <div class="row">\${(i.options||['Да','Нет']).map((o,k)=>
      '<button class="'+(k===0?'p':'')+'" onclick="say(\\''+esc(i.id)+'\\',\\''+esc(o)+'\\')">'+esc(o)+'</button>').join('')}
    </div></div>\`;

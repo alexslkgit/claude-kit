@@ -6,20 +6,24 @@
 # reading any of the conversations behind them.
 #
 #   ask.sh --title "..." --why "..." [--options "Да|Нет"] [--open "<url or command>"]
-#          [--project NAME] [--session NAME] [--wait [SECONDS]]
+#          [--steps "step one|step two|step three"] [--project NAME] [--session NAME] [--wait [SECONDS]]
+#
+# --steps is pipe-separated, like --options: one action per item, rendered on the page as a
+# checklist he can tick off, instead of one wall of --why text.
 #
 # Prints the request id on stdout. With --wait it blocks and prints the answer
 # instead, exiting 1 on timeout.
 
 set -euo pipefail
 IN="$HOME/.claude/inbox"
-title=""; why=""; options="Да|Нет"; open=""; project=""; session=""; wait_for=""
+title=""; why=""; options="Да|Нет"; open=""; steps=""; project=""; session=""; wait_for=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --title)   title="$2";   shift 2 ;;
     --why)     why="$2";     shift 2 ;;
     --options) options="$2"; shift 2 ;;
     --open)    open="$2";    shift 2 ;;
+    --steps)   steps="$2";   shift 2 ;;
     --project) project="$2"; shift 2 ;;
     --session) session="$2"; shift 2 ;;
     --wait)    if [[ "${2:-}" =~ ^[0-9]+$ ]]; then wait_for="$2"; shift 2; else wait_for=3600; shift; fi ;;
@@ -31,9 +35,9 @@ done
 
 id="$(date +%Y%m%d-%H%M%S)-$$"
 mkdir -p "$IN/queue" "$IN/answers"
-python3 - "$IN/queue/$id.json" "$id" "$title" "$why" "$options" "$open" "$project" "$session" <<'PY'
+python3 - "$IN/queue/$id.json" "$id" "$title" "$why" "$options" "$open" "$project" "$session" "$steps" <<'PY'
 import json, sys, datetime
-path, rid, title, why, options, open_, project, session = sys.argv[1:9]
+path, rid, title, why, options, open_, project, session, steps = sys.argv[1:10]
 json.dump({
     "id": rid,
     "created": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -43,6 +47,7 @@ json.dump({
     "why": why,
     "options": [o for o in options.split("|") if o],
     "open": open_,
+    "steps": [s for s in steps.split("|") if s],
 }, open(path, "w"), ensure_ascii=False, indent=1)
 PY
 
