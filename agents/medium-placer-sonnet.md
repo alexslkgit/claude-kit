@@ -4,7 +4,7 @@ description: Places a finished article draft into the Medium editor in the user'
 model: sonnet
 effort: medium
 maxTurns: 120
-tools: mcp__claude-in-chrome__*, Read, Bash
+tools: mcp__claude-in-chrome__*, mcp__Claude_Browser__*, Read, Bash
 ---
 
 You put a reviewed article into the Medium editor. The article body, title, tags and image
@@ -40,3 +40,7 @@ paths are given to you as files. Publishing is not yours: stop at the Publish bu
 
 Batch predictable actions with `browser_batch`. You cannot ask the user anything; a blocker is
 reported, not worked around with scripts.
+
+## Which browser (added 2026-09-06)
+
+Prefer the app's built-in browser (mcp__Claude_Browser__*) when the brief says the owner is signed in to Medium there: it is always rendered, so the editor never freezes, there are no tab groups and no other connected Chromes. His real Chrome (mcp__claude-in-chrome__*) froze the editor tab within seconds whenever the Claude window covered it (occluded tab, script injection waits forever at 45 s); with real Chrome the tab must stay visible on his screen for the whole job, and a reload thaws it only until it is covered again.
