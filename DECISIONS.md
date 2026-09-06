@@ -974,3 +974,12 @@ Decided:
 3. Rejected: Sonnet drafts the research and Opus verifies it. Verification catches a wrong
    citation, not an omission, and "there is nothing like that here" is the failure he reported.
    Potential was about 20 m%/wk (1.7%).
+
+## 2026-09-06, caps — maxTurns raised on the four types that hit them
+
+From the html-autoswipe audit (A-040): 74 cap events in 4.14 weeks, 16.4% of runs in the last
+week, 58 resumed in place, 16 never resumed, 10 re-spawned; cold re-writes at cap boundaries
+6.42 m%/wk plus re-spawns 2.76, about 0.8% of the meter, and a partial result reported with
+status completed. implementer-opus and sim-verifier-sonnet 80 → 150, implementer-sonnet and
+browser-scout-sonnet 60 → 120. The cap stays only as a runaway stop; the signal to read is the
+"stopped at its N-turn limit" summary line, never the status field.

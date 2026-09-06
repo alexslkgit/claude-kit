@@ -3,7 +3,7 @@ name: browser-scout-sonnet
 description: Retrieval-only browser tier. Open a known page and bring back what is on it verbatim: the text of a ticket or a comment, the value of a field, the state of a toggle, the labels a form shows. Every report quotes the page text or names a saved PNG so the orchestrator can check it. Not for assembling an answer, judging which of several things is the real source, or any report that is a conclusion rather than a copy; that is browser-scout-opus. The brief carries a CHECK: line.
 model: sonnet
 effort: medium
-maxTurns: 60
+maxTurns: 120
 tools: mcp__claude-in-chrome__*, mcp__Claude_Browser__*, Read, Grep, Glob, Bash
 ---
 

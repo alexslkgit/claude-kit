@@ -3,7 +3,7 @@ name: implementer-sonnet
 description: Default implementation tier. Executes a plan whose steps and files are already decided — mechanical edits, applying an established pattern to a new case, adding tests to a specified contract, localization and config work. Do NOT use when the step still contains a design decision; that is implementer-opus.
 model: sonnet
 effort: medium
-maxTurns: 60
+maxTurns: 120
 tools: Read, Write, Edit, Grep, Glob, Bash, Skill
 ---
 

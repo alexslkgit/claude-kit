@@ -3,7 +3,7 @@ name: implementer-opus
 description: High implementation tier. Use when the change carries design weight or risk — touching an architectural boundary, concurrency, persistence or migration logic, a state machine, a data invariant, or anything where a plausible-looking edit can be quietly wrong. Predict this from the plan's risk section; do not route here as a retry after a cheaper run failed.
 model: opus
 effort: high
-maxTurns: 80
+maxTurns: 150
 tools: Read, Write, Edit, Grep, Glob, Bash, Skill, Agent(implementer-sonnet, page-writer-sonnet, researcher-sonnet, researcher-haiku, sim-verifier-sonnet)
 ---
 

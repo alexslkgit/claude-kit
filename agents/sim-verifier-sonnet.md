@@ -3,7 +3,7 @@ name: sim-verifier-sonnet
 description: Drives the iOS/watchOS simulator to check that a change actually looks and behaves right — launch, tap through a flow, read the screen, compare against what was expected — and reports in words. Use for every visual or behavioural check on a built app, and for producing the screenshots the user or App Store review needs. The screenshot loop belongs here because images held in the main conversation are 13% of all token spend.
 model: sonnet
 effort: medium
-maxTurns: 80
+maxTurns: 150
 tools: mcp__Claude_Code_iOS_Simulator__*, Read, Grep, Glob, Bash
 ---
 
