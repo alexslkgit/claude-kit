@@ -76,6 +76,8 @@ import os, re
 def def_head(name):
     if not name: return None
     for base in (os.path.join(str(d.get("cwd") or ""), ".claude", "agents"),
+                 os.path.join(os.environ.get("CLAUDE_PROJECT_DIR") or "", ".claude", "agents"),
+                 os.path.join(os.getcwd(), ".claude", "agents"),
                  os.path.expanduser("~/.claude/agents"),
                  os.path.expanduser("~/Developer/claude-kit/agents")):
         f = os.path.join(base, name + ".md")
