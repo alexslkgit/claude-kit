@@ -903,6 +903,28 @@ else:
 PY
 fi
 
+# Cap subagent nesting at two layers. 2026-09-06: subagents spawn subagents by default (up to
+# three layers, or whatever the remote feature flag says while the env var is unset); the kit's
+# Opus parents carry Agent(...) allowlists of cheap workers, and two layers is all they need.
+if [ -f "$SETTINGS" ] && command -v python3 >/dev/null 2>&1; then
+  python3 - "$SETTINGS" <<'DEPTH'
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path))
+except Exception as e:
+    sys.exit(f"  subagent depth: {path} is not valid JSON ({e}); set env.CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=\"2\" by hand")
+env = data.setdefault("env", {})
+if env.get("CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH") == "2":
+    print("  subagent depth: already 2")
+else:
+    env["CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH"] = "2"
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2); f.write("\n")
+    print("  subagent depth: set to 2")
+DEPTH
+fi
+
 # The shelf is served permanently on 8899, because that link updates itself in a tab he already
 # has open and a file:// one does not. A LaunchAgent survives a reboot; a per-session http.server
 # on a random port does not.

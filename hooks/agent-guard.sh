@@ -31,6 +31,13 @@
 # Output is phrased as statements, never imperatives: imperative text from a hook can trip
 # prompt-injection defences and be shown to the user instead of used.
 
+# 2026-09-06, remeasured on usage fields over 4.14 weeks (research/audit-2026-09-05 in the
+# html-autoswipe task): his rule is that Sonnet and Haiku run only where a wrong result is caught
+# mechanically, so every cheap-tier brief needs a CHECK: line; researcher-opus and
+# browser-scout-opus are the defaults for their roles and need no TIER-OPUS; the untiered types
+# are refused outright (226 runs, 25% of subagent spend, 33 of 53 nested spawns). Nesting is real:
+# a subagent whose tools include Agent spawns its own, and this hook fires inside subagents too.
+
 set -uo pipefail
 
 command -v python3 >/dev/null 2>&1 || exit 0
@@ -58,7 +65,7 @@ model = str(ti.get("model", "") or "")
 
 # An explicit cheap model on the call overrides the type: what is being paid for is the model.
 if model in ("sonnet", "haiku"):
-    print("allow"); raise SystemExit(0)
+    print("allow" if "CHECK:" in brief else "check:" + (sub or model)); raise SystemExit(0)
 
 # Resolve the tier from the definition on disk, not from the name. Keying on a "-opus"
 # suffix let every project-local agent straight through: scan-reader, a repo agent defined
@@ -84,13 +91,20 @@ tier = model or decl or ""
 
 if sub in untiered or decl == "" or decl is None:
     # No definition, or a definition that names no model: the run inherits the main chat.
-    print("allow" if "TIER-OK" in brief else "untiered:" + (sub or "no type"))
+    print("untiered:" + (sub or "no type"))
     raise SystemExit(0)
 if tier.startswith("fable") or sub.endswith("-fable"):
     print("allow" if "TIER-FABLE:" in brief else "fable:" + sub)
     raise SystemExit(0)
+# Roles with no cheaper sibling, and the two roles where Opus is the default since 2026-09-06,
+# need no justification; only implementer-opus still names the design risk.
+opus_default = ("researcher-opus", "browser-scout-opus", "planner-opus", "verifier-opus",
+                "marketer-opus", "sense-check-opus")
 if tier.startswith("opus") or sub.endswith("-opus"):
-    print("allow" if "TIER-OPUS:" in brief else "opus:" + sub)
+    print("allow" if (sub in opus_default or "TIER-OPUS:" in brief) else "opus:" + sub)
+    raise SystemExit(0)
+if tier in ("sonnet", "haiku") or sub.endswith(("-sonnet", "-haiku")):
+    print("allow" if "CHECK:" in brief else "check:" + sub)
     raise SystemExit(0)
 print("count:" + sub)
 ' 2>/dev/null)"
@@ -101,18 +115,34 @@ case "$verdict" in
     cat >&2 <<EOF
 agent-guard refused an Agent call with subagent_type "$sub".
 
-The untiered types — general-purpose, claude, Explore, Plan, and a spawn with no type — carry
-no model of their own and inherit whatever the main chat is running, which is Opus. Measured
-over the month to 2026-08-25 that is 147 runs and 10.3% of the whole limit, at about \$5 to \$7
-a run, against \$0.49 a run for the tiered agents.
+The untiered types, general-purpose, claude, Explore, Plan and a spawn with no type, carry no
+model, no turn cap and no tools list of their own: they inherit Opus and every tool, including
+Agent, so they nest without limit. Measured over the 4.14 weeks to 2026-09-05 they were 226 runs
+and 25% of all subagent spend, and 33 of the 53 nested spawns that month came from them. Since
+2026-09-06 nothing lets them through.
 
-The roster exists so the tier is chosen once, in the definition: researcher-haiku for a
-mechanical lookup, researcher-sonnet or implementer-sonnet as the default, page-writer-sonnet
-for any long file, browser-scout-sonnet for anything in a browser, sim-verifier-sonnet for the
-simulator. Picking the one that matches the brief costs nothing and prices the run correctly.
+Every task has a roster type: researcher-opus for anything to find out, browser-scout-opus for
+anything in a browser, implementer-opus or implementer-sonnet for edits, page-writer-sonnet for a
+long file, sim-verifier-sonnet for the simulator. A task that spans two of those is two spawns,
+or one Opus parent that delegates through its own Agent allowlist.
+EOF
+    exit 2
+    ;;
+  check:*)
+    sub="${verdict#check:}"
+    cat >&2 <<EOF
+agent-guard refused a cheap-tier Agent call ("$sub") because the brief has no CHECK: line.
 
-TIER-OK anywhere in the brief lets a genuine catch-all through — a task that truly spans tools
-no single roster agent has.
+His rule, written down 2026-09-06: Sonnet and Haiku only where a wrong result is caught by a
+mechanical check, never where the report would be consumed as a fact. Measured over the month to
+2026-09-05, at most 6% of Sonnet runs were redone on Opus, against 16% of Opus runs redone on
+Opus, so the cheap tier is not the expensive one in tokens; what it cannot buy is trust in an
+unchecked answer.
+
+A line reading CHECK: <what catches a wrong result> anywhere in the brief lets it through. Real
+checks: the build and the tests, a grep of the same pattern, the PNG path the report must name,
+the quoted page text, a page he reads himself. Where no such check exists the task belongs to the
+Opus sibling of the role, which for research and browsing needs no justification at all.
 EOF
     exit 2
     ;;
@@ -120,21 +150,16 @@ EOF
     sub="${verdict#opus:}"
     cat >&2 <<EOF
 agent-guard refused an Agent call with subagent_type "$sub" because the brief does not say why
-the Opus tier is the one this task needs.
+the Opus tier is the one this step needs.
 
-implementer-opus alone was 15.3% of the whole limit in the month to 2026-08-25: 247 runs,
-11 934 requests, \$5.04 a run against \$0.70 for implementer-sonnet. researcher-opus was another
-4.8%. The gap is not only the price per request — an Opus run is also twice as long, so it is
-compounded twice.
+implementer-opus was 275 meter-% a week over the 4.14 weeks to 2026-09-05, 307 runs at 3.7 a
+run against 0.68 for implementer-sonnet, and 39% of all subagent spend. Implementation is the one
+role where the cheap tier has a real check, the build and the tests, so a decided step runs on
+implementer-sonnet and only design risk sends it here: an architectural boundary, concurrency,
+persistence or migration logic, a state machine, a data invariant, an edit where a
+plausible-looking version can be quietly wrong.
 
-The output style already asks for this prediction from the plan's risk section rather than as a
-retry after a cheaper run: an architectural boundary, concurrency, persistence or migration
-logic, a state machine, a data invariant, or an ambiguous cross-cutting question where a
-plausible-looking answer can be quietly wrong. Where none of that is present, the sonnet tier of
-the same role is the default and the brief is already written for it.
-
-A line reading TIER-OPUS: <the reason in one sentence> anywhere in the brief lets it through,
-and it is worth writing, because the next session reads it.
+A line reading TIER-OPUS: <the reason in one sentence> anywhere in the brief lets it through.
 EOF
     exit 2
     ;;
@@ -143,9 +168,8 @@ EOF
     cat >&2 <<EOF
 agent-guard refused an Agent call with subagent_type "$sub".
 
-Fable is \$0.327 a request, five times the average and 6.1% of the month for 2.1% of the
-requests. It is the tier for a question already judged too hard for Opus — a subtle correctness
-problem across several subsystems, a race that survived an Opus pass — not a first attempt.
+Fable is the tier for a question already judged too hard for Opus, a subtle correctness problem
+across several subsystems, a race that survived an Opus pass, not a first attempt.
 
 A line reading TIER-FABLE: <what Opus is expected to miss here> anywhere in the brief lets it
 through.

@@ -864,3 +864,74 @@ Applied in one session from `Tree_storage/.claude/tasks/audit/HANDOFF-audit-fixe
 Not done: merging duplicate hook wiring (17 PreToolUse entries for 11 scripts) is its own session, one hook at a
 time with a test after each; computer-use and Apify are toggled in the desktop app, not in files.
 Pushed only after the owner's yes; the standing kit-update rule to push at once is overridden for this package.
+
+## 2026-09-06 — Sonnet only behind a mechanical check; subagents nest one layer; untiered types refused
+
+Trigger: his statement that Sonnet answers a data check differently from Opus or Fable, so his
+rule is Sonnet only for work that is easy to verify and hard to get wrong, and his question
+whether an Opus subagent can spawn Sonnet subagents of its own.
+
+Measured (html-autoswipe task, research/audit-2026-09-05, 4.14 weeks to 2026-09-05, 1 723
+subagent runs, meter-% units):
+
+- The kit did not implement his rule. 870 of 1 723 runs (50.5%) ran on Sonnet because
+  researcher-sonnet and browser-scout-sonnet were declared the defaults of their roles: 187 and
+  131 runs, 13.0 and 14.3 m%/wk, reports consumed as facts with no check.
+- Per-run cost, Opus vs Sonnet: researcher 2.007 vs 0.288 (7.0x), implementer 3.715 vs 0.679
+  (5.5x), browser-scout 2.297 vs 0.450 (5.1x). Meter weights alone say 3x (output 60 vs 20);
+  the rest is task mix.
+- Redo rate, strict classifier (an Opus brief of the same role within 30 min that names a
+  previous run, a re-check or a redo): after Sonnet 52 of 870 = 6.0%, 32.1 m%/wk = 2.7% of the
+  meter (implementer 28 of 159 = 17.6%, researcher 7 of 187 = 3.7%, browser-scout 4 of 131 =
+  3.1%); after Opus 132 of 825 = 16.0%, 103.5 m%/wk. The transcripts do not show Sonnet redone
+  more than Opus. What they cannot show is a wrong Sonnet answer nobody re-checked, which is his
+  actual objection.
+- Sonnet-first costs S + p·O against O. With S/O = 1/3 the cheap tier loses only when p > 0.67;
+  with the measured per-run ratio, p > 0.86. Measured p ≤ 0.18 on the worst role. The tier is
+  never a token question; it is a detectability question.
+- Nesting: code.claude.com/docs/en/sub-agents says a subagent spawns subagents by default, up
+  to three layers; CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH caps it (1 = off); a tools list without
+  Agent stops a type; `Agent(a, b)` in tools is an allowlist. CLI 2.1.224 carries the env var,
+  the "Concurrent subagent limit reached" text and `agentDefinitions.allowedAgentTypes`; when
+  the env var is unset the default depth comes from a remote feature flag (`hoe()`), so the kit
+  pins it. The transcripts hold 53 nested Agent calls in the window, all from types without a
+  tools list (claude 27, general-purpose 16, other projects' scan-reader and dom-mapper 10), 21
+  of them Opus parent to Sonnet child; kit types made 0. A nested `claude -p --model
+  claude-sonnet-5` also runs from inside a session (9 s, 60 312 tokens of cache write before the
+  first word), 2.3x the floor of an Agent child (Sonnet median 53 143) and without the agent
+  definition, so the Agent path is the one.
+- Untiered types: 226 runs (general-purpose 165, claude 61), 177.9 m%/wk = 25.4% of subagent
+  spend, no cap, every tool, 33 of the 53 nested spawns.
+
+Decided:
+
+1. agent-guard: any Sonnet or Haiku spawn, by type or by `model:` override, needs a `CHECK:`
+   line naming the mechanical check; researcher-opus, browser-scout-opus, planner-opus,
+   verifier-opus, marketer-opus and sense-check-opus need no TIER-OPUS; implementer-opus keeps
+   TIER-OPUS because the build and the tests make implementer-sonnet a real default; untiered
+   types are refused with no escape (TIER-OK removed).
+2. Roster: researcher-opus and browser-scout-opus are the defaults of their roles;
+   researcher-sonnet is mechanical extraction only; browser-scout-sonnet is verbatim retrieval
+   only, with the quoted text or a PNG in its report.
+3. Nesting on at depth 2 (settings env, install.sh), allowlists: implementer-opus →
+   implementer-sonnet, page-writer-sonnet, researcher-sonnet, researcher-haiku,
+   sim-verifier-sonnet; researcher-opus and planner-opus → researcher-sonnet, researcher-haiku;
+   browser-scout-opus → browser-scout-sonnet; verifier-opus stays a leaf. Each parent carries a
+   "Delegating" section; agent-guard fires inside subagents (dash-guard was seen firing on a
+   nested Agent call in the data), so the CHECK rule holds one layer down.
+4. Output style "Choosing the model" rewritten to the above.
+
+Cost of the rule: research and browsing on Opus by default is +54 m%/wk at the weight ratio
+and up to +130 at the observed per-run ratio, +4.6% to +11% of the meter, accepted as the price
+of trusting only checked answers. The earlier lever "implementer default Sonnet" (task A-040) is
+withdrawn as a default change: implementer-sonnet already is the default for decided steps, and
+what is missing is TIER-OPUS discipline, not a definition.
+
+Not verified yet: the roster is loaded at session start (a project-local type created
+mid-session came back "Agent type not found", and a researcher-opus spawned after the edit still
+had no Agent tool), so the `Agent(...)` allowlist and the hook inside a nested spawn are checked
+in the next fresh session with `.claude/agents/nest-probe-sonnet.md` in the html-autoswipe task
+folder. Until then the parents' "Delegating" sections are dormant.
+
+Dead end: `grep` on the CLI binary with `.{0,100}` patterns fails (ugrep complexity limit);
+search the bytes with python.

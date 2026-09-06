@@ -1,6 +1,6 @@
 ---
 name: browser-scout-sonnet
-description: Default browser tier. Read-only work in the user's real Chrome — open a ticket, a chat channel, a dashboard or a settings page, look at it, and report what is there in words. Use for any browsing whose product is information: what does this page say, is this flag on, who commented, what does this form ask for. Every screenshot dies with this agent instead of riding along in the main context, which is why browsing belongs here and not in the main conversation.
+description: Retrieval-only browser tier. Open a known page and bring back what is on it verbatim: the text of a ticket or a comment, the value of a field, the state of a toggle, the labels a form shows. Every report quotes the page text or names a saved PNG so the orchestrator can check it. Not for assembling an answer, judging which of several things is the real source, or any report that is a conclusion rather than a copy; that is browser-scout-opus. The brief carries a CHECK: line.
 model: sonnet
 effort: medium
 maxTurns: 60

@@ -320,19 +320,24 @@ The floor is maintained, not inherited:
 
 ## Choosing the model
 
-The agent roster is already in every session's listing, do not restate it. Pick the minimum tier
-that will do the job well, before the run; cheap-first-then-escalate is rejected. Lower the tier
-where the subagent fetches, filters, extracts, or runs and reports; keep Opus where it decides
-something you will act on without re-reading its raw output. Verification is a reaction to a
-suspicious result, not a routine step. **This seat runs on Opus or Fable, never lower**, and the
-saving is taken out of the subagents. Simulator work goes to `sim-verifier-sonnet`; the global
+The agent roster is already in every session's listing, do not restate it. **This seat runs on
+Opus or Fable, never lower.** His rule, measured 2026-09-06: **Sonnet and Haiku only where a
+wrong result is caught by a mechanical check**, a build, a test run, a grep, a PNG, a page he
+reads himself. Every cheap-tier brief carries `CHECK: <what catches a wrong result>`; a report
+that would be consumed as a fact with no such check runs on Opus. So researcher-opus and
+browser-scout-opus are the defaults for research and browsing and need no justification;
+implementer-sonnet stays the default for a decided step because the build and the tests are its
+check, and `TIER-OPUS:` still names the design risk that sends a step to implementer-opus. Fable
+takes `TIER-FABLE:` on the same terms. Untiered types (`general-purpose`, `claude`, `Explore`,
+`Plan`, no type) are refused outright: they inherit Opus, every tool and no cap, and nest freely.
+Simulator work goes to `sim-verifier-sonnet`, whose PNG paths are its check; the global
 `CLAUDE.md` paragraph keeping builds and simulator runs in the seat applies only on a Copilot
-machine.
+machine. `hooks/agent-guard.sh` enforces all of it at the call site, inside subagents as well.
 
-**Never spawn an untiered type, and predict an Opus or Fable tier in writing.** Enforced at the
-call site by `agent-guard.sh`: no untiered spawn without `TIER-OK`, no expensive tier without a
-`TIER-OPUS:` or `TIER-FABLE:` line naming what the cheaper tier would get wrong, an architectural
-boundary, concurrency, persistence or migration logic, a state machine, a data invariant.
+**Subagents nest.** An Opus subagent spawns the cheap workers its `tools:` line allows through
+`Agent(...)`, one layer below it, under the same CHECK rule; depth is capped at two layers by
+`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=2`. Plan the split in the seat when you can see it, and
+leave the parent to split the bulk it discovers.
 
 ## Minimal blast radius
 

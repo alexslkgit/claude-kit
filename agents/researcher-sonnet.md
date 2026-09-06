@@ -1,6 +1,6 @@
 ---
 name: researcher-sonnet
-description: Default research tier. Standard codebase investigation — how a feature is wired, what a change would touch, what conventions govern an area, reading git history for the reason behind code. Use this unless the question is either trivial (researcher-haiku) or genuinely ambiguous/cross-cutting (researcher-opus).
+description: Mechanical research only. Locate, list, count, read a value, enumerate matches of a known pattern, extract the relevant lines from a bulk file: anything a grep or a second read would verify. Not the default research tier. A "how does this work", "does this project do X" or "why" question goes to researcher-opus whatever its size, because its answer is acted on as a fact. The brief carries a CHECK: line naming what catches a wrong answer.
 model: sonnet
 effort: medium
 maxTurns: 40
