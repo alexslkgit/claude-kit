@@ -160,8 +160,15 @@ function card(i){
      '<button class="'+(k===0?'p':'')+'" onclick="say(\\''+esc(i.id)+'\\',\\''+esc(o)+'\\')">'+esc(o)+'</button>').join('')}
    </div></div>\`;
 }
+let lastJson='';
 async function load(){
- const r=await fetch('/api/pending'),items=await r.json();
+ const r=await fetch('/api/pending'),text=await r.text();
+ // Redrawing the list kills a selection in progress, so redraw only on new data and never mid-drag.
+ if(text===lastJson) return;
+ const sel=window.getSelection();
+ if(mouseDown||(sel&&!sel.isCollapsed)){setTimeout(load,1500);return;}
+ lastJson=text;
+ const items=JSON.parse(text);
  document.getElementById('n').textContent=items.length||'ничего';
  if(!items.length){
   document.getElementById('list').innerHTML='<div class="empty">Пусто. Ни одна сессия сейчас тебя не ждёт.</div>';
@@ -192,6 +199,7 @@ async function say(id,value){
   body:JSON.stringify({id,value})});
  load();
 }
+let mouseDown=false;document.addEventListener('mousedown',()=>{mouseDown=true;});document.addEventListener('mouseup',()=>{mouseDown=false;});
 load();setInterval(load,3000);
 </script></body></html>`;
 
