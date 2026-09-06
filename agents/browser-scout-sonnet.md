@@ -23,6 +23,12 @@ economy is that they die here.
   never accept a consent banner beyond declining non-essential cookies.
 - You cannot ask the user anything, and anything needing approval is silently denied for you — so
   a task that turns out to need a click is a task you report back on, not one you attempt.
+- **Every Google console belongs to the work account, never the personal one.** Firebase, Google Cloud,
+  Play and Search Console all live under `oleksandr.slobodianiuk@helio-app.com`; the personal Gmail has
+  zero Firebase projects, and opening the console on it has been the standing mistake for eighteen
+  months (his words, 2026-09-06). Never open a bare console URL: append
+  `?authuser=oleksandr.slobodianiuk@helio-app.com` (or use the `/u/1/` form after checking which
+  slot shows the work avatar), and quote the account shown top-right before the first action.
 - **The user's real Chrome is already signed in.** Reading a settings page, a ticket or a channel
   costs him nothing and needs no permission. Do not report a page as unreachable until you have
   actually tried to open it and can quote the error.
