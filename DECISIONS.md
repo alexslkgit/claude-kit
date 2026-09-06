@@ -983,3 +983,22 @@ week, 58 resumed in place, 16 never resumed, 10 re-spawned; cold re-writes at ca
 status completed. implementer-opus and sim-verifier-sonnet 80 → 150, implementer-sonnet and
 browser-scout-sonnet 60 → 120. The cap stays only as a runaway stop; the signal to read is the
 "stopped at its N-turn limit" summary line, never the status field.
+
+
+## 2026-09-06, afternoon — the board port is held on both address families, and a guard kills strays
+
+The owner clicked a board link and got a 404 while the LaunchAgent was up. Cause, measured: the
+agent served ~/Tasks on `127.0.0.1:8899` only; a detached `python -m http.server 8899` left by a
+finapp session (cwd `~/Finances/finapp/public/app`, parent bash already reparented to launchd) held
+`*:8899` over IPv6; Chrome resolves `localhost` to `::1` first, so `curl [::1]:8899/_repos/…` gave
+404 and `127.0.0.1` gave 200. Killing the stray fixed the link at once.
+
+Decision: `templates/tasks-board-server.plist` binds `::`, which on macOS accepts IPv4 too
+(verified on port 8898: both addresses 200), so a stray with no `--bind`, the shape that caused
+this, fails with address-in-use. A stray bound explicitly to `127.0.0.1` still binds beside a
+wildcard listener on macOS (tested: it served 404 on the IPv4 side while `::1` stayed ours), so the
+guard is not optional. `hooks/board-port-guard.sh` runs at SessionStart and UserPromptSubmit: it kills any
+listener on 8899 that is not the agent's and whose command is `http.server`, restarts the agent
+when either address does not answer `/_repos/` with 200, and speaks only when it acted or the port
+is down. The board skill carries the rule in one sentence. Not done: a shell-guard refusal of
+`http.server 8899`, because the bind change makes the stray fail on its own.

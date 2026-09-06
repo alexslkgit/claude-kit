@@ -791,6 +791,31 @@ print(f"  hooks: inbox guard registered ({added} new entr{'y' if added==1 else '
 PY
 fi
 
+# Register the board port guard: a stray `http.server 8899` from another session shadowed
+# `localhost` over IPv6 on 2026-09-06 and every board link 404ed. Silent unless it acts.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/board-port-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON, skipped, fix it and re-run"); raise SystemExit(0)
+hooks = data.setdefault("hooks", {})
+added = 0
+for event in ("SessionStart", "UserPromptSubmit"):
+    entries = hooks.setdefault(event, [])
+    if any(script in json.dumps(e) for e in entries):
+        continue
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]}); added += 1
+if added:
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+print(f"  hooks: board port guard registered ({added} new entr{'y' if added==1 else 'ies'})")
+PY
+fi
+
 # Merge the machine-conditional rules into ~/.claude/CLAUDE.md between markers. That file also
 # holds whatever the user wrote by hand, so this replaces only the marked block, never the file.
 # Each rule states its own precondition and is inert on a machine where it does not apply.

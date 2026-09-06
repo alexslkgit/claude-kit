@@ -29,6 +29,8 @@ honest. Never narrate an update; the link is the whole announcement.
 | inside a checkout | `<repo>/.claude/tasks/<task>.html`, beside the journal of the same basename |
 | the link, always | `http://localhost:8899/<task>/board.html` · in a repo `…/_repos/<repo>/<task>.html` · index `…/index.html` |
 
+**Port 8899 belongs to the LaunchAgent, bound on `::` so it holds both localhost addresses. Never start `http.server` on it from a session.** A stray listener on the IPv6 side shadowed every board link with a 404 on 2026-09-06; `hooks/board-port-guard.sh` now kills strays and restarts the agent at session start.
+
 A LaunchAgent (`com.alexslk.tasks-board-server`) serves `~/Tasks` permanently, so the link
 survives a reboot and a `/clear`. Over http the page refreshes itself in a tab he already has
 open; from disk it cannot. Never the scratchpad, never `/tmp`.

@@ -11,7 +11,7 @@
         <string>http.server</string>
         <string>8899</string>
         <string>--bind</string>
-        <string>127.0.0.1</string>
+        <string>::</string>
         <string>--directory</string>
         <string>TASKS_DIR</string>
     </array>
