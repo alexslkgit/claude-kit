@@ -62,6 +62,7 @@ ti = d.get("tool_input") or {}
 brief = str(ti.get("prompt", "")) + " " + str(ti.get("description", ""))
 sub = str(ti.get("subagent_type", "") or "")
 model = str(ti.get("model", "") or "")
+parent = str(d.get("agent_type", "") or "")   # set only when this hook fires inside a subagent
 
 # An explicit cheap model on the call overrides the type: what is being paid for is the model.
 if model in ("sonnet", "haiku"):
@@ -72,22 +73,36 @@ if model in ("sonnet", "haiku"):
 # with model: opus and named nothing in particular, was 1.3% of the limit over 65 runs and
 # this hook waved all 65 past. The name is a label; the file is the fact.
 import os, re
-def declared_model(name):
+def def_head(name):
     if not name: return None
     for base in (os.path.join(str(d.get("cwd") or ""), ".claude", "agents"),
                  os.path.expanduser("~/.claude/agents"),
                  os.path.expanduser("~/Developer/claude-kit/agents")):
         f = os.path.join(base, name + ".md")
         if os.path.isfile(f):
-            try: head = open(f, errors="ignore").read(4000)
+            try: return open(f, errors="ignore").read(4000)
             except Exception: continue
-            m = re.search(r"^model:\s*([A-Za-z0-9._-]+)", head, re.M)
-            return (m.group(1).lower() if m else "")   # "" = defined but declares no model
-    return None                                        # no definition found at all
+    return None
+def declared_model(name):
+    head = def_head(name)
+    if head is None: return None                       # no definition found at all
+    m = re.search(r"^model:\s*([A-Za-z0-9._-]+)", head, re.M)
+    return (m.group(1).lower() if m else "")           # "" = defined but declares no model
 
 untiered = ("general-purpose", "claude", "Explore", "Plan", "")
 decl = declared_model(sub)
 tier = model or decl or ""
+
+# A nested spawn. The CLI (2.1.224, checked 2026-09-06) hands a subagent whose tools line says
+# Agent(a, b) the full Agent tool and ignores the list, so the list is enforced here from the
+# parent definition. A parent whose tools line has no Agent(...) is not restricted by this block.
+if parent:
+    phead = def_head(parent) or ""
+    pm = re.search(r"^tools:.*?Agent\(([^)]*)\)", phead, re.M)
+    if pm:
+        allowed = [x.strip() for x in pm.group(1).split(",") if x.strip()]
+        if sub not in allowed:
+            print("nested:" + parent + ">" + sub + ">" + ", ".join(allowed)); raise SystemExit(0)
 
 if sub in untiered or decl == "" or decl is None:
     # No definition, or a definition that names no model: the run inherits the main chat.
@@ -125,6 +140,19 @@ Every task has a roster type: researcher-opus for anything to find out, browser-
 anything in a browser, implementer-opus or implementer-sonnet for edits, page-writer-sonnet for a
 long file, sim-verifier-sonnet for the simulator. A task that spans two of those is two spawns,
 or one Opus parent that delegates through its own Agent allowlist.
+EOF
+    exit 2
+    ;;
+  nested:*)
+    rest="${verdict#nested:}"; parent="${rest%%>*}"; rest="${rest#*>}"; child="${rest%%>*}"; allowed="${rest#*>}"
+    cat >&2 <<EOF
+agent-guard refused a nested Agent call: "$parent" may spawn only $allowed, and asked for "$child".
+
+The Agent(...) list in a subagent's tools line is not enforced by the CLI (verified 2026-09-06 on
+2.1.224: a researcher-opus spawned implementer-sonnet straight through it), so this hook enforces
+it from the parent's definition. The list holds the cheap workers whose result the parent can
+check mechanically. A parent that needs any other type reports the need in its result and the
+orchestrator spawns it.
 EOF
     exit 2
     ;;

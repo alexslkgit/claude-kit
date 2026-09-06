@@ -935,3 +935,42 @@ folder. Until then the parents' "Delegating" sections are dormant.
 
 Dead end: `grep` on the CLI binary with `.{0,100}` patterns fails (ugrep complexity limit);
 search the bytes with python.
+
+## 2026-09-06, later — nesting verified live; the Agent(...) list is enforced by the hook, not the CLI; research parents at effort medium; the planner names a tier per step
+
+Verified in this session on CLI 2.1.224:
+
+- Definitions reload mid-session: a type created under .claude/agents appeared in the roster
+  within minutes, and a researcher-opus spawned after the edit had Agent in its tools.
+- researcher-opus spawned researcher-haiku (CHECK line, allowed); researcher-sonnet without a
+  CHECK line was refused by agent-guard inside the subagent; implementer-sonnet went straight
+  through `Agent(researcher-sonnet, researcher-haiku)`. The CLI does not enforce that list for
+  subagents (the docs describe it for `claude --agent` main threads).
+- Hook input inside a subagent carries `agent_id` and `agent_type` (docs
+  code.claude.com/docs/en/hooks, confirmed by logging the payload keys). agent-guard now refuses
+  a nested spawn whose child is not in the parent's Agent(...) list; live: researcher-opus to
+  implementer-sonnet refused, to researcher-haiku allowed.
+- Where an Opus research run's money goes (185 runs): 84% is what the model writes (28 100
+  output tokens a run), 9% material entering the context (112 000 tokens), 7% re-reading
+  (1 987 000 tokens at weight 0.07). Of the written tokens, last 120 runs: final report 18%,
+  tool calls 17%, the remaining ~65% is thinking, which is not stored. implementer-opus splits
+  79 / 10 / 11 with 48 800 output tokens a run. Delegating reads to Sonnet can therefore touch
+  at most 16% of a research run before the handshake is paid; the lever inside an Opus run is
+  thinking, and its knob is `effort`.
+
+Decided:
+
+1. researcher-opus and browser-scout-opus run at `effort: medium` (were high). Baseline to beat
+   by 2026-09-13: researcher-opus 2.007 m% a run, median 26 turns, 28 100 output tokens;
+   browser-scout-opus 2.297 m%, 59.5 turns, 28 300 tokens; strict redo after research 3.7%
+   (Sonnet) and 16% (Opus, all roles). Revert if per-run cost does not fall or the redo rate
+   rises above 16%.
+2. planner-opus names a tier per step: implementer-sonnet unless the step carries a named design
+   risk, and the orchestrator copies the risk class into TIER-OPUS. Purpose: decided steps go to
+   implementer-sonnet, where the build and the tests are the CHECK. At 60% decided steps the
+   potential is about 120 m%/wk gross, about 90 net of redo at 17.6%, about 8% of the meter.
+   Measure by 2026-09-13: implementer-opus runs a week (baseline 74) and the implementer-sonnet
+   redo rate (baseline 17.6%).
+3. Rejected: Sonnet drafts the research and Opus verifies it. Verification catches a wrong
+   citation, not an omission, and "there is nothing like that here" is the failure he reported.
+   Potential was about 20 m%/wk (1.7%).

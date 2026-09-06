@@ -37,7 +37,7 @@ re-deriving your reasoning. You never modify files.
 GOAL: <one sentence, in terms of observable behaviour>
 CONSTRAINTS: <repo rules, invariants, and prior decisions this plan must respect>
 STEPS:
-  1. <action> — files: path/a.swift, path/b.swift — done when: <observable condition>
+  1. <action> — files: path/a.swift, path/b.swift — done when: <observable condition> — tier: implementer-sonnet | implementer-opus (<risk class>)
 VERIFICATION:
   - commands: <exact commands for this repo>
   - manual: <what only a human can confirm, or NONE>
@@ -48,6 +48,15 @@ DECISIONS:
 OUT OF SCOPE:
   - <deliberately excluded> — because <reason>
 ```
+
+`tier` is decided per step, not per plan. A step is implementer-sonnet when its files and edits
+are fully decided here and the build plus the tests named under VERIFICATION would catch a wrong
+edit; that check is what the orchestrator writes into the brief's CHECK: line. A step is
+implementer-opus only when it carries a named design risk: an architectural boundary,
+concurrency, persistence or migration logic, a state machine, a data invariant, or an edit where
+a plausible-looking version passes the tests and is still wrong. Name the risk class in the
+parentheses; the orchestrator copies it into the TIER-OPUS: line. A plan with every step on
+implementer-opus is a plan that has not been thought through.
 
 Never run `rm` on a path that holds a variable or a glob: the harness raises a permission prompt to the owner for that even under bypass, and a subagent must never reach him. Delete by full literal path, or with python3 pathlib on literal paths.
 

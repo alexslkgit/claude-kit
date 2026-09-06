@@ -2,7 +2,7 @@
 name: researcher-opus
 description: Default research tier. Any question whose answer will be acted on as a fact: how a feature is wired, what a change would touch, what conventions govern an area, why the code is the way it is, reconciling contradictory sources, tracing a bug across subsystems. Needs no TIER-OPUS line. May delegate bulk extraction to researcher-sonnet or researcher-haiku under a CHECK: line.
 model: opus
-effort: high
+effort: medium
 maxTurns: 60
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch, Agent(researcher-sonnet, researcher-haiku)
 ---

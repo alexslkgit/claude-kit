@@ -2,7 +2,7 @@
 name: browser-scout-opus
 description: Default browser tier. Any browsing whose product is a conclusion the orchestrator will act on: work out who owns a question and where to write to them, reconcile a ticket against a board, follow a trail across several systems, decide which channel or document is the real source, read a page whose meaning has to be judged. Needs no TIER-OPUS line. May delegate a verbatim page read to browser-scout-sonnet under a CHECK: line. Read-only, same as the sonnet tier.
 model: opus
-effort: high
+effort: medium
 maxTurns: 80
 tools: mcp__claude-in-chrome__*, mcp__Claude_Browser__*, Read, Grep, Glob, Bash, WebSearch, WebFetch, Agent(browser-scout-sonnet)
 ---
