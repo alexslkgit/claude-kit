@@ -40,8 +40,10 @@ installed.
 
 d. **The draft**, via `implementer-opus` with a `TIER-OPUS` line, since this is voice work.
 1000 to 1300 words for a 5 to 6 minute read. File layout: 5 title options, 5 tags, body with
-`![caption](img/...)` and italic captions, and an `{{OUTRO}}` placeholder for his recurring
-Discord/Udemy block, copied verbatim from his last article.
+`![caption](img/...)` and italic captions. **No community outro.** He stopped teaching, so the
+students, Discord and Udemy block is retired (his words 2026-09-06: "я уже не занимаюсь этим, эта
+часть про комьюнити со студентами никому не надо"). An article ends with the conclusion, the
+translation note linking the other language, and the question to readers.
 
 e. **Review**, done in the main conversation, never delegated: check every number against
 `MATERIAL.md`, run the checklist from the style file, confirm the read time, confirm no
@@ -68,6 +70,9 @@ translated and re-written into that account's own style.
 - Keep the numbers identical across languages.
 - The article's caveats stay in, do not smooth them out for readability.
 - No em-dashes, in any language.
+- No community, Discord or Udemy block in any new article, in either language.
+- A long article needs a chart every 2 or 3 screens, not only at the top: he rejected a text
+  heavy draft in 2026-09-06 with "никто не будет читать такое количество текста в 2026 году".
 
 ## 4. Lessons
 

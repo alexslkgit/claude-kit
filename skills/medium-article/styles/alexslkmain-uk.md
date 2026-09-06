@@ -63,6 +63,8 @@ All articles are in Ukrainian. Some titles of technical articles are given in En
 
 ## How he ends articles
 
+**Retired 2026-09-06: no Discord or Udemy block in new articles**, in either language. He stopped teaching. The historic patterns below are for recognition only.
+
 - Older technical articles (IBInspectable, KVO/KVC) end with a recurring block: an invitation to the Ukrainian iOS community on Discord + a link to his Udemy course.
 - The newest article (on job search) ends differently: a reflective conclusion + an invitation to the Discord community + a direct question to readers in the comments.
 

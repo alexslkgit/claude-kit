@@ -51,7 +51,9 @@ Note: with only 3 published stories total, "3 most recent" and "the whole accoun
 
 ## Endings and recurring outro
 
-All three articles end with a near-identical two-part outro block, adapted per article but structurally recurring:
+**Retired 2026-09-06: never write the community/Discord pitch again.** He no longer teaches and asked for it out of the articles. Keep only the translation note. The historic pattern is kept below for recognition only.
+
+All three older articles end with a near-identical two-part outro block:
 
 1. A community/Discord pitch, verbatim across two of three articles:
    "Together with my students, we are building a Ukrainian iOS community. If you are learning iOS development, please join us on Discord." (article 1)
@@ -87,7 +89,7 @@ Article 2 (the how-to) omits the Discord pitch and keeps only the translation no
 7. Use numbered lists for categories/types, not for step-by-step instructions.
 8. Avoid code blocks; explain technical symbols and terms inline in prose.
 9. Caption images only when they carry unique data; otherwise a plain photo credit is enough.
-10. End with a two-part outro: an invitation to his Ukrainian iOS Discord community (essays only) plus a note on the piece being translated from a Ukrainian original, with a link back to it.
+10. End with the conclusion, then a note that the piece has a Ukrainian original with a link back to it, then a question to readers. No Discord or community invitation.
 
 ## Published by the kit
 - 2026-09-03: "I Measured the Claude Max Meter. Here Is What a Token Actually Weighs",
