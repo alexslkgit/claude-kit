@@ -103,3 +103,9 @@ translated and re-written into that account's own style.
   Cloudflare human check, which is his click. Register-wise he rejected the first draft as
   yellow press: the opening must explain the situation to a newcomer before any number.
 - 2026-09-06, fourth placement: a tab in his real Chrome freezes within minutes when the Claude window covers it (CDP "Runtime.evaluate timed out"); `navigate` to the same draft URL thaws it, so brief the placer to re-navigate on every timeout and give up only after three in a row. Restructuring a placed draft (move two images, edit two sentences, add five tags) took one placer 90 tool calls. Medium turns digit ranges ("50-70") and dates into en-dashes on paste: write ranges in words in the source. The opening image must carry a visible surprise; a stacked weekly bar chart was rated 4/10 by him, the tier price chart with the redo reversal won.
+- 2026-09-08, after publishing: verify every chart with arithmetic before it is placed, not by
+  eye. One chart in the token-economy article drew a week 41.7% too tall because that single bar
+  was read from a data file that gets regenerated from live logs, while the rest of the chart used
+  the frozen report. Rule: a number in a chart comes from the frozen report the article quotes,
+  and a `researcher-opus` pass re-derives every bar height, marker and crossing from the SVG path
+  data before placement. Also check that a chart's own title is true of the shape it draws.
