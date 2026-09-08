@@ -1002,3 +1002,28 @@ listener on 8899 that is not the agent's and whose command is `http.server`, res
 when either address does not answer `/_repos/` with 200, and speaks only when it acted or the port
 is down. The board skill carries the rule in one sentence. Not done: a shell-guard refusal of
 `http.server 8899`, because the bind change makes the stray fail on its own.
+
+## 2026-09-08, afternoon — a desktop chat that swallows messages is an app-side warm-up hang, not a dead session
+
+Chat `release-2-2-submit` (energy-tracker, app id `local_3e317d9d…`, CLI id `5cc1d3d4…`) stopped
+answering; "Try again" did nothing. Evidence from `~/Library/Logs/Claude/main.log`: every
+`LocalSessions.sendMessage` for it since 2026-09-06 19:23 (app quit mid-send, `CycleHealth
+reason=app_quit`) is logged without the `Sending message to session` / `Mapping internal session`
+lines that follow a healthy send; `Warming up session` fires on every focus (92 times on 2026-09-08)
+and never reaches `warmed successfully` (last one 2026-09-04 12:37); no `claude --resume=5cc1d3d4`
+process ever appears; the transcript (12.9 MB, 5679 lines, every line valid JSON) did not grow.
+`ccd_session_mgmt.send_message` to it blocks the full 300 s without even a `sendMessage` log line.
+The 136 MB `subagents/` folder and its "exceed the load bounds" warning are NOT the cause: two other
+sessions carry the same warning and warm in under a second. cwd is intact, so nothing "lost a folder".
+
+The CLI itself is fine: `claude --resume 5cc1d3d4… -p "ping"` from a shell answered in about a
+minute ("alive, about 60k tokens of context") and appended to the transcript. So the fault is the
+desktop app's per-chat warm-up, which dies silently between `PluginsFetcher` and `Using skills
+plugin` for this one chat, and survives app restarts, so it lives in persisted per-chat state
+(`claude-code-sessions/…/local_3e317d9d….json`: 23 prior CLI ids, a fork parent, bridge ids,
+artifact watches, a registered html-preview server) rather than in memory. Root field not isolated.
+
+Decision: do not repair the app record by hand. Continue the task in a fresh chat from `STATUS.md`
+and the task journal, which is the documented handoff path anyway; the old chat stays readable. A
+direct `claude --resume <cli-id> -p` is the way to reach a chat's brain when the app will not, and
+the first check for "the chat is dead" is the `sendMessage` → `Sending message` pair in `main.log`.
