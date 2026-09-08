@@ -57,9 +57,15 @@ say() { echo "SUPERVISOR $(date '+%H:%M'): $*"; }
 for attempt in $(seq 1 "$MAX"); do
   if finished; then say "already finished before attempt $attempt"; exit 0; fi
 
-  EXTRA=""
+  EXTRA="
+
+SENTINEL RULE. The word DONE may appear in your report file only once, as its very last line, written
+after every section is complete. Never put DONE into a skeleton, a draft or a first version: the
+supervisor treats it as finished the moment it sees it, and on 2026-09-08 two calls that wrote a
+five-heading skeleton ending in DONE were released from supervision two minutes in. While work is in
+progress end the file with the line IN PROGRESS instead."
   if [ "$attempt" -gt 1 ]; then
-    EXTRA="
+    EXTRA="$EXTRA
 
 RESTART NOTICE, ATTEMPT $attempt. A previous attempt at this exact brief did not finish. It was
 either killed part-way by a network failure talking to the model API, or it stalled: alive but with
