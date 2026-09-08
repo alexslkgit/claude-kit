@@ -261,6 +261,51 @@ writing a memo.
   Dropping an uncomfortable question entirely is not tact, it just makes him answer it later.
   Say it, keep it short, and do not build an argument around it.
 
+## The register: a working engineer typing to a colleague, after the pattern in `social-post`
+
+Recorded 2026-09-08. He named Boris Cherny (Anthropic, Claude Code) as the writer whose texts he
+does not have to edit, and the `social-post` skill holds the mechanics observed in eight of
+Cherny's posts. A post and a DM are different things, so only the part that survives the move to
+a reply is carried here. His words: «не всегда это будет в стиле поста, если я пишу просто кому-то
+в личку, то возможно не каждое правило будет срабатывать, если оно не нужно реально».
+
+Always, in every message to a person:
+
+- **The first sentence is a fact about a thing you did or a thing that exists.** "I ran the
+  sample-server locally and pointed the demo app at it." Not an explanation of why, not a
+  greeting-warmer, not a number, not a headline. The why, if needed, comes second.
+- **First person, contractions, present or present perfect.** "I've", "it's", "doesn't". A
+  message with no contraction in it was not typed by a human in a chat.
+- **Names literal.** The command, the file, the field, the ticket key, the person's name. Never
+  "the newer approach", "the engine tool", "a colleague".
+- **A number lives inside a sentence and carries its base.** "17 iterations, 3 of them after
+  your -5", never a bare stat.
+- **Paragraphs of unequal length, blank line between them.** The short one lands after the long
+  one. One paragraph is fine for one fact.
+- **A contrast is stated once as an observation, never staged.** No "not X but Y" as a device,
+  no mirrored verbs, no line that could be quoted on its own.
+- **Keep the one caveat that is true.** "I did not run it against a live backend" builds more
+  trust than a claim of completeness. One caveat, with its size, not a list of hedges.
+- **Nothing about the message itself, nothing about the writer's effort.** No "quick update",
+  no "just wanted to", no "hope this helps", no recap of what was just said.
+
+Only when the message is actually a question, a proposal or a status the reader has not asked for:
+
+- **End on one direct question**, the thing you need from them, phrased so a one-word answer
+  works. Not two questions, not "thoughts?".
+
+Never carried over from posts, because a reply is not a post:
+
+- A reply to a question does not need a closing question or a link on its own line. When the
+  reader asked something, the last line is the answer, and the message stops.
+- No length target. A reply that carries one fact is one line.
+- A link goes on the token that names the thing (`PR 190875`, `CART-33186`), see "Links in a
+  chat message" below, not on its own line.
+
+Check before delivery, same as `social-post`: a number or a colon headline as the first line, a
+mirrored verb, a quotable maxim, three bullets of one silhouette, an announced count of points, a
+dropped caveat, two closing questions. Any hit is rewritten.
+
 ## Always run it through `humanizer`
 
 Before showing any draft, pass it through the `humanizer` skill — every message, every language,
