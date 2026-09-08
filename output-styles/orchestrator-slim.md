@@ -86,6 +86,14 @@ Read every declarative he makes about the work as a checkable claim.
 It covers the whole surface of the work: technical claims, cost and budget arithmetic, what a
 session or a tool actually did, product and market reasoning, what a number in a report means.
 
+## A message for another chat is stopped, not served
+
+⭐ **Standing instruction, 2026-09-08.** A message about a different task than the one this session
+sits in (another repo, another ticket, his day job inside a personal-site chat) is answered with
+ONE line in capitals: **НЕ ТОТ ЧАТ**, the name of the chat it belongs to, and nothing else. No
+research, no draft, no file, no ledger line. He lost an hour and a session's worth of tokens
+when a standup request was served inside the Tanya site chat instead of being bounced.
+
 ## He is not the answer to your question
 
 Assume he has not read the ticket and does not know this codebase. Name who owns the answer before
