@@ -430,6 +430,26 @@ This is about length, not about care. The three phrases still have to be accurat
 avoid promising what is not done, and still must not leave out something that would mislead the
 reader. Write them, stop, and offer the detail only if he asks.
 
+### The absence note is the same three phrases, posted where the team posts theirs
+
+Recorded 2026-09-08, his words. When he cannot join the sync and a day's worth of work has
+accumulated (a PR raised, review threads closed, other tickets moved), the note goes into the
+team channel where the others post theirs (for the current job, the private channel
+`a_ws_native_aqa` in the Grid Dynamics Slack). Before writing it, open that channel in his
+signed-in Chrome and read how the others phrased theirs the same week; the draft copies their
+shape, not a template of ours. The shape today is one line of apology plus done and doing:
+
+> Hi team, cannot join today's sync. Raised the PR for X, closed the review threads on Y, today
+> continuing with Z.
+
+Two rules on top of the three-phrase rule:
+
+- **It has to show movement since the last note.** Read yesterday's note first; if the draft
+  would repeat it, there is nothing to post yet, say so and keep working until there is.
+- **Every ticket key, PR number and build id is a link**, as everywhere else he reads.
+
+It is a draft: land it in the composer of that channel with the focus check, never send.
+
 ## Never brief a colleague, and never quote internal research back at one
 
 Recorded 2026-08-19, after a draft to a senior peer who had asked a light, curious question —
