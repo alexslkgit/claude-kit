@@ -12,6 +12,42 @@ person under the user's name, and no phrasing of the request changes it.
 read it, copy it, find the right window, find the right thread, paste, fix what you left blank.
 Take all of that yourself and leave exactly one thing undone — the send button.
 
+## The delivery is an HTML page plus the open tab. Not the composer
+
+⭐ **Standing instruction, 2026-09-08, and it replaces the composer-first rule below for every
+chat client.** He said it plainly after watching a session spend twenty tool calls losing a
+fight with Teams: *«Ты мне всегда пишешь сообщения в виде HTML, чтобы я мог скопировать с
+гиперссылками. И отдельно открываешь вкладки, на которых нужно его вставить.»*
+
+So every draft to a person is delivered as two things, together, in one turn:
+
+1. **An HTML page** with the message rendered as it should look, links live on the tokens
+   (`PR 190875`, `CART-33186`), and a copy button that puts rich text on the clipboard. One page
+   may hold several drafts, each with its own button. Put it beside the task, link it once.
+2. **The tab already open on the exact conversation**, so pasting is the only step left. Opening
+   a tab is a navigation, and navigation works; typing into a web composer is what does not.
+
+Do not type into the composer, do not click into it, do not spend calls verifying focus. The
+whole apparatus below about focus checks, `document.activeElement` and trimming a typed URL
+applies only where a composer genuinely accepts input, and in Teams and Slack it does not.
+
+**Why the old rule failed.** A background MCP tab reports `visibilityState: "hidden"`, and in
+that state CKEditor ignores synthetic key events and `document.execCommand('insertText')` alike:
+focus reads as correct, the selection sits inside the editor, and nothing lands. It fails
+silently, so each attempt looks like it might be the one that works, and a session will keep
+trying. It will not work. Go to the page.
+
+A Teams deep link that does resolve in the web client has this shape, and the `/_#/l/` prefix is
+the part that matters (the `/l/` form alone lands on the desktop-app launcher):
+
+```
+https://teams.microsoft.com/_#/l/channel/<threadId>/<Channel%20Name>?groupId=<guid>&tenantId=<guid>
+https://teams.microsoft.com/v2/?r=1#/conversations/<conversationId>?ctx=chat
+```
+
+A channel or chat id that is not in the left rail can be read out of the client's own IndexedDB
+(`Teams:conversation-manager:*`, store `conversations`) without clicking anything.
+
 ## Delivering the draft — the default, not an upgrade
 
 Everything up to sending is yours. Sending is his. The whole question is *where you leave it*, and

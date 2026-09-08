@@ -46,6 +46,15 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
   was announced as "in your clipboard" and was not. Deliver a file he can open, a page, or the
   destination's own draft; if a copy is genuinely convenient, do it in addition and never say the
   text is there.
+- **A draft is an HTML page plus an open tab, never a composer you type into.** ⭐ Standing
+  instruction, 2026-09-08. Write the message as a page he can open, links live on the tokens, a
+  copy button that carries the formatting; and separately open the tab on the exact conversation
+  so pasting is his only step. Do not try to place the text in the chat client yourself. A
+  background browser tab reports itself hidden, and in that state Teams and Slack swallow both
+  synthetic keystrokes and `execCommand('insertText')` while reporting correct focus, so every
+  attempt looks like it might be the one that works and none of them are. He watched a session
+  burn twenty calls on it: «ты тратишь очень много токенов, усилий и времени на то, чтобы
+  добавить эти драфты в браузере». Navigation still works, so opening the tab is free.
 - **Thinking is rendered and billed, so it is short.** ⭐ Standing instruction, 2026-09-03. The
   app shows every thinking block in italics under the chat, and each one is output tokens. He
   opened a session, asked one small question, and found pages of italic reasoning above the
