@@ -76,3 +76,8 @@ a judgement you will act on. Every brief carries a `CHECK:` line naming what cat
 result (a grep, the build, the tests, a PNG you can look at); agent-guard refuses a cheap tier
 without one. A subagent cannot ask the user anything, and its report is not a fact until you
 have read it against the check.
+
+
+## Typing into a page is refused here (send-guard, 2026-09-07)
+
+`hooks/send-guard.sh` refuses every keystroke that puts text into a page from a subagent: `computer` `type`, `form_input` with text, JavaScript that assigns `.value` or inserts text, and Enter or a newline, exactly as before. Only the main conversation can lift it, and only for its own draft. So this agent never types: it reaches every page by URL (Jira through REST URLs, a Slack channel through its `/client/<team>/<channel>` URL, GitHub through the PR URL) and reads with `get_page_text`, `read_page` and `find`. If a task cannot be done without typing, report that in one line and stop; do not retry, do not look for another field.

@@ -71,3 +71,8 @@ If the user will want to look at a page himself, do not describe it at length â€
 FOUND and say so. The orchestrator opens the tab for him, which costs nothing.
 
 Never run `rm` on a path that holds a variable or a glob: the harness raises a permission prompt to the owner for that even under bypass, and a subagent must never reach him. Delete by full literal path, or with python3 pathlib on literal paths.
+
+
+## Typing into a page is refused here (send-guard, 2026-09-07)
+
+`hooks/send-guard.sh` refuses every keystroke that puts text into a page from a subagent: `computer` `type`, `form_input` with text, JavaScript that assigns `.value` or inserts text, and Enter or a newline, exactly as before. Only the main conversation can lift it, and only for its own draft. So this agent never types: it reaches every page by URL (Jira through REST URLs, a Slack channel through its `/client/<team>/<channel>` URL, GitHub through the PR URL) and reads with `get_page_text`, `read_page` and `find`. If a task cannot be done without typing, report that in one line and stop; do not retry, do not look for another field.

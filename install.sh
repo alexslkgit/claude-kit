@@ -35,6 +35,9 @@ copy_tree plan-shell
 # The board's shell: board.css + board.js. The board skill copies these next to the page it
 # writes, so an instance board is markup and data only and never re-emits 12 KB of styling.
 copy_tree board-shell
+# The shared messages page: messages.css + messages.js. draft-message writes cards into the one
+# live page at ~/Tasks/messages/messages.html and never inlines this shell into it.
+copy_tree messages-shell
 # Small helpers the skills call by absolute path, e.g. tools/inline-shell.py, which folds a
 # page's shell back in when the page has to travel on its own.
 copy_tree tools
@@ -958,6 +961,12 @@ if [ "$(uname)" = "Darwin" ]; then
   mkdir -p "${TASKS_DIR}/_shell" "${TASKS_DIR}/_repos"
   cp -f board-shell/board.css board-shell/board.js board-shell/render-body.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
   cp -f plan-shell/plan.css plan-shell/plan.js "${TASKS_DIR}/_shell/" 2>/dev/null || true
+
+  # The shared messages page. The shell is always refreshed; messages.html holds his real drafts,
+  # so it is copied only the first time and never overwritten after that.
+  mkdir -p "${TASKS_DIR}/messages"
+  cp -f messages-shell/messages.css messages-shell/messages.js "${TASKS_DIR}/messages/" 2>/dev/null || true
+  [ -e "${TASKS_DIR}/messages/messages.html" ] || cp -f messages-shell/messages.html "${TASKS_DIR}/messages/messages.html"
 
   # Every OTHER _shell on the machine gets the same three files. hooks/board-inline.sh renders a
   # board through the page's OWN _shell/board.js, so a _shell left behind at an older version is a

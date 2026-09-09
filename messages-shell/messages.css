@@ -1,0 +1,48 @@
+/* messages.css: the whole look of the shared messages page. One file, every machine.
+   The page itself carries DATA ONLY: it links this file and never re-emits styling.
+   Restyle here. Palette tokens copied from board-shell/board.css on purpose, so the
+   messages page and the board read as one family. */
+
+:root {
+  --bg:#FDFCF9; --fg:#23211E; --muted:#6E675C; --faint:#7F776C;
+  --line:#E7E0D0; --line-soft:#EFEADC;
+  --accent:#9A6207; --btn-bg:#23211E; --btn-fg:#FDFCF9;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#1A1815; --fg:#EDE9E0; --muted:#A39B8D; --faint:#8A8276;
+    --line:#332F28; --line-soft:#2A2721;
+    --accent:#D9A441; --btn-bg:#EDE9E0; --btn-fg:#1A1815;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:34px 32px 48px; background:var(--bg); color:var(--fg);
+  font:15.5px/1.55 Commissioner, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+
+.head { max-width:760px; margin:0 auto 24px; }
+.head h1 { font-family:Literata, Georgia, serif; font-size:28px; font-weight:700;
+  letter-spacing:-.02em; margin:0 0 6px; }
+.head .sub { font-size:14px; color:var(--muted); margin:0; }
+
+#messages { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+
+.msg { border:1px solid var(--line); border-radius:6px; padding:16px 18px; background:var(--bg); }
+.msg[data-status="sent"] { opacity:.5; }
+.msg header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.msg header .to { font-weight:600; font-size:14px; }
+.msg header .meta { font-size:12.5px; color:var(--muted); cursor:pointer; user-select:none; }
+.msg header .meta:hover { color:var(--fg); }
+.msg header .open { margin-left:auto; flex:none; font-size:12.5px; font-weight:600;
+  color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+.msg header .copy { flex:none; font:inherit; font-size:12.5px; font-weight:600;
+  color:var(--btn-fg); background:var(--btn-bg); border:none; border-radius:3px;
+  padding:6px 12px; cursor:pointer; }
+
+.msg .body { font-size:16px; line-height:1.5; }
+.msg .body a { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+.msg .body b { font-weight:700; }
+.msg .body p { margin:0 0 10px; }
+.msg .body p:last-child { margin-bottom:0; }
+.msg .body ol, .msg .body ul { margin:0 0 10px; padding-left:20px; }
