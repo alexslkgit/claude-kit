@@ -55,8 +55,10 @@
   function flashCopied(btn) {
     var old = btn.textContent;
     btn.textContent = 'Скопировано';
+    btn.classList.add('copied');
     setTimeout(function () {
       btn.textContent = old;
+      btn.classList.remove('copied');
     }, 1500);
   }
 
