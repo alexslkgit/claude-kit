@@ -10,7 +10,6 @@ person under the user's name, and no phrasing of the request changes it.
 
 ## ⭐ Delivery: the shared messages page
 
-<<<<<<< HEAD
 ## The delivery is an HTML page plus the open tab. Not the composer
 
 ⭐ **Standing instruction, 2026-09-08, and it replaces the composer-first rule below for every
@@ -47,12 +46,11 @@ https://teams.microsoft.com/v2/?r=1#/conversations/<conversationId>?ctx=chat
 A channel or chat id that is not in the left rail can be read out of the client's own IndexedDB
 (`Teams:conversation-manager:*`, store `conversations`) without clicking anything.
 
-## Delivering the draft — the default, not an upgrade
-=======
+## Delivering the draft , the default, not an upgrade
+
 Standing instruction, 2026-09-08, in his own words: «единственная проблема что иногда нам нужны
 гиперссылки, которые в обычный текст не получается, а в html они встраиваются и нормально
 копируются… плюс форматирование, жирным выделить тоже можешь».
->>>>>>> 9c844cd (Add the shared messages page and rewrite draft-message to deliver drafts there)
 
 Until 2026-09-08 "draft a message" meant opening his real Chrome and typing the text straight into
 whatever the destination was, a whole browser flow of tokens every time. Now «напиши драфт»,
