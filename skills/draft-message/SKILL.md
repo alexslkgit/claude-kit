@@ -54,8 +54,20 @@ A channel or chat id that is not in the left rail can be read out of the client'
 ## Delivering the draft, the default, not an upgrade
 
 - File: `~/Tasks/messages/messages.html`, served at `http://localhost:8899/messages/messages.html`.
-- Insert the new card directly under the `<!-- NEW MESSAGES GO HERE -->` marker inside
-  `<main id="messages">`, so the newest card is always on top. Never remove the marker.
+- **Write the card with the script, never by editing the page.** The page is read once by the
+  script, not by the conversation, so a card costs the body and nothing else:
+```bash
+~/.claude/tools/add-message.py --project <repo-or-task-slug> --to "Taras Paliienko, DM в Slack Grid Dynamics" \
+    --lang uk --open "<url>" --body-file /path/to/body.md [--replace]
+```
+  Body file: paragraphs separated by blank lines, `[text](url)` for links, `**bold**` for bold.
+  `--replace` drops the earlier draft card for the same project and recipient first, which is how
+  an "updated message" is written. `--project` is the repository or task slug; the page groups
+  cards under one heading per project, so with ten drafts he sees at a glance which project each
+  belongs to. The script inserts under the `<!-- NEW MESSAGES GO HERE -->` marker inside
+  `<main id="messages">`, newest on top. Never remove the marker, never hand-edit the page.
+  (Recorded 2026-09-10: cards were being written by hand with python heredocs, which meant
+  re-reading the page into the conversation each time. He asked for the script.)
 - **Several cards on one page is the normal case, not an exception.** Every message drafted in a
   session lands on the same page as its own card. Each card is fully independent: its own
   recipient, its own language, its own Open link, its own status. Nothing about one card depends

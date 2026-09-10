@@ -104,5 +104,28 @@
     }
   });
 
+  function groupByProject() {
+    var main = document.getElementById('messages');
+    if (!main) { return; }
+    var cards = Array.prototype.slice.call(main.querySelectorAll('.msg'));
+    if (!cards.some(function (c) { return c.getAttribute('data-project'); })) { return; }
+    var order = [], groups = {};
+    cards.forEach(function (card) {
+      var name = card.getAttribute('data-project') || 'без проекта';
+      if (!groups[name]) { groups[name] = []; order.push(name); }
+      groups[name].push(card);
+    });
+    order.forEach(function (name) {
+      var section = document.createElement('section');
+      section.className = 'project';
+      var h = document.createElement('h2');
+      h.textContent = name;
+      section.appendChild(h);
+      groups[name].forEach(function (card) { section.appendChild(card); });
+      main.appendChild(section);
+    });
+  }
+
+  groupByProject();
   restore();
 })();

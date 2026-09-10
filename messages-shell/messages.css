@@ -58,3 +58,8 @@ body { margin:0; padding:48px 32px 72px; background:var(--bg); color:var(--fg);
 .msg .body p { margin:0 0 14px; }
 .msg .body p:last-child { margin-bottom:0; }
 .msg .body ol, .msg .body ul { margin:0 0 14px; padding-left:22px; }
+
+/* one section per project, newest project first; the h2 is the project slug */
+.project { width:100%; display:flex; flex-direction:column; gap:24px; margin-bottom:16px; }
+.project h2 { font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--meta); margin:0 0 14px; padding-bottom:6px; border-bottom:1px solid rgba(128,128,128,.25); }
