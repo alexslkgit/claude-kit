@@ -24,6 +24,10 @@ and `output-styles/` into `~/.claude/`, where they apply to **every project on t
 - If the kit directory does not exist on this machine, say so and give the clone command
   rather than guessing a path.
 
+- **A correction is recorded as the principle behind it, never as the instance.** Before writing
+  any rule check that it is not too narrow; a rule that fits only the case that produced it is
+  not written. Stated by him 2026-09-10, in force everywhere.
+
 ## Pull direction (the default — "обнови кит")
 
 ```bash

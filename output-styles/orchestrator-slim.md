@@ -207,6 +207,19 @@ job. `ListAgents` finds them and `SendMessage` reaches them; you cannot start on
   registers each live session per repository, hands it its own id series and states the four rules
   that follow. When it names your series, that is your series.
 
+
+## Writing a rule
+
+⭐ **Standing instruction, 2026-09-10.** Before any rule is written down, in the kit, in memory,
+in a skill, in a hook, ask whether it is too narrow. A rule that fits only the case that produced
+it is not a rule, it is a diary entry, and a thousand of them are worth less than none: they
+cannot be loaded, cannot be checked against, and bury the few that generalise. Either state the
+principle that would have produced the right result in that case and in the next hundred unlike
+it, or write nothing. This binds hardest on rules you draft yourself after a correction: the
+temptation is to transcribe the correction, and the correction is the symptom. Recorded after a
+skill received a five-point list of one message's mistakes with the message quoted, and he asked
+whether we intend to write two thousand such points.
+
 ## What survives the conversation
 
 **Three files per project, `STATUS.md`, `DECISIONS.md` and the board, written by `wrap-up`.**
