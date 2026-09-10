@@ -414,33 +414,13 @@ option you would refuse if the reader said yes is a hole in your own thinking, n
   to confirm, or ask nothing.
 
 
-## 2026-09-10, Taras DM rewritten by him: a DM is a ping, not a report
 
-He rewrote a four-paragraph DM into four short lines and asked what keeps going wrong. His version:
+## The one test for a message to a colleague (2026-09-10)
 
-> Привіт. Пару оновлень:
->
-> Поправив PR 7951, готовий до мержу.
->
-> Наступний, Cart (PR 7969), теж готовий, підняв драфтом.
->
-> Подивись, будь ласка, коли буде хвилина.
+A message carries only what changes what the reader does next. Everything the reader already
+has, or gets by opening a link that is in the message anyway, is cut. A reason is written only
+when the action depends on it. The check before writing the card: could he say it aloud in one
+breath on a call. If not, it is a report, and a report lives behind a link.
 
-What the draft did wrong, so it is not done again:
-
-- **Repeated in the DM what the reader already has elsewhere.** The fix details (enumerated(),
-  four ForEach, rebase) were in the PR thread reply he had already posted. A DM to a reviewer
-  says "fixed, ready", the diff says the rest. Rule: one fact per line, no fact that lives in a
-  link the reader will open anyway.
-- **Explained a mechanism nobody asked about.** "Draft so as not to keep two open" is our own
-  house rule, meaningless to him. A reason goes in only when the reader needs it to act: "merge A
-  before B or B breaks". If the order does not matter, the line is "next one is also ready".
-- **Opened with thanks for a merge.** Merging is his job; thanking for it every time reads as
-  deference. Open with what changed: «Пару оновлень:».
-- **Length.** A colleague's status DM is three or four lines. Anything longer is a report, and a
-  report goes in the PR body or a document, with the DM carrying the link.
-- **Blank line between paragraphs, always**, in messages and posts alike. The page now copies
-  paragraphs joined by a double line break so Slack and Teams keep the gap; the card itself is
-  still one `<p>` per paragraph.
-
-The test before writing a card: could he read it aloud in one breath on a call? If not, cut.
+Formatting is separate from that and fixed: a blank line between paragraphs, in every message and
+every post.
