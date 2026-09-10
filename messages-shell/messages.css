@@ -63,3 +63,12 @@ body { margin:0; padding:48px 32px 72px; background:var(--bg); color:var(--fg);
 .project { width:100%; display:flex; flex-direction:column; gap:24px; margin-bottom:16px; }
 .project h2 { font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
   color:var(--meta); margin:0 0 14px; padding-bottom:6px; border-bottom:1px solid rgba(128,128,128,.25); }
+
+/* Отправил: outlined pill next to Копировать; sent cards drop into the archive */
+.msg header .sent { margin-left:auto; padding:8px 16px; border-radius:999px; border:1px solid var(--meta);
+  background:transparent; color:var(--meta); font:inherit; font-size:14px; cursor:pointer; }
+.msg header .sent:hover { color:var(--fg); border-color:var(--fg); }
+.msg[data-status="sent"] header .sent { border-color:var(--green); color:var(--green); }
+#archive { max-width:720px; margin:40px auto 0; }
+#archive summary { cursor:pointer; font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--meta); margin-bottom:14px; }
+#archive .msg { margin-bottom:24px; }

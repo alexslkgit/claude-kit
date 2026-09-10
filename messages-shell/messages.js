@@ -73,7 +73,12 @@
 
   function copyCard(card, btn) {
     var body = card.querySelector('.body');
-    var html = body.innerHTML;
+    var paragraphs = body.querySelectorAll('p');
+    // Slack and Teams turn <p> into a single line break; a blank line between paragraphs
+    // needs an explicit double <br>. He always writes messages with blank lines.
+    var html = paragraphs.length
+      ? '<div>' + Array.prototype.map.call(paragraphs, function (p) { return p.innerHTML; }).join('<br><br>') + '</div>'
+      : body.innerHTML;
     var text = plainText(body);
     if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
       var item = new ClipboardItem({
@@ -96,13 +101,58 @@
       copyCard(copyBtn.closest('.msg'), copyBtn);
       return;
     }
-    var meta = e.target.closest('.meta');
-    if (meta) {
-      var card = meta.closest('.msg');
-      var next = card.getAttribute('data-status') === 'sent' ? 'draft' : 'sent';
-      setStatus(card, next, true);
+    var sentBtn = e.target.closest('.sent');
+    if (sentBtn) {
+      var c = sentBtn.closest('.msg');
+      setStatus(c, c.getAttribute('data-status') === 'sent' ? 'draft' : 'sent', true);
+      placeCards();
     }
   });
+
+  // Sent cards leave the project sections and collect under a collapsed Архив at the bottom,
+  // so the page shows only what is still to be sent. Status lives in localStorage per card.
+  function placeCards() {
+    var main = document.getElementById('messages');
+    var archive = document.getElementById('archive');
+    if (!archive) {
+      archive = document.createElement('details');
+      archive.id = 'archive';
+      archive.innerHTML = '<summary></summary>';
+      main.parentNode.insertBefore(archive, main.nextSibling);
+    }
+    document.querySelectorAll('.msg').forEach(function (card) {
+      var sent = card.getAttribute('data-status') === 'sent';
+      var inArchive = card.parentNode === archive;
+      if (sent && !inArchive) {
+        archive.appendChild(card);
+      } else if (!sent && inArchive) {
+        var section = sectionFor(card.getAttribute('data-project') || 'без проекта');
+        section.appendChild(card);
+      }
+    });
+    document.querySelectorAll('section.project').forEach(function (sec) {
+      sec.hidden = !sec.querySelector('.msg');
+    });
+    var n = archive.querySelectorAll('.msg').length;
+    archive.querySelector('summary').textContent = 'Архив · ' + n;
+    archive.hidden = n === 0;
+  }
+
+  function sectionFor(name) {
+    var main = document.getElementById('messages');
+    var found = null;
+    main.querySelectorAll('section.project').forEach(function (sec) {
+      if (sec.querySelector('h2').textContent === name) { found = sec; }
+    });
+    if (found) { return found; }
+    var section = document.createElement('section');
+    section.className = 'project';
+    var h = document.createElement('h2');
+    h.textContent = name;
+    section.appendChild(h);
+    main.appendChild(section);
+    return section;
+  }
 
   function groupByProject() {
     var main = document.getElementById('messages');
@@ -126,6 +176,16 @@
     });
   }
 
+  document.querySelectorAll('.msg header').forEach(function (h) {
+    if (!h.querySelector('.sent')) {
+      var b = document.createElement('button');
+      b.className = 'sent';
+      b.type = 'button';
+      b.textContent = 'Отправил';
+      h.appendChild(b);
+    }
+  });
   groupByProject();
   restore();
+  placeCards();
 })();
