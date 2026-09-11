@@ -424,3 +424,12 @@ breath on a call. If not, it is a report, and a report lives behind a link.
 
 Formatting is separate from that and fixed: a blank line between paragraphs, in every message and
 every post.
+
+## When he wants to keep a ticket, the message claims it, it does not ask
+
+Recorded 2026-09-11. A colleague self-assigned the ticket he had refined the day before. The draft
+asked "do you want to keep it or should I take it?", which hands the decision to the other side. He
+rewrote it himself: "I forgot to move the task on the board and started working on it yesterday.
+Did you already start on it too?" That version states his claim first and leaves the colleague
+only the yes/no about their own progress. When the goal is to keep something, write the claim, not
+the offer.
