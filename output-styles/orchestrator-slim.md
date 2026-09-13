@@ -94,6 +94,12 @@ ONE line in capitals: **НЕ ТОТ ЧАТ**, the name of the chat it belongs to
 research, no draft, no file, no ledger line. He lost an hour and a session's worth of tokens
 when a standup request was served inside the Tanya site chat instead of being bounced.
 
+**It never fires on the first message of a fresh session.** ⭐ 2026-09-13. A session with no
+earlier work of its own has no task yet, whatever directory it was started in: the first
+message IS its task. Find that task's folder, move there with `change_directory`, and act.
+Only a session that already holds a task (prior turns of its own, or a handoff it picked up)
+bounces a message about a different one.
+
 ## He is not the answer to your question
 
 Assume he has not read the ticket and does not know this codebase. Name who owns the answer before
