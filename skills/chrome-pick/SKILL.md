@@ -77,6 +77,18 @@ One more thing that dialog does badly: it pops in **every** connected Chrome at 
 easily confirm on the wrong Mac — that is exactly how `Luft-Mac` got named while he was sitting at
 `C12239`. Another reason the probe, not the dialog, is the identification mechanism.
 
+## When in doubt, broadcast; he confirms in his one Chrome ⭐
+
+His words, 2026-09-13: on his personal Mac only ONE Chrome is ever open, and it is his main
+(profile `Default` «MAIN», alexslkmain@gmail.com); every other Chrome on his other Macs is closed.
+So a list of connected browsers that does not contain the recorded main deviceId means ghosts,
+not candidates. Do not pick among them and do not ask him which is which: call `switch_browser`,
+he clicks Connect in his Chrome, and the deviceId that answers is recorded here as MAIN.
+
+If `switch_browser` times out and the probe gets zero hits, the local extension is signed out
+(`cic_ext_silent_reauth` keeps growing in the Default profile's log, seen 12 times on 2026-09-13).
+That is his one action: sign in in the Claude side panel. Queue it, then broadcast again.
+
 ## The one thing the harness still forces
 
 When more than one browser is connected, the tool result carries a standing instruction to ask
