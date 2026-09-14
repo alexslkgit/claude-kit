@@ -21,20 +21,27 @@ learn", the answer is a deck in this repo — never a new page.
 
 ## Read before writing anything
 
-1. `~/Developer/study-deck/README.md` — the deck contract: `window.DECK`, blocks, card fields.
-2. `~/Developer/study-deck/STATUS.md` — cold start, live traps, the port rule.
-3. An existing deck for house style — `decks/mayflower-ios/data.js` (the richest one).
+**There are two engines in the repo, and only one is current.** `core/` is the engine every new
+deck uses. `app/` is the old one, kept only because older decks still load it. Never scaffold on
+`app/`: on 2026-09-14 a deck was built on it and he rejected it at first sight as the wrong design.
 
-Existing decks: `decks/mayflower-ios`, `decks/mayflower-final`, `decks/justmarkets-ios`,
-`decks/claude-code`.
+1. `~/Developer/study-deck/core/README.md` — the contract: `window.DECK`, `round`, `marks`,
+   card fields, the four card forms, what the browser stores.
+2. `~/Developer/study-deck/STATUS.md` — cold start and live traps. Where it disagrees with
+   `core/README.md`, the README wins.
+3. A core deck for house style — `decks/system-design-basics/` (his interview deck).
+
+Decks on `core/`: `decks/system-design-basics`, `decks/claude-dev-foundations`, and `decks/_lab`
+(the test deck). Everything else in `decks/` is on the old `app/` engine and is not a template.
 
 ## New deck
 
 ```bash
-cd ~/Developer/study-deck && mkdir -p decks/<name> && cp app/deck.html decks/<name>/index.html
+cd ~/Developer/study-deck && git pull --ff-only && mkdir -p decks/<name> && cp decks/system-design-basics/index.html decks/<name>/index.html
 ```
 
-Then write `decks/<name>/data.js` and nothing else.
+Change only the `<title>` in that copy, then write `decks/<name>/data.js` and nothing else. The
+`?v=` stamps on the `core/*` links stay exactly as the source deck has them.
 
 Writing a long `data.js` from the main conversation is exactly the spend the kit forbids: hand it
 to `page-writer-sonnet` with the source material named by path.
@@ -48,8 +55,9 @@ to `page-writer-sonnet` with the source material named by path.
 
 So the deck is built in two moves, and the first one is questions only:
 
-**Round one — `data.js` with questions and no `a`.** A knowledge card carries `q`, `prio`, `diff`,
-`tag`, `job`, and nothing else the reader can see. The engine treats an answerless card as normal:
+**Round one — `data.js` with `round: 1` and no `a`.** A knowledge card carries `id`, `q`, `tag`
+and `reply`, and nothing else the reader can see. A card with no `a` and a reply that is not
+`none` is the «про себя» form in `core/README.md`. The engine treats an answerless card as normal:
 he answers in his own words, and the card tells him the write-up comes next round. Do NOT write a
 prepared answer "just in case" — a hundred lines of which he already knows ninety is the exact
 waste this rule exists to end.
@@ -58,8 +66,10 @@ waste this rule exists to end.
 full answer must contain there: three to six short lines, enough for the next session to compute
 the delta without re-researching the topic. This is where the research goes in round one.
 
-**Round two — the delta, and only the delta.** His export carries his own wording per card and a
-marker for the cards where he pressed «Не знаю».
+**`q` collapses newlines.** A second language or a second line never goes into `q`: put it in `d`.
+
+**Round two — the delta, and only the delta.** His sent form carries his own wording per card and
+the mark he put on each card.
 
 1. Compare his wording against `ref`. What he said correctly is DELETED from the plan, not
    rewritten back at him.
@@ -67,16 +77,16 @@ marker for the cards where he pressed «Не знаю».
    he pressed «Не знаю», `a` is the whole short answer, because there is no delta to take.
 3. `d` holds the trap or the follow-up question he would not survive, if there is one. If there
    isn’t, leave `d` out.
-4. Keep the exchange in that card’s `seed` as the trail. His questions are never answered in chat
-   prose.
-5. Bump the card’s `rev`. His status resets, his own text survives, and the answer is visible at
-   once because the gate has already been passed.
+4. Your reply to his answer goes in the card's `from: [{ round: N, t: "…" }]`. His questions are
+   never answered in chat prose.
+5. Bump `DECK.round` once for the whole deck. His answers of the previous round stay under the
+   older key and are shown as «Было · круг N»; nothing of his is copied into `data.js`.
 6. A card he answered fully needs no write-up at all. Say so and move on; padding it is how the
    deck stops being read.
 
-`kind:"howto"` cards are instructions, not questions — they carry their content from round one and
-are never gated. `DECK.gate = false` turns the gate off for a deck where it makes no sense (a
-last-minute cram deck, a reference deck).
+A card with `reply: { mode: "none" }` is an instruction, not a question: it carries its content
+from round one. `DECK.gate = false`, or `gate` on a single card, turns the gate off where it makes
+no sense (a last-minute cram deck, a reference deck).
 
 **Volume is a hard constraint, not a preference.** 2026-08-19, thirty minutes before his interview:
 «не нравится объём задач… любой код, если ты мне показываешь и на нём что-то объясняешь — это то,
@@ -86,16 +96,14 @@ that. Code blocks are for a deck he will read days ahead, never for one he opens
 ## Stacks: order and the vacancy flag
 
 - **Blocks are ordered by priority, most urgent stack first.** He reads top-down and stops when
-  time runs out, so the order of the stacks IS the plan. Card order inside a stack is handled by
-  the engine from `prio`.
-- **`job: true`** on a block (or a single card) marks material specific to THIS company, vacancy
-  or subject — as opposed to baseline knowledge any interview on the topic would ask. It renders
-  as a «под вакансию» chip. Absence is the default; never flag everything.
-  Recorded 2026-08-19: «есть блок вещей, которые в целом нужно знать к любому интервью, а есть то,
-  что именно в этой вакансии — я хочу понимать, с чего начать или что оставить на потом».
-- Every card carries `prio` 1..3 (3 = нужно прямо сейчас) and `diff` 1..3. Set both deliberately:
-  they are the controls he uses to cut the deck down when time is short, and he re-sorts on the
-  fly.
+  time runs out, so the order of the stacks IS the plan, and so is card order inside a stack.
+- **The stacks he sorts into are `DECK.marks`**, declared per deck as
+  `{ id, label, side: "mine" | "done", key }`. The engine hard-codes none.
+- **Vacancy-specific material** («под вакансию», recorded 2026-08-19: «есть блок вещей, которые в
+  целом нужно знать к любому интервью, а есть то, что именно в этой вакансии») goes in its own
+  block, named so. `job` does not exist in `core/`.
+- **`prio` and `diff` are his, not the author's.** In `core/` they are flags he sets per card in
+  the browser. Never write them into `data.js`.
 - Probability that the question actually comes up goes in `tag`, the line above the answer:
   «спросят почти наверняка», «вероятно», «могут спросить».
 
@@ -105,53 +113,52 @@ that. Code blocks are for a deck he will read days ahead, never for one he opens
 mark, draft and comment he made is invisible. Never hand him a link on a different port.
 
 ```bash
-cd ~/Developer/study-deck && (nohup python3 -m http.server 8931 >/dev/null 2>&1 &)
+cd ~/Developer/study-deck && (nohup python3 serve.py 8931 >/dev/null 2>&1 &)
 ```
 
-The link he opens: `http://localhost:8931/decks/<name>/index.html`. A `file://` path is not
+`serve.py`, not `http.server`: it sends `no-store`, so an edited `data.js` is never served stale.
+
+The link he opens: `http://localhost:8931/decks/<name>/`. A `file://` path is not
 clickable for him — always the http form. The server dies between sessions; check it with
 `curl -s -o /dev/null -w "%{http_code}" <url>` before sending the link, and restart it silently.
 
 ## `key` is written once and never changed again
 
 `DECK.key` is the whole address of his work: the engine reads state from
-`localStorage[DECK.key]` and nothing else (`app/engine.js:12,171`). Bump it — even to something
+`localStorage[DECK.key]` and nothing else. Bump it — even to something
 that reads more correct, like `-r2` for a second round — and every mark, draft, answer and
 comment he made becomes invisible in one reload, while sitting intact under the old name. He
 opens the deck, sees "38 не пройдено, 0 повтор, 0 знаю" and empty answer fields, and concludes
 the tool lost his evening. This happened on 2026-08-19 to `mayflower-final`.
 
-A new round is a rewrite of the SAME deck: same `key`, same card ids, new `a` text, `rev`
-bumped on the cards whose content actually changed. A new `key` is only correct for a genuinely
-new deck with a new name.
-
-`rev:` is the separate, deliberate lever: on a bump `fresh()` deletes that card's `status` and
-sets `nu:1` (`app/engine.js:240-243`), so the card returns to "не пройдено" with an «обновлено»
-badge while his answer and `told` survive and the разбор stays open. The old mark is destroyed,
-not archived — so leave `rev` alone on cards whose wording you only polished, and set it only
-where he genuinely has to pass the card again.
+A new round is a rewrite of the SAME deck: same `key`, same card ids, `round` bumped by one. His
+records are keyed by card id plus round number, so the previous round is simply an older key:
+nothing is overwritten and no mark is destroyed. There is no `rev`, `nu` or `seed` in `core/`.
+A new `key` is only correct for a genuinely new deck with a new name.
 
 ## The engine
 
-`app/engine.js` and `app/engine.css` are the tool. **Do not touch them for the sake of a round** —
-the split between engine and data is what keeps each round cheap, and a deck is always expressible
-in `data.js` alone.
+`core/` (`model.js`, `store.js`, `send.js`, `shell.js`, `shell.css`) is the tool. **Do not touch
+it for the sake of a round**: the split between engine and data is what keeps each round cheap,
+and a deck is always expressible in `data.js` alone.
 
-They do change when HE asks for a change in how the tool behaves. Then: surgical edits in his
+It does change when HE asks for a change in how the tool behaves. Then: surgical edits in his
 style, backwards compatible with every existing deck, no reset of his `localStorage` shape, the
-`?v=NN` query bumped in `app/deck.html` and in every `decks/*/index.html`, and README updated with
-the new fields. Hand the work to `implementer-opus`, not to the main conversation.
+`?v=` stamp bumped in every core deck's `index.html`, `core/README.md` updated, and
+`node core/selftest.js` green. Hand the work to `implementer-opus`, not to the main conversation.
 
 ## Verify before handing it over
 
 ```bash
-node --check decks/<name>/data.js && grep -c 'id:"' decks/<name>/data.js
-grep -o 'id:"[^"]*"' decks/<name>/data.js | sort | uniq -d    # must be empty
+cd ~/Developer/study-deck && node --check decks/<name>/data.js && node core/selftest.js
+grep -oE 'id: *"[^"]*"' decks/<name>/data.js | sort | uniq -d    # must be empty
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8931/decks/<name>/
 ```
 
-A malformed card is dropped silently by the engine, and a script error renders an empty page that
-looks exactly like a page with no content — so open it and count the cards before saying it is
-ready.
+**Never open a real deck in an automated browser.** Every load writes to the storage his real
+answers live in. Anything that has to be looked at goes through `decks/_lab/`, which exists for
+exactly that. A malformed `data.js` shows the deck-error screen; the check above catches it
+without opening the page.
 
 ## Content rules, learned from his corrections
 
