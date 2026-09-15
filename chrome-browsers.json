@@ -15,6 +15,16 @@
   ],
   "browsers": [
     {
+      "deviceId": "9979b1b7-5f96-449b-a0c6-ec2257efa42d",
+      "hostname": "OMT-GHHD91424H-LDH",
+      "signedInTo": "Lufthansa work surfaces, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN): teams.microsoft.com, dev.azure.com/lhg-ddl, trackspace.lhsystems.com, figma",
+      "verified": "2026-09-15",
+      "method": "localhost-probe",
+      "note": "CONFIRMED 2026-09-15 by localhost probe from OMT-GHHD91424H-LDH: fetched /probe-9979b1b7. New id because the extension was signed out (11 cic_ext_silent_reauth entries) and he signed in again at ~13:35. A re-sign-in changes the deviceId, so when the registered id for this Mac is missing from the list, expect a new one and probe the newest.",
+      "chromeProfileDir": "Profile 1",
+      "chromeProfileName": "Lufthansa (work profile, SSO)"
+    },
+    {
       "deviceId": "8b3a859a-488c-49a0-bbbc-f49791a5c731",
       "hostname": "C12239",
       "chromeProfileDir": "Default",
@@ -53,9 +63,10 @@
       "signedInTo": "Lufthansa work surfaces, live SSO as SLOBODIANIUK, OLEKSANDR (EXTERN): teams.microsoft.com, dev.azure.com/lhg-ddl, trackspace.lhsystems.com, figma",
       "verified": "2026-08-30",
       "method": "localhost-probe",
-      "note": "CONFIRMED 2026-08-30 by localhost probe run from OMT-GHHD91424H-LDH itself: this deviceId fetched http://127.0.0.1:<port>/probe-c6e75d27 and the local server logged the hit, so it is the Chrome on THIS Mac. hostname matches. This is the browser for every Lufthansa surface.\n\nCORRECTED 2026-08-24 on OMT-GHHD91424H-LDH. The 2026-08-17 line \"unknown Mac, probe-negative\" was about C12239, not about this machine. select_browser with this id works directly and lands in the work Chrome. STATUS.md of lh-group-app-ios said so all along. Two browser-scout runs were wasted on 2026-08-24 by pointing them at 2a3a86cf instead.",
+      "note": "SUPERSEDED 2026-09-15: the extension was signed out and re-signed in, which issued a new deviceId 9979b1b7. Kept for history only. CONFIRMED 2026-08-30 by localhost probe run from OMT-GHHD91424H-LDH itself: this deviceId fetched http://127.0.0.1:<port>/probe-c6e75d27 and the local server logged the hit, so it is the Chrome on THIS Mac. hostname matches. This is the browser for every Lufthansa surface.\n\nCORRECTED 2026-08-24 on OMT-GHHD91424H-LDH. The 2026-08-17 line \"unknown Mac, probe-negative\" was about C12239, not about this machine. select_browser with this id works directly and lands in the work Chrome. STATUS.md of lh-group-app-ios said so all along. Two browser-scout runs were wasted on 2026-08-24 by pointing them at 2a3a86cf instead. ; stale since 2026-09-15 restart, superseded by 9979b1b7",
       "chromeProfileDir": null,
-      "chromeProfileName": "work profile, Lufthansa SSO"
+      "chromeProfileName": "work profile, Lufthansa SSO",
+      "superseded_by": "9979b1b7-5f96-449b-a0c6-ec2257efa42d"
     },
     {
       "deviceId": "0c78e979-7e0c-40e8-b883-f0ac4d02f735",
@@ -66,6 +77,13 @@
       "verified": "2026-08-25",
       "method": "declared by him",
       "note": "VERIFIED 2026-08-25 12:30 by live probe: DO NOT USE. 0c78e979 is the JOB SEARCH profile, signed in as oleksandrslobodianiukwork@gmail.com. Proof: select_browser on this deviceId plus tabs_context_mcp created a tab in the Chrome window whose Gmail is oleksandrslobodianiukwork@gmail.com, twice, and that window's Gmail reports 0% of 15 GB used while his personal one reports 21%. The duplicate entry that called this his personal main profile has been removed; it cost three agent runs on 2026-08-25. His personal profile is 2a3a86cf.\n\nDO NOT TOUCH. He opened this Chrome on purpose so a different agent could work in it in isolation. Never open, move or close a tab here. If it is the only browser connected, ask him rather than using it."
+    },
+    {
+      "deviceId": "9979b1b7-5f96-449b-a0c6-ec2257efa42d",
+      "hostname": "OMT-GHHD91424H-LDH",
+      "note": "work profile, Lufthansa SSO, THIS Mac after the 2026-09-15 restart (replaces c6e75d27)",
+      "verified": "2026-09-15",
+      "method": "localhost probe"
     }
   ]
 }
