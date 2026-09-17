@@ -31,6 +31,11 @@ is a rule that gets ignored. If a rewrite shows nothing general, leave the file 
 
 ## Per person
 
+The blocks below are one job's people. A project that keeps a colleague database of its own, a
+`team.json` or the facts section of its `CLAUDE.local.md`, is the register for its people and it
+wins over anything inferred here. Read that first, and add a block below only for a defect he
+actually corrected, never to copy a database into the kit.
+
 ### Taras Paliienko, Principal engineer, reviews and merges his PRs
 - Ukrainian in DM. Technical, dense, no pleasantries, no thanks-in-advance.
 - He is the one who finds the defect; the reply says what was wrong, what was done, what he can
