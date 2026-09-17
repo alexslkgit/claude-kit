@@ -10,6 +10,12 @@
   }
 
   function statusKey(card) {
+    return 'msg-status-' + hashCode(card.getAttribute('data-key') || '');
+  }
+
+  // Old key: hashed the rendered body text, which shifts whenever layout changes. Kept only
+  // so restore() can migrate whatever it already saved under it, once, then drop it.
+  function legacyStatusKey(card) {
     var body = card.querySelector('.body');
     return 'msg-status-' + hashCode(body.innerText);
   }
@@ -25,7 +31,7 @@
       meta.textContent = meta.textContent.replace(/(черновик|отправлено)\s*$/, word);
     }
     if (persist !== false) {
-      localStorage.setItem(statusKey(card), status);
+      try { localStorage.setItem(statusKey(card), status); } catch (err) { /* private window */ }
     }
   }
 
@@ -41,7 +47,21 @@
         m.textContent = 'переписано';
         card.querySelector('header .meta').insertAdjacentElement('afterend', m);
       }
-      var saved = localStorage.getItem(statusKey(card));
+      // One-time migration: adopt whatever was saved under the old, layout-dependent key
+      // if the new, stable key has nothing yet, then drop the old entry.
+      var newKey = statusKey(card);
+      var oldKey = legacyStatusKey(card);
+      var current = null, legacy = null;
+      try {
+        current = localStorage.getItem(newKey);
+        legacy = localStorage.getItem(oldKey);
+        if (!current && legacy) {
+          localStorage.setItem(newKey, legacy);
+          localStorage.removeItem(oldKey);
+          current = legacy;
+        }
+      } catch (err) { /* private window */ }
+      var saved = current;
       if (saved === 'deleted') {
         card.setAttribute('data-status', 'deleted');
       } else if (saved === 'sent' || saved === 'draft') {
@@ -196,7 +216,7 @@
     var delBtn = e.target.closest('.del');
     if (delBtn) {
       var dc = delBtn.closest('.msg');
-      localStorage.setItem(statusKey(dc), 'deleted');
+      try { localStorage.setItem(statusKey(dc), 'deleted'); } catch (err) { /* private window */ }
       dc.setAttribute('data-status', 'deleted');
       placeCards();
       return;
@@ -278,20 +298,45 @@
   }
 
   document.querySelectorAll('.msg header').forEach(function (h) {
+    // Three explicit rows, built from the elements the HTML already has, before any
+    // button gets appended so each one lands in the row it belongs to.
+    var titleRow = document.createElement('div');
+    titleRow.className = 'hrow title';
+    var metaRow = document.createElement('div');
+    metaRow.className = 'hrow meta-row';
+    var actionsRow = document.createElement('div');
+    actionsRow.className = 'hrow actions';
+
+    var to = h.querySelector('.to');
+    var meta = h.querySelector('.meta');
+    var openLink = h.querySelector('.open');
+    var copyBtn = h.querySelector('.copy');
+    if (to) { titleRow.appendChild(to); }
+    if (meta) { metaRow.appendChild(meta); }
+    if (openLink) { actionsRow.appendChild(openLink); }
+    if (copyBtn) { actionsRow.appendChild(copyBtn); }
+
+    h.appendChild(titleRow);
+    h.appendChild(metaRow);
+    h.appendChild(actionsRow);
+
     if (!h.querySelector('.sent')) {
       var b = document.createElement('button');
       b.className = 'sent';
       b.type = 'button';
       b.textContent = 'Отправил';
-      h.appendChild(b);
+      actionsRow.appendChild(b);
     }
     if (!h.querySelector('.rewrite')) {
       var rw = document.createElement('button');
       rw.className = 'rewrite';
       rw.type = 'button';
       rw.textContent = 'Переписать';
-      h.appendChild(rw);
+      actionsRow.appendChild(rw);
     }
+    var grow = document.createElement('span');
+    grow.className = 'grow';
+    actionsRow.appendChild(grow);
     if (!h.querySelector('.del')) {
       var x = document.createElement('button');
       x.className = 'del';
@@ -299,14 +344,14 @@
       x.title = 'Удалить с этой страницы';
       x.setAttribute('aria-label', 'Удалить');
       x.textContent = '\u00d7';
-      h.appendChild(x);
+      actionsRow.appendChild(x);
     }
     var proj = h.parentNode.getAttribute('data-project');
     if (proj && !h.querySelector('.proj')) {
       var tag = document.createElement('span');
       tag.className = 'proj';
       tag.textContent = proj;
-      h.querySelector('.meta').insertAdjacentElement('afterend', tag);
+      titleRow.appendChild(tag);
     }
   });
   restore();

@@ -1,91 +1,687 @@
 /* messages.css: the whole look of the shared messages page. One file, every machine.
    The page itself carries DATA ONLY: it links this file and never re-emits styling.
-   Restyle here. Clean, handsome, senior-developer tool: big readable type, white
-   cards, blue pill buttons. Built once, reused forever. */
+   Editorial, calm, hand-made. Restraint, not decoration. */
 
 :root {
-  --bg:#FFFFFF; --card-bg:#FFFFFF; --fg:#111111; --meta:#4B5563;
-  --blue:#0B5FFF; --blue-fg:#FFFFFF;
-  --green:#0F9D58; --amber:#B45309;
-  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+  /* paper */
+  --page-bg:  #FBFAF8;
+  --card-surface: #FFFFFF;
+  --ink:      #16181D;
+  --ink-soft: #6B7280;
+  --hairline: #E7E5E0;
+
+  /* one accent */
+  --accent:    #1D4ED8;
+  --accent-fg: #FFFFFF;
+
+  /* status only: a dot and a word */
+  --success: #157F3D;
+  --warning: #B45309;
+
+  /* aliases kept for older cards / scripts that still reference these names */
+  --fg:      var(--ink);
+  --meta:    var(--ink-soft);
+  --card-bg: var(--card-surface);
+  --blue:    var(--accent);
+  --blue-fg: var(--accent-fg);
+  --green:   var(--success);
+  --amber:   var(--warning);
+
+  --danger: #B42318;
+  --card-hover-shadow: 0 2px 8px rgba(0,0,0,.05);
+  --control-border: var(--hairline);
+  --proj-bg: color-mix(in srgb, var(--accent) 10%, transparent);
+  --proj-fg: var(--accent);
   color-scheme: light;
 }
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:#0F1115; --card-bg:#1A1D24; --fg:#E8EAF0; --meta:#A9AFBD;
-    --blue:#5B8CFF; --blue-fg:#0F1115;
-    --green:#2FBE73; --amber:#E0A852;
-    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --page-bg:      #121317;
+    --card-surface: #191B20;
+    --ink:          #ECEDEF;
+    --ink-soft:     #9AA0A6;
+    --hairline:     #2A2D33;
+
+    --accent:    #5B8DEF;
+    --accent-fg: #121317;
+
+    --success: #4ADE80;
+    --warning: #FBBF24;
+
+    --fg:      var(--ink);
+    --meta:    var(--ink-soft);
+    --card-bg: var(--card-surface);
+    --blue:    var(--accent);
+    --blue-fg: var(--accent-fg);
+    --green:   var(--success);
+    --amber:   var(--warning);
+
+    --danger: #E5484D;
+    --card-hover-shadow: 0 2px 10px rgba(0,0,0,.35);
+    --control-border: #3A3E46;
+    --proj-bg: color-mix(in srgb, var(--accent) 10%, transparent);
+    --proj-fg: var(--accent);
     color-scheme: dark;
   }
 }
+
 * { box-sizing: border-box; }
-body { margin:0; padding:48px 32px 72px; background:var(--bg); color:var(--fg);
-  font:18px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; }
 
-.head { max-width:720px; margin:0 auto 32px; }
-.head h1 { font-size:30px; font-weight:600; letter-spacing:-.01em; margin:0 0 8px; }
-.head .sub { font-size:16px; line-height:1.5; color:var(--meta); margin:0; }
+html { background: var(--page-bg); }
 
-#messages { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+body {
+  margin: 0;
+  padding: 64px 24px 120px;
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
 
-.msg { border:none; border-radius:14px; padding:28px; background:var(--card-bg); box-shadow:var(--shadow); }
-.msg[data-status="sent"] { opacity:.6; }
-.msg header { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
-.msg header .to { font-weight:600; font-size:16px; }
-.msg header .meta { font-size:15px; color:var(--meta); cursor:pointer; user-select:none; }
-.msg header .meta:hover { color:var(--fg); }
-.msg header .meta .status { font-weight:600; }
-.msg[data-status="draft"] .status { color:var(--amber); }
-.msg[data-status="sent"] .status { color:var(--green); }
+/* ---------- header ---------- */
 
-.msg header .open { margin-left:auto; flex:none; font-size:15px; font-weight:600;
-  color:var(--blue); background:transparent; border:2px solid var(--blue); border-radius:999px;
-  padding:8px 16px; text-decoration:none; }
-.msg header .open:hover { background:var(--blue); color:var(--blue-fg); }
-.msg header .open:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.head {
+  max-width: 760px;
+  margin: 0 auto 40px;
+}
 
-.msg header .copy { flex:none; font:inherit; font-size:15px; font-weight:600;
-  color:var(--blue-fg); background:var(--blue); border:none; border-radius:999px;
-  padding:10px 18px; cursor:pointer; }
-.msg header .copy:hover { filter:brightness(1.08); }
-.msg header .copy:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
-.msg header .copy.copied { background:var(--green); color:#FFFFFF; }
+.head h1 {
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
 
-.msg .body { font-size:18px; line-height:1.6; }
-.msg .body a { color:var(--blue); text-decoration:underline; text-underline-offset:2px; }
-.msg .body b { font-weight:700; }
-.msg .body p { margin:0 0 14px; }
-.msg .body p:last-child { margin-bottom:0; }
-.msg .body ol, .msg .body ul { margin:0 0 14px; padding-left:22px; }
+.head .sub {
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 68ch;
+}
 
-/* one section per project, newest project first; the h2 is the project slug */
-.project { width:100%; display:flex; flex-direction:column; gap:24px; margin-bottom:16px; }
-.project h2 { font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-  color:var(--meta); margin:0 0 14px; padding-bottom:6px; border-bottom:1px solid rgba(128,128,128,.25); }
+/* ---------- sort control: segmented pill ---------- */
 
-/* Отправил: outlined pill next to Копировать; sent cards drop into the archive */
-.msg header .sent { margin-left:auto; padding:8px 16px; border-radius:999px; border:1px solid var(--meta);
-  background:transparent; color:var(--meta); font:inherit; font-size:14px; cursor:pointer; }
-.msg header .sent:hover { color:var(--fg); border-color:var(--fg); }
-.msg[data-status="sent"] header .sent { border-color:var(--green); color:var(--green); }
-#archive { max-width:720px; margin:40px auto 0; }
-#archive summary { cursor:pointer; font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--meta); margin-bottom:14px; }
-#archive .msg { margin-bottom:24px; }
+#sortbar {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+}
 
-#sortbar { max-width:720px; margin:0 auto 20px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--meta); }
-#sortbar button { font:inherit; font-size:14px; padding:6px 14px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); cursor:pointer; }
-#sortbar button.on { border-color:var(--blue); background:var(--blue); color:var(--blue-fg); }
-.msg header .sent { margin-left:0; }
-.msg header .del { flex:none; width:34px; height:34px; border-radius:50%; border:1px solid transparent; background:transparent; color:var(--meta); font-size:22px; line-height:1; cursor:pointer; }
-.msg header .del:hover { color:#CF222E; border-color:#CF222E; }
-.msg header .proj { font-size:12px; color:var(--meta); border:1px solid var(--meta); border-radius:999px; padding:1px 8px; opacity:.8; }
-.msg[hidden] { display:none; }
-.msg header .rewrite { flex:none; padding:8px 16px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); font:inherit; font-size:14px; cursor:pointer; }
-.msg header .rewrite:hover { color:var(--fg); border-color:var(--fg); }
-.msg header .edited { font-size:12px; color:var(--green); border:1px solid var(--green); border-radius:999px; padding:1px 8px; }
-.editor textarea { width:100%; box-sizing:border-box; font:inherit; font-size:17px; line-height:1.55; padding:14px; border-radius:10px; border:1px solid var(--meta); background:var(--card-bg); color:var(--fg); resize:vertical; }
-.editor-row { display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
-.editor-row button { font:inherit; font-size:15px; font-weight:600; padding:8px 18px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); cursor:pointer; }
-.editor-row .save-edit { background:var(--blue); border-color:var(--blue); color:var(--blue-fg); }
-.editor-row .hint { font-size:13px; color:var(--meta); }
+#sortbar span {
+  color: var(--ink-soft);
+}
+
+#sortbar button {
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--control-border);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+}
+
+#sortbar button:first-of-type {
+  border-radius: 999px 0 0 999px;
+  border-right: 1px solid var(--control-border);
+}
+
+#sortbar button:last-of-type {
+  border-radius: 0 999px 999px 0;
+}
+
+#sortbar button:hover {
+  color: var(--ink);
+}
+
+#sortbar button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+#sortbar button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- message list ---------- */
+
+#messages {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+section.project {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 4px;
+}
+
+section.project h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ---------- card ---------- */
+
+article.msg {
+  background: var(--card-surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 28px;
+  transition: border-color 120ms ease-out, box-shadow 120ms ease-out, transform 120ms ease-out;
+}
+
+article.msg:hover {
+  border-color: var(--ink-soft);
+  box-shadow: var(--card-hover-shadow);
+  transform: translateY(-1px);
+}
+
+.msg[data-status="sent"] {
+  opacity: .55;
+}
+
+.msg[data-status="sent"]:hover {
+  border-color: var(--hairline);
+  box-shadow: none;
+  transform: none;
+}
+
+.msg[data-status="draft"] {
+  /* default resting card, nothing extra */
+}
+
+.msg[hidden] {
+  display: none;
+}
+
+/* ---------- card header ---------- */
+
+.msg header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  background: none;
+}
+
+.hrow {
+  display: flex;
+  align-items: center;
+}
+
+.hrow.title {
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hrow.meta-row {
+  gap: 10px;
+}
+
+.hrow.actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.grow {
+  flex: 1;
+}
+
+.msg header .to {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.msg header .meta {
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.msg header .meta:hover {
+  color: var(--ink);
+}
+
+.msg header .meta .status {
+  font-weight: 600;
+}
+
+.msg header .meta .status::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--warning);
+  vertical-align: middle;
+}
+
+.msg[data-status="draft"] .meta .status { color: var(--warning); }
+.msg[data-status="draft"] .meta .status::before { background: var(--warning); }
+
+.msg[data-status="sent"] .meta .status { color: var(--success); }
+.msg[data-status="sent"] .meta .status::before { background: var(--success); }
+
+.msg header .proj {
+  margin-left: auto;
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--proj-fg);
+  background: var(--proj-bg);
+  border: none;
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+
+.msg header .edited {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--success);
+  border: 1px solid var(--success);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* actions row: wraps gracefully, .del pinned to the far right via .grow */
+
+.msg header .open,
+.msg header .copy,
+.msg header .sent,
+.msg header .rewrite {
+  font: inherit;
+  font-size: 14px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.msg header .open {
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--control-border);
+  color: var(--ink-soft);
+}
+
+.msg header .open:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* exactly one filled button per card: Копировать */
+.msg header .copy {
+  flex: none;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.msg header .copy:hover {
+  filter: brightness(1.06);
+}
+
+.msg header .copy.copied {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--accent-fg);
+}
+
+/* when the editor is open, .save-edit becomes the one filled button in the card.
+   The archived card is quiet, so nothing in it is filled either. */
+.msg:has(.editor) header .copy,
+#archive .msg header .copy {
+  background: transparent;
+  border: 1px solid var(--control-border);
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.msg:has(.editor) header .copy:hover,
+#archive .msg header .copy:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  filter: none;
+}
+
+.msg header .sent {
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--control-border);
+  color: var(--ink-soft);
+}
+
+.msg header .sent:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.msg[data-status="sent"] header .sent {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.msg header .rewrite {
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--control-border);
+  color: var(--ink-soft);
+}
+
+.msg header .rewrite:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.msg header .del {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--control-border);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.msg header .del:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.msg header .open:focus-visible,
+.msg header .copy:focus-visible,
+.msg header .sent:focus-visible,
+.msg header .rewrite:focus-visible,
+.msg header .del:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- body copy: the whole job of the page ---------- */
+
+.msg .body {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.msg .body p {
+  margin: 0 0 14px;
+}
+
+.msg .body p:last-child {
+  margin-bottom: 0;
+}
+
+.msg .body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.msg .body b {
+  font-weight: 700;
+}
+
+.msg .body ol,
+.msg .body ul {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+/* ---------- inline editor ---------- */
+
+.editor {
+  background: var(--card-surface);
+}
+
+.editor textarea {
+  /* pulled out by its own padding + border so the first glyph lines up with .body text */
+  width: calc(100% + 34px);
+  margin-left: -17px;
+  margin-right: -17px;
+  display: block;
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--card-surface);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  padding: 16px;
+  resize: vertical;
+}
+
+.editor textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.editor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.editor-row button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--control-border);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.editor-row button:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.editor-row button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.editor-row .save-edit {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.editor-row .save-edit:hover {
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  filter: brightness(1.06);
+}
+
+.editor-row .cancel-edit {
+  /* ghost, inherits the default editor-row button look */
+}
+
+.editor-row .hint {
+  flex: 1 1 220px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* ---------- archive ---------- */
+
+#archive {
+  max-width: 760px;
+  margin: 48px auto 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--hairline);
+}
+
+#archive summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  list-style: none;
+  transition: color 120ms ease-out;
+}
+
+#archive summary:hover {
+  color: var(--ink);
+}
+
+#archive summary::-webkit-details-marker {
+  display: none;
+}
+
+#archive summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 120ms ease-out;
+}
+
+#archive[open] summary::before {
+  transform: rotate(90deg);
+}
+
+#archive .msg {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: color-mix(in srgb, var(--card-surface) 85%, var(--page-bg) 15%);
+  box-shadow: none;
+}
+
+#archive .msg:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+#archive .msg .to,
+#archive .msg .body {
+  color: var(--ink-soft);
+}
+
+#archive .msg:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 700px) {
+  body {
+    padding: 40px 20px 96px;
+    font-size: 17px;
+  }
+
+  .head h1 {
+    font-size: 26px;
+  }
+
+  .msg .body {
+    font-size: 17px;
+  }
+
+  article.msg {
+    padding: 20px;
+  }
+
+  /* actions row stays compact so it never stacks more than two lines above the text */
+  .hrow.actions {
+    gap: 5px;
+  }
+
+  /* the spacer would push the × onto a line of its own at this width */
+  .hrow.actions .grow {
+    display: none;
+  }
+
+  .msg header .open,
+  .msg header .copy,
+  .msg header .sent,
+  .msg header .rewrite {
+    font-size: 12px;
+    height: 30px;
+    padding: 0 8px;
+  }
+
+  .msg header .del {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  /* on a phone the controls must not push the draft itself below the fold */
+  .msg header {
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .msg header .to {
+    font-size: 17px;
+  }
+}
