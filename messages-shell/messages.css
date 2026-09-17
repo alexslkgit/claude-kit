@@ -72,3 +72,20 @@ body { margin:0; padding:48px 32px 72px; background:var(--bg); color:var(--fg);
 #archive { max-width:720px; margin:40px auto 0; }
 #archive summary { cursor:pointer; font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--meta); margin-bottom:14px; }
 #archive .msg { margin-bottom:24px; }
+
+#sortbar { max-width:720px; margin:0 auto 20px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--meta); }
+#sortbar button { font:inherit; font-size:14px; padding:6px 14px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); cursor:pointer; }
+#sortbar button.on { border-color:var(--blue); background:var(--blue); color:var(--blue-fg); }
+.msg header .sent { margin-left:0; }
+.msg header .del { flex:none; width:34px; height:34px; border-radius:50%; border:1px solid transparent; background:transparent; color:var(--meta); font-size:22px; line-height:1; cursor:pointer; }
+.msg header .del:hover { color:#CF222E; border-color:#CF222E; }
+.msg header .proj { font-size:12px; color:var(--meta); border:1px solid var(--meta); border-radius:999px; padding:1px 8px; opacity:.8; }
+.msg[hidden] { display:none; }
+.msg header .rewrite { flex:none; padding:8px 16px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); font:inherit; font-size:14px; cursor:pointer; }
+.msg header .rewrite:hover { color:var(--fg); border-color:var(--fg); }
+.msg header .edited { font-size:12px; color:var(--green); border:1px solid var(--green); border-radius:999px; padding:1px 8px; }
+.editor textarea { width:100%; box-sizing:border-box; font:inherit; font-size:17px; line-height:1.55; padding:14px; border-radius:10px; border:1px solid var(--meta); background:var(--card-bg); color:var(--fg); resize:vertical; }
+.editor-row { display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+.editor-row button { font:inherit; font-size:15px; font-weight:600; padding:8px 18px; border-radius:999px; border:1px solid var(--meta); background:transparent; color:var(--meta); cursor:pointer; }
+.editor-row .save-edit { background:var(--blue); border-color:var(--blue); color:var(--blue-fg); }
+.editor-row .hint { font-size:13px; color:var(--meta); }

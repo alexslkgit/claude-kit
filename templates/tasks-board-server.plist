@@ -6,13 +6,9 @@
     <string>com.alexslk.tasks-board-server</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
-        <string>-m</string>
-        <string>http.server</string>
+        <string>PYTHON_BIN</string>
+        <string>HOME_DIR/.claude/tools/tasks-server.py</string>
         <string>8899</string>
-        <string>--bind</string>
-        <string>::</string>
-        <string>--directory</string>
         <string>TASKS_DIR</string>
     </array>
     <key>RunAtLoad</key>

@@ -112,6 +112,20 @@ A channel or chat id that is not in the left rail can be read out of the client'
   That reading goes to `browser-scout-sonnet`, by URL, read-only, only when the register for that
   person is not already in the project's `team.json`.
 
+## Read the per-person rules and his rewrites first
+
+`style-rules.md`, beside this file, holds one block per person he writes to: language, register and
+the defects already corrected for that person. Read the block before the first line of any draft.
+
+`~/Tasks/messages/edits.jsonl` is the record of what he actually sent. Every card he rewrote on the
+messages page is one JSON line with `to`, `original` and `edited`. Read the last entries for that
+person, because the difference between the two fields is the only honest feedback there is: he
+rewrites most drafts and, before 2026-09-17, did it in the composer where no session could see it.
+
+After he rewrites a card, turn the difference into ONE general rule in `style-rules.md` for that
+person, or into the global list when it is not person-specific. Never write back a list of his
+specific corrections.
+
 ## Before drafting
 
 1. **Earn the question.** A message to a human is the last resort, after the repository, git
@@ -433,3 +447,14 @@ rewrote it himself: "I forgot to move the task on the board and started working 
 Did you already start on it too?" That version states his claim first and leaves the colleague
 only the yes/no about their own progress. When the goal is to keep something, write the claim, not
 the offer.
+
+## A new version deletes the old one
+
+Standing instruction, 2026-09-17. The messages page shows only what is still worth sending. When a
+draft replaces an earlier draft to the same person or thread, the earlier card is removed in the same
+call, never left beside the new one: he cannot tell which of two cards is current and should not
+have to. `add-message.py` drops cards with the same project and recipient by default; recipient
+labels drift between sessions, so pass `--supersedes "<substring>"` for every older card the new
+text replaces, then read the list of remaining cards it prints and repeat if an older version is
+still there. A draft overtaken by events (he sent his own text, the question was answered) is
+removed the same way, without waiting for him to press the x.

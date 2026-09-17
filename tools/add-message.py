@@ -7,7 +7,11 @@ Usage:
 
 Body: paragraphs separated by blank lines. Inline: [text](url), **bold**.
 A line block of the form "1. ..." / "2. ..." stays in one paragraph joined by <br>.
---replace drops earlier draft cards with the same project and recipient first.
+A new card is a new VERSION: earlier cards with the same project and recipient are always
+dropped (pass --keep to keep them). Recipient labels drift between sessions, so also pass
+--supersedes "<substring of the old card's recipient line>" (repeatable, case-insensitive) for
+every older card this text replaces. The output lists every card left for the project: read it,
+and if one of them is an older version of what you just wrote, run again with --supersedes.
 Prints the page URL and one line per card on the page for that project.
 """
 import argparse, datetime, html, os, re, sys
@@ -43,7 +47,9 @@ def main():
     ap.add_argument('--open', required=True)
     ap.add_argument('--body-file')
     ap.add_argument('--body')
-    ap.add_argument('--replace', action='store_true')
+    ap.add_argument('--replace', action='store_true', help='default, kept for old callers')
+    ap.add_argument('--keep', action='store_true')
+    ap.add_argument('--supersedes', action='append', default=[])
     a = ap.parse_args()
     text = open(a.body_file).read() if a.body_file else a.body
     if not text:
@@ -52,14 +58,22 @@ def main():
     if MARK not in page:
         sys.exit('add-message: marker missing in ' + PAGE)
     key = html.escape(a.project + '|' + a.to, quote=True)
-    if a.replace:
+    n = 0
+    if not a.keep:
         page, n = re.subn(
-            r'<article class="msg" data-status="draft" data-project="%s" data-key="%s">.*?</article>\n\n'
+            r'<article class="msg" data-status="draft" data-project="%s" data-key="%s"[^>]*>.*?</article>\n\n'
             % (re.escape(html.escape(a.project, quote=True)), re.escape(key)), '', page, flags=re.S)
-    else:
-        n = 0
+    proj = re.escape(html.escape(a.project, quote=True))
+    for sub in a.supersedes:
+        def drop(m, sub=sub):
+            to = re.search(r'<span class="to">Кому: ([^<]*)', m.group(0))
+            return '' if to and sub.lower() in html.unescape(to.group(1)).lower() else m.group(0)
+        before = page.count('<article')
+        page = re.sub(r'<article class="msg"[^>]*data-project="%s"[^>]*>.*?</article>\n\n?' % proj, drop, page, flags=re.S)
+        n += before - page.count('<article')
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     card = (
-        '<article class="msg" data-status="draft" data-project="%s" data-key="%s">\n'
+        '<article class="msg" data-status="draft" data-project="%s" data-key="%s" data-ts="%s">\n'
         '  <header>\n'
         '    <span class="to">Кому: %s</span>\n'
         '    <span class="meta">%s · %s · <span class="status">черновик</span></span>\n'
@@ -68,12 +82,11 @@ def main():
         '  </header>\n'
         '  <div class="body">\n%s\n  </div>\n'
         '</article>\n\n'
-    ) % (html.escape(a.project, quote=True), key, html.escape(a.to, quote=False),
-         datetime.date.today().isoformat(), a.lang, html.escape(a.open, quote=True), body_html(text))
+    ) % (html.escape(a.project, quote=True), key, now, html.escape(a.to, quote=False),
+         now, a.lang, html.escape(a.open, quote=True), body_html(text))
     page = page.replace(MARK, MARK + '\n' + card, 1)
     open(PAGE, 'w').write(page)
-    tos = re.findall(r'data-project="%s"[^>]*>\s*<header>\s*<span class="to">Кому: ([^<]+)'
-                     % re.escape(html.escape(a.project, quote=True)), page)
+    tos = re.findall(r'data-project="%s"[^>]*>\s*<header>\s*<span class="to">Кому: ([^<]+)' % proj, page)
     print(URL)
     print('replaced %d; cards for %s: %s' % (n, a.project, ' | '.join(tos)))
 

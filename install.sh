@@ -994,11 +994,20 @@ if [ "$(uname)" = "Darwin" ]; then
   done
   echo "  board shelf: $(find "${TASKS_DIR}/_repos" -maxdepth 1 -type l | wc -l | tr -d ' ') repos linked on http://localhost:8899/_repos/"
 
+  # The shelf server also takes POST /messages/edit, so his rewrite of a draft lands in
+  # messages/edits.jsonl instead of only in the Slack composer. /usr/bin/python3 is a shim that
+  # refuses to run until the Xcode licence is accepted, so the plist gets a real interpreter.
+  cp -f tools/tasks-server.py "${HOME}/.claude/tools/tasks-server.py" 2>/dev/null || true
+  chmod +x "${HOME}/.claude/tools/tasks-server.py" 2>/dev/null || true
+  PYTHON_BIN="$(command -v python3.13 || command -v python3 || echo /usr/bin/python3)"
+  case "${PYTHON_BIN}" in /usr/bin/python3) /usr/bin/python3 -c 'pass' 2>/dev/null || PYTHON_BIN=/Library/Developer/CommandLineTools/usr/bin/python3 ;; esac
+
   AGENT_LABEL="com.alexslk.tasks-board-server"
   AGENT_PLIST="${HOME}/Library/LaunchAgents/${AGENT_LABEL}.plist"
   if [ -f templates/tasks-board-server.plist ]; then
     mkdir -p "${HOME}/Library/LaunchAgents"
-    sed "s|TASKS_DIR|${TASKS_DIR}|g" templates/tasks-board-server.plist > "${AGENT_PLIST}.new"
+    sed -e "s|TASKS_DIR|${TASKS_DIR}|g" -e "s|HOME_DIR|${HOME}|g" -e "s|PYTHON_BIN|${PYTHON_BIN}|g" \
+      templates/tasks-board-server.plist > "${AGENT_PLIST}.new"
     if [ ! -f "$AGENT_PLIST" ] || ! cmp -s "${AGENT_PLIST}.new" "$AGENT_PLIST"; then
       mv "${AGENT_PLIST}.new" "$AGENT_PLIST"
       launchctl bootout "gui/$(id -u)/${AGENT_LABEL}" 2>/dev/null || true
