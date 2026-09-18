@@ -100,10 +100,13 @@ prompt = str(ti.get("prompt", ""))
 if "COPILOT-EXEMPT" in prompt:
     print("allow"); raise SystemExit(0)
 sub = str(ti.get("subagent_type", "") or "")
-# The tiers whose whole job is fetch / read / search / build / report — the ones the
-# machine rule routes to the employer-funded licence. Judgement tiers are left alone:
-# planner-opus and verifier-opus decide things the orchestrator acts on directly.
-billable = ("researcher-", "implementer-")
+# The tiers whose whole job is fetch / read / search / build / report / write-a-file from a
+# brief — the ones the machine rule routes to the employer-funded licence. Judgement tiers are
+# left alone: planner-opus and verifier-opus decide things the orchestrator acts on directly,
+# and browser-scout-* / sim-verifier-* need his signed-in Chrome or the simulator, which the
+# licence cannot reach. page-writer- was added 2026-09-18: a week of zero licence usage turned
+# out to be long file writes going to the personal subscription one brief at a time.
+billable = ("researcher-", "implementer-", "page-writer-")
 if sub.startswith(billable) or sub in ("Explore", "general-purpose", "claude", "Plan", ""):
     print("block:" + (sub or "default"))
 else:
