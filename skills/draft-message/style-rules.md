@@ -36,6 +36,11 @@ is a rule that gets ignored. If a rewrite shows nothing general, leave the file 
   dates, chosen flights and "then we all put the same flights in the form"; he replaced it with
   two lines saying he would check the options himself and asking whether other airlines are
   allowed at all.
+- **A sentence that does not change what the reader does next is deleted, not softened.** The
+  worst form is raising something and then withdrawing it in the same breath: an ask that turns out
+  to be already satisfied, a worry the state of the world has answered, a note about what you chose
+  not to ask. Check the live state first, and if the ask is dead, it does not appear at all. Naming
+  it costs the reader a paragraph to discover there was nothing to do.
 - **He sends it, always.** The draft is a card on the page; nothing is ever sent from here.
 
 ## Per person
