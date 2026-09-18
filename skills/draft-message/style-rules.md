@@ -41,6 +41,16 @@ is a rule that gets ignored. If a rewrite shows nothing general, leave the file 
   to be already satisfied, a worry the state of the world has answered, a note about what you chose
   not to ask. Check the live state first, and if the ask is dead, it does not appear at all. Naming
   it costs the reader a paragraph to discover there was nothing to do.
+- **Never hand the reader a menu. The message asks for a yes, not for a decision between your
+  options.** When the thing can be done from his side, the sentence is "should I do X", never
+  "will you do X, or should I do Y": offering someone a choice makes them work out the answer and
+  then do the work as well. When the decision genuinely belongs to them, give the facts and stop,
+  which is the same rule seen from the other side. Written 2026-09-18 from a rewrite: a draft asked
+  a colleague "will you clone the set for him, or should he work the originals" and he replaced it
+  with "should I just assign him to these tickets".
+- **A name in the greeting opens a cold thread, not a running one.** In a thread where he has
+  already written today he continues it, "Hi again", or just starts talking. A fresh "Hi <name>,"
+  on the fourth message of a live conversation reads as a form letter.
 - **He sends it, always.** The draft is a card on the page; nothing is ever sent from here.
 
 ## Per person
