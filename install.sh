@@ -600,6 +600,30 @@ print(f"  hooks: promise guard registered ({added} new entr{'y' if added==1 else
 PY
 fi
 
+# Register the edits guard. The messages page records his rewrite of a draft in edits.jsonl, and
+# the draft-message skill tells a session to read it, but nothing made a session open it: the
+# session that wrote the draft never learned it was rewritten. UserPromptSubmit prints every
+# unacknowledged rewrite until one session turns it into a rule and runs `edits-guard.sh ack`.
+if command -v python3 >/dev/null 2>&1; then
+  python3 - "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/hooks/edits-guard.sh" <<'PY'
+import json, os, sys
+path, script = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception:
+        print("  hooks: settings.json is not valid JSON — skipped, fix it and re-run"); raise SystemExit(0)
+entries = data.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
+if not any(script in json.dumps(e) for e in entries):
+    entries.append({"hooks": [{"type": "command", "command": script, "timeout": 10}]})
+    with open(path, "w") as f: json.dump(data, f, indent=2); f.write("\n")
+    print("  hooks: edits guard registered")
+else:
+    print("  hooks: edits guard already registered")
+PY
+fi
+
 # Register the page sweep. The page guard only sees a page being written; it cannot see the ones
 # that were already on disk, the ones another tool wrote, or the ones he downloaded. On 2026-08-25
 # he asked for every existing file to be proved clean, not only future ones, so the sweep walks the

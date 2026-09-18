@@ -8,7 +8,9 @@ composer and no session ever saw it.
 
 ## Updating this file is part of the job
 
-After he rewrites a card, open `edits.jsonl`, compare `original` with `edited`, and ask what the
+A rewrite reaches you by itself: `hooks/edits-guard.sh` prints every unacknowledged entry of
+`edits.jsonl` at the top of each turn until a session writes the rule and runs
+`~/.claude/hooks/edits-guard.sh ack`. When it fires, open the entry, compare `original` with `edited`, and ask what the
 difference is *in general*. One rule per repeated defect, written into the person's block below or
 into the global list. Never a list of his specific corrections: a rule he has to re-read as a diary
 is a rule that gets ignored. If a rewrite shows nothing general, leave the file alone.
@@ -27,6 +29,13 @@ is a rule that gets ignored. If a rewrite shows nothing general, leave the file 
   decide something unless he said so in this conversation. A number, a date or an offer of work
   inside a draft is a commitment he has to honour in front of his team.
 - **Never a bare ticket or PR number** where it can be a link.
+- **A fact he has not checked himself is not his position.** A message may not turn a session's
+  research into his announced decision, and may not tell peers what to do on the strength of it.
+  Until he has looked, the honest message is what he actually knows, that he is checking, and the
+  one question still open. Written 2026-09-18 from a rewrite: a group-chat draft laid out settled
+  dates, chosen flights and "then we all put the same flights in the form"; he replaced it with
+  two lines saying he would check the options himself and asking whether other airlines are
+  allowed at all.
 - **He sends it, always.** The draft is a card on the page; nothing is ever sent from here.
 
 ## Per person
