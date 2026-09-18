@@ -1036,3 +1036,13 @@ other agent's chat in his Chrome, picks the model, pastes, answers its questions
 output; he sees only the finished result or a pick between rendered options. The Claude Design MCP
 cannot trigger the in-app designer (put_conversation is display-only), so the route is the web UI
 via browser-scout-opus, one goal per run.
+
+## 2026-09-18 · Board goes opt-in
+Standing instruction: the board (`board` skill) is now written only when he explicitly asks for one
+in that message — «борд», «сделай борд», «покажи борд», «обнови борд», "board". No board at task
+start, none at task end, none in a status or wrap-up, none linked unprompted in any message. Reason:
+token cost of keeping a board current in chats where he never opens it — the same $1.50/session
+upkeep measured for "rewritten only when he asks" (2026-08-31) recurs even when the board is never
+read at all. This supersedes "the board link still opens every message" (2026-08-16) and "create it
+at the start of a task and close it at the end" (2026-08-31). The `board` skill itself — format,
+storage location, `_shell/board.css`/`board.js` — is unchanged; it fires only on explicit request.

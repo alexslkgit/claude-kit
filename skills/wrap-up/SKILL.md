@@ -38,15 +38,17 @@ If this project has neither file yet, create the directory and both files from s
 structure here, and add a one-line pointer to auto-memory (`~/.claude/projects/<repo>/memory/`) so
 the next session knows where to look before it knows anything else.
 
-**There is no third file.** The user's own view is the board written by the `board` skill
-(`.claude/tasks/<task>.html`) — a wrap-up updates that board, it does not create a second HTML
-status beside it. If a project still carries an older `status.html`, fold whatever is current in
-it into the board and delete it.
+**Wrap-up does not create or update a board.** ⭐ Standing instruction, 2026-09-18: the board
+(`board` skill, `.claude/tasks/<task>.html`) is written only when he explicitly asked for one this
+session. If he did, updating it is the last step below; if he did not, wrap-up never touches it and
+never mentions it. If a project still carries an older `status.html`, fold whatever is current in
+it into `STATUS.md` and delete it.
 
-What that board must carry after a wrap-up: what we are doing and why, where we are, what he says at
-his next standup, and, at the very top, **the short list of things only he can physically do**
-(approve a push, sign in, click submit, decide scope). In his language, plainly, no jargon he did
-not use himself. A stale board is worse than none — he trusts it before a call and repeats it aloud.
+If a board was requested this session, what it must carry after a wrap-up: what we are doing and
+why, where we are, what he says at his next standup, and, at the very top, **the short list of
+things only he can physically do** (approve a push, sign in, click submit, decide scope). In his
+language, plainly, no jargon he did not use himself. A stale board is worse than none — he trusts
+it before a call and repeats it aloud.
 
 One project, one set of files. Never let another project's status leak in.
 

@@ -38,7 +38,7 @@ committed to the project — containing two files with **opposite lifecycles**:
 - **Part 1, for me, in my language, deliberately plain**: where we are, ready-to-speak text for my
   next standup or status call, what can go wrong, and what only I can physically do. Plus a dated
   changelog.
-- **Part 2, the working log, dense**: board, current work with shas and paths, settled facts that
+- **Part 2, the working log, dense**: current work with shas and paths, settled facts that
   must not be re-verified, standing constraints, news from chat and meetings, and next steps split
   into *waiting on me*, *running unattended*, and *never started but still owed*.
 
@@ -49,15 +49,14 @@ each one cost real time once. When a decision stops being true, append a new ent
 it by number and mark the old one `SUPERSEDED BY D-nn`; never rewrite history. `STATUS.md` cites
 ids instead of restating reasoning — that is what lets rule 3 prune safely.
 
-**The board beside them is mandatory, not optional.** It is my own view, and it has one job:
-take me from zero to oriented in five minutes — what we are doing, why, where we are, what I say at
-my next standup, and at the very top the short list of things only I can physically do. My language,
-plain words, works in light and dark. The page itself carries data only: its look and behaviour come
-from `_shell/board.css` and `_shell/board.js` beside it, copied once from the kit and never written
-into the page. It lives at
-`<repo>/.claude/tasks/<task>.html` and is rewritten in the same wrap-up as the other two, never
-later: a stale one is worse than none, because I read it right before a call and repeat what it
-says out loud.
+**The board is optional, written only when I ask for it.** When I do, it is my own view, and it has
+one job: take me from zero to oriented in five minutes — what we are doing, why, where we are, what
+I say at my next standup, and at the very top the short list of things only I can physically do. My
+language, plain words, works in light and dark. The page itself carries data only: its look and
+behaviour come from `_shell/board.css` and `_shell/board.js` beside it, copied once from the kit
+and never written into the page. It lives at `<repo>/.claude/tasks/<task>.html` and, once it
+exists, is rewritten in the same wrap-up as the other two, never later: a stale one is worse than
+none, because I read it right before a call and repeat what it says out loud.
 
 Then wire the guard, so a context reset is never silent:
 

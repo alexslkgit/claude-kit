@@ -1,6 +1,6 @@
 ---
 name: board
-description: The board — one live HTML page per task that shows the user where the work stands. Written ON REQUEST ONLY, when he says «борд», «покажи борд», «обнови борд», "board", "update the board". Create it at the start of a task and close it at the end; between those, only when he asks.
+description: The board — one live HTML page per task that shows the user where the work stands. Written ONLY when he explicitly asks, saying «борд», «покажи борд», «обнови борд», "board", "update the board". Never at task start or end, never linked unprompted.
 allowed-tools: Read, Write, Edit, Bash, Glob
 ---
 
@@ -11,15 +11,17 @@ anything waits on him, without reading the chat. A dashboard, not a log and not 
 
 ## On request only
 
-⭐ **Standing instruction, 2026-08-31.** Write the board when he asks for it, at the start of a
-task, and at the end. **Not at every stage change, not at every decision, not before a long
-operation.** Measured across 45 days of transcripts: 5 961 board calls in 328 sessions, a median
-of **14 board calls per session**, and a request costs ~$0.105 whatever it carries. That is about
-$1.50 of upkeep per session, and he was not reading thirteen of those fourteen.
+⭐ **Standing instruction, 2026-09-18.** Write the board only when he explicitly asks for one in
+that message («борд», «сделай борд», «покажи борд», «обнови борд», "board"). Not at task start,
+not at task end, not at every stage change, not at every decision, not before a long operation,
+not in a wrap-up or a handoff. Measured across 45 days of transcripts: 5 961 board calls in 328
+sessions, a median of **14 board calls per session**, and a request costs ~$0.105 whatever it
+carries. That is about $1.50 of upkeep per session, and he was not reading thirteen of those
+fourteen — this superseded the earlier "create at start, close at end" rule of 2026-08-31.
 
-The link still opens **every** chat message, bare URL on its own first line (⭐ 2026-08-16). The
-page is therefore a snapshot, not a live feed: `stamp` says when it was last written, and that is
-honest. Never narrate an update; the link is the whole announcement.
+The link appears only in the reply where he asked for it, bare URL on its own first line. The
+page is a snapshot, not a live feed: `stamp` says when it was last written, and that is honest.
+Never narrate an update; the link is the whole announcement.
 
 ## Where it lives
 

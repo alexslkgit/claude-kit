@@ -86,28 +86,25 @@ That sentence is what earns the trust that makes him follow the other nine steps
     row among twenty identical ones. Cropped to the control, never a full page. They cost tokens on
     every read.
 
-## The plan and the board are one pair
+## The plan and the board, only when a board exists
 
-⭐ **Standing instruction, 2026-08-20.** They are two files with two jobs — the board says where
-the *run* stands, the plan says what *he* does next — and he reaches the second one **through the
-first**. Never merge them, and never let the plan exist only as a link in a chat message.
+⭐ **Standing instruction, 2026-09-18 supersedes 2026-08-20 where it conflicts.** The board is
+opt-in now (`board` skill): it exists only where he explicitly asked for one this session. When it
+does not exist, the plan link goes straight to him in the reply and nothing below applies.
 
-His words, after a session handed him a plan link in the body of a message: «если я говорю тебе
-про инструкцию, ты на свой основной борт должен дать ссылку на него… по нажатию на ссылку я
-перехожу на нашу же инструкцию». The reason is mechanical: every chat message opens with the board
-URL and nothing else, so the board is the only address he has memorised. A plan the board does not
-point at is a plan he cannot find tomorrow morning.
+When a board **does** exist for the task, the old pairing still holds — the board says where the
+*run* stands, the plan says what *he* does next, and he reaches the second one **through the
+first**. His words, after a session handed him a plan link in the body of a message: «если я
+говорю тебе про инструкцию, ты на свой основной борт должен дать ссылку на него… по нажатию на
+ссылку я перехожу на нашу же инструкцию».
 
-Three things follow, and none of them is optional:
+Two things follow when a board is present:
 
 1. **Writing a plan means patching the board in the same turn.** The board's «Ждёт от тебя» block
    becomes the entrance: its `a.btn` links to the plan, and its text says what the first step is.
    Not a mention somewhere on the page — the call-to-action itself.
 2. **They look like one product.** `plan.css` carries the board's palette and typefaces on purpose.
    If you restyle one, restyle the other in the same commit.
-3. **The board link still opens every message.** The plan link may appear in the body once, when
-   the plan is new. After that, point at `board.html` and let him click through — or point at one
-   step, `plan.html#step-6`, when you mean exactly that step.
 
 ## Files
 

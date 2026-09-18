@@ -318,7 +318,7 @@ start. This file is claimed by this chat, by its stamp or, if it predates stampi
   chat:  "$CHAT_TITLE" ($CHAT_ID)
 
 This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
-first message opens with the board link as always and says in one line which task you picked up,
+first message says in one line which task you picked up (no board link unless he asked for one),
 so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
 back at him, do not write a new one, and do not tell him to clear a context he cleared seconds ago.
 EOF
@@ -638,7 +638,7 @@ this same chat before the clear and carries its id.
   chat:  "$CHAT_TITLE" ($CHAT_ID)
 
 This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
-first message opens with the board link as always and says in one line which task you picked up,
+first message says in one line which task you picked up (no board link unless he asked for one),
 so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
 back at him, do not write a new one, and do not tell him to clear a context he cleared seconds ago.
 EOF
@@ -661,7 +661,7 @@ was written before handoffs were stamped; everything written from now on is clai
   chat:  "$CHAT_TITLE" ($CHAT_ID), matched by name, not by stamp
 
 This is a PICKUP: read that file with the Read tool now, then carry on from where it stops. Your
-first message opens with the board link as always and says in one line which task you picked up,
+first message says in one line which task you picked up (no board link unless he asked for one),
 so a wrong pickup is caught in a second. Do not thank him for the handoff, do not summarise it
 back at him, and do not write a new one.
 EOF

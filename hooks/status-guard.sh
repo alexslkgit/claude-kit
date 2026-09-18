@@ -175,7 +175,8 @@ case "$event" in
       if [ -n "$tasks" ]; then
         cat <<EOF
 status-guard: $n prompts in. $cwd is a shelf, not a project: it holds several unrelated tasks,
-each keeping its own STATUS.md, DECISIONS.md, board.html and plan.html in its own folder.
+each keeping its own STATUS.md and DECISIONS.md in its own folder (plus board.html and plan.html
+only where one was requested).
 
 $tasks
 If the work of this session is one of those, its files are the ones to read and to keep current,
@@ -186,11 +187,11 @@ EOF
         exit 0
       fi
       cat <<EOF
-status-guard: $n prompts into this session, and this project still has no STATUS.md, no
-DECISIONS.md and no board, so nothing decided here survives a context reset. The wrap-up skill
-creates all three and writes the marker; it is meant to run when the work starts producing
-decisions, not only when the context is about to be cleared. The user has said he wants this
-raised while it is still cheap to fix rather than discovered at the end of a session.
+status-guard: $n prompts into this session, and this project still has no STATUS.md and no
+DECISIONS.md, so nothing decided here survives a context reset. The wrap-up skill creates both
+and writes the marker; it is meant to run when the work starts producing decisions, not only when
+the context is about to be cleared. The user has said he wants this raised while it is still cheap
+to fix rather than discovered at the end of a session.
 EOF
       exit 0
     fi
@@ -244,9 +245,9 @@ EOF
       cat <<EOF
 status-guard: this project has no persistent status files.
 
-No \`.claude/status-dir\` marker exists at or above $cwd, so there is no STATUS.md, no
-DECISIONS.md and no board for this project, and nothing here survives a context reset.
-The wrap-up skill creates all of them, writes the marker, and adds the auto-memory pointer.
+No \`.claude/status-dir\` marker exists at or above $cwd, so there is no STATUS.md and no
+DECISIONS.md for this project, and nothing here survives a context reset.
+The wrap-up skill creates both, writes the marker, and adds the auto-memory pointer.
 The user has asked to be told about this in one line rather than have work proceed silently
 without project memory.
 EOF
@@ -257,7 +258,7 @@ EOF
       cat <<EOF
 status-guard: $status_dir is registered as this project's status directory, but STATUS.md is
 not there. This project currently has no memory of previous sessions. The wrap-up skill creates
-STATUS.md, DECISIONS.md and the board.
+STATUS.md and DECISIONS.md.
 EOF
       exit 0
     fi
@@ -265,9 +266,7 @@ EOF
     printf 'status-guard: this project keeps its memory in %s.\n' "$status_dir"
     printf 'STATUS.md holds current state and opens with a cold-start section; DECISIONS.md is append-only and holds every decision and dead end with its reason.\n'
     if [ -f "$status_dir/board.html" ]; then
-      printf 'This task owns its whole folder: board.html is the page he keeps open, plan.html the chewed instruction beside it, journal.md the evidence trail. Keep all of them in step with STATUS.md.\n'
-    else
-      printf 'The board is the third artefact: a self-refreshing HTML page per task, at %s/.claude/tasks/<task>.html, kept in step with the other two.\n' "${repo_root:-$cwd}"
+      printf 'This task owns its whole folder: board.html is the page he keeps open (written only on request), plan.html the chewed instruction beside it, journal.md the evidence trail. Keep all of them in step with STATUS.md.\n'
     fi
     case "$source_kind" in
       clear)   printf 'This session started immediately after a /clear.\n' ;;

@@ -63,7 +63,7 @@ being a passive summarizer.
 ## Flush the durable files first — this is not optional
 
 A handoff prompt is one artefact and it dies when that chat closes. The files outlive it, and the
-successor reads them before it reads you. **Bring all three up to date before you write a single
+successor reads them before it reads you. **Bring both up to date before you write a single
 line of the prompt**, then write the prompt from them:
 
 1. **`STATUS.md`** — rewrite the state it gets wrong, do not append. Every claim carries its
@@ -72,19 +72,19 @@ line of the prompt**, then write the prompt from them:
 2. **`DECISIONS.md`** — append every decision and every dead end this conversation produced, with
    its reason and its cost. If you decided something and did not write it down, the next session
    will re-litigate it from scratch, which is exactly what a handoff is meant to prevent.
-3. **The board** — the self-refreshing HTML page the `board` skill maintains, at
-   `.claude/tasks/<task>.html`. This one is for the user, not for you: it is what he opens to
-   re-orient in five minutes without asking anything. A stale board is worse than none, and a
-   `/clear` is exactly the moment he will open it.
 
-Then the prompt itself carries pointers to all three, not copies of them.
+**The board is not part of the handoff ritual.** ⭐ Standing instruction, 2026-09-18: rewrite it
+only if he explicitly asked for a board earlier in this session. If none was requested, the handoff
+proceeds without one and says nothing about it.
+
+Then the prompt itself carries pointers to both, not copies of them.
 
 **A handoff that merely writes a prompt is incomplete.** If there is a repository checkout — the
 normal Claude Code case — absent files are not an exception, they are work not yet done: run the
 `wrap-up` procedure first and create everything it creates — the status directory, `STATUS.md`,
 `DECISIONS.md`, the `<repo>/.claude/status-dir` marker (hidden via `.git/info/exclude`, never
-`.gitignore`, copied into every worktree), the auto-memory pointer, the board, and the
-`.wrapup-stamp` touch as its last action. Only once all of that exists do you write the
+`.gitignore`, copied into every worktree), the auto-memory pointer, the board if one was requested,
+and the `.wrapup-stamp` touch as its last action. Only once all of that exists do you write the
 continuation prompt, and it points at the files you just created, not around them.
 
 The one-line "these files do not exist here" note is not a general escape hatch — it survives

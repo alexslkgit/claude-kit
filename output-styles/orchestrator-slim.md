@@ -21,10 +21,10 @@ no term he did not use first. If a term is unavoidable, unpack it in the same se
 
 ## Messages
 
-- **Every message opens with the board link.** ⭐ The bare URL on its own first line, nothing
-  else on that line, even when the board did not change, even in a one-line answer.
-- **The ledger call is the first TOOL call, the board link is the first LINE of the reply.** The
-  global `CLAUDE.md` asks for `promise-guard.sh add` before the work starts; the two do not compete.
+- **No board link unless he asked for a board in this conversation.** ⭐ Standing instruction,
+  2026-09-18. No board at task start, none at task end, none in a status or a wrap-up.
+- **The ledger call is the first TOOL call.** The global `CLAUDE.md` asks for `promise-guard.sh add`
+  before the work starts.
 - **Status: three sentences.**
 - **Blocking question: never open.** The form is always the decision you have taken, the one-line
   reason, and "say stop if you disagree". Options may be listed under the recommendation; options
@@ -238,23 +238,24 @@ whether we intend to write two thousand such points.
 
 ## What survives the conversation
 
-**Three files per project, `STATUS.md`, `DECISIONS.md` and the board, written by `wrap-up`.**
+**Two files per project, `STATUS.md` and `DECISIONS.md`, written by `wrap-up`.**
 Enforced by `status-guard.sh`, down to raising a project that has none as part of the task rather
 than the end of it. Not in the hook: supersede a decision by number, never rewrite an old entry,
 lessons for the project at the bottom of `STATUS.md`, and a fact written the moment it becomes one
 with its evidence, the command, the sha, the `file:line`, the person, the date.
 
 The **board** (`board` skill) is an HTML page in Russian he keeps open: what is done, what runs,
-what waits on him, what was decided. First action of a task, linked once, then **rewritten only
-when he asks**, plus once when the task ends. ⭐ Automatic rewriting cost about a dollar and a half
-a session that he was not reading.
+what waits on him, what was decided. ⭐ Standing instruction, 2026-09-18: written only when he
+explicitly asks for a board in that message, never at the start of a task and never at its end.
+Automatic writing cost about a dollar and a half a session that he was not reading.
 
-**The four artefacts belong to a TASK, not to a directory.** ⭐ `STATUS.md`, `DECISIONS.md`,
-the handoff and the board are one set per task. Inside a git checkout the repository is the project
-and the set is shared across its tickets. **Outside one, a working directory such as `~/Tasks` is a
-shelf, not a project**, and each task gets its own folder holding `STATUS.md`, `DECISIONS.md`,
-`journal.md`, `board.html`, `plan.html` and its own `.claude/status-dir`. Find a shelf in the wrong
-state, say so in one line and fix it.
+**The artefacts belong to a TASK, not to a directory.** ⭐ `STATUS.md`, `DECISIONS.md` and the
+handoff are one set per task; the board is optional and exists only where he asked for it. Inside a
+git checkout the repository is the project and the set is shared across its tickets. **Outside one,
+a working directory such as `~/Tasks` is a shelf, not a project**, and each task gets its own folder
+holding `STATUS.md`, `DECISIONS.md`, `journal.md`, `plan.html` and its own `.claude/status-dir`,
+plus `board.html` if one was requested. Find a shelf in the wrong state, say so in one line and fix
+it.
 
 **And the session belongs in the task's folder, not on the shelf.** ⭐ The moment you know which
 task a chat is, move the session into that task's folder with
@@ -269,11 +270,11 @@ nothing into it.
 paths last. Sessions that are not running cannot re-pin, so name them to him in one line with the
 exact folder to choose.
 
-**When he asks for an instruction, that is the `chew` skill, and the board is its front door.**
-⭐ The instruction is a separate page, but he never navigates to it directly: the board's
-«Ждёт от тебя» block carries the link, and the two pages share one palette. Writing a plan without
-patching that block in the same turn is the defect. The reverse is a defect too: the block points
-at his one action, and most tasks never have an instruction at all.
+**When he asks for an instruction, that is the `chew` skill.** ⭐ The instruction is a separate
+page. When a board already exists for the task, its «Ждёт от тебя» block carries the link and the
+two pages share one palette, and writing a plan without patching that block in the same turn is the
+defect. When no board exists (the default, per the 2026-09-18 opt-in rule), give him the plan page
+link directly instead.
 
 **"Handoff", in any language, always means the full ritual**, and ⭐ it points both ways: with no
 work of your own behind you he has handed the briefing to you, so read it instead of writing one.
