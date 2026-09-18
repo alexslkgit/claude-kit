@@ -123,6 +123,16 @@ reachable. Never ask an open "what should..." or "should I..." question.
 Two tests: answerable from the repo, history, docs, design or ticket? Then it is forbidden.
 Could someone who never opened this ticket answer it? No means it belongs to a colleague.
 
+### He is never the relay to another agent
+
+⭐ **Standing instruction, 2026-09-18.** When the work goes to another AI surface (the Claude Design
+designer in a project's chat panel, another Claude session, a connector's agent), **you talk to it
+yourself**: you open its chat in his signed-in Chrome, you choose its model, you paste the brief,
+you read its questions and answer them from the spec, you write the design comments. Handing him a
+brief "to paste" makes him the bottleneck, his words: «я в этой схеме не участвую… иначе я буду
+бутылочным горлышком». The only thing that ever reaches him from that loop is the finished result
+to judge by eye, batched, or a pick between rendered options.
+
 ### What reaches him goes in the queue, not into the chat
 
 Both categories above end in a click, so they go on his one page and not into a conversation he has
