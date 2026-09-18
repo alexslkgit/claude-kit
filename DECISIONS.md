@@ -1027,3 +1027,12 @@ Decision: do not repair the app record by hand. Continue the task in a fresh cha
 and the task journal, which is the documented handoff path anyway; the old chat stays readable. A
 direct `claude --resume <cli-id> -p` is the way to reach a chat's brain when the app will not, and
 the first check for "the chat is dead" is the `sendMessage` → `Sending message` pair in `main.log`.
+
+## 2026-09-18 · He is never the relay to another AI surface
+Session adhd-plugin handed him two briefs "to paste into the Claude Design chat". His answer:
+«я в этой схеме не участвую, ты сам общаешься с поддизайном… иначе я буду бутылочным горлышком».
+Rule added to orchestrator-slim under "He is not the answer to your question": the seat opens the
+other agent's chat in his Chrome, picks the model, pastes, answers its questions, comments on its
+output; he sees only the finished result or a pick between rendered options. The Claude Design MCP
+cannot trigger the in-app designer (put_conversation is display-only), so the route is the web UI
+via browser-scout-opus, one goal per run.
