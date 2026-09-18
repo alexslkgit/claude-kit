@@ -57,12 +57,16 @@ def main():
     page = open(PAGE).read()
     if MARK not in page:
         sys.exit('add-message: marker missing in ' + PAGE)
-    key = html.escape(a.project + '|' + a.to, quote=True)
+    # The page stores his per-card status (sent, deleted) in localStorage under a hash of
+    # data-key. A rewritten card must come back as a fresh draft, so the key carries the
+    # write time; the replace below matches the stable project|to prefix, old flat keys included.
+    base = html.escape(a.project + '|' + a.to, quote=True)
+    key = html.escape(a.project + '|' + a.to + '|' + datetime.datetime.now().strftime('%Y%m%d%H%M%S'), quote=True)
     n = 0
     if not a.keep:
         page, n = re.subn(
-            r'<article class="msg" data-status="draft" data-project="%s" data-key="%s"[^>]*>.*?</article>\n\n'
-            % (re.escape(html.escape(a.project, quote=True)), re.escape(key)), '', page, flags=re.S)
+            r'<article class="msg" data-status="draft" data-project="%s" data-key="%s(?:\|[0-9]{14})?"[^>]*>.*?</article>\n\n'
+            % (re.escape(html.escape(a.project, quote=True)), re.escape(base)), '', page, flags=re.S)
     proj = re.escape(html.escape(a.project, quote=True))
     for sub in a.supersedes:
         def drop(m, sub=sub):
