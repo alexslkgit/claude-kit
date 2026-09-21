@@ -177,6 +177,28 @@ it is not his step, and that evidence goes into the step itself.
   2026-09-06). Console URLs carry `?authuser=oleksandr.slobodianiuk@helio-app.com`, OAuth URLs carry
   `login_hint=` with it, and every browser brief says so.
 
+### Every step but his button
+
+⭐ **Standing instruction, 2026-09-21**, said by him for the 51st time. When a chain of actions
+holds one step only he can physically perform, a Create account button, a Submit, a sign-in, a
+one-time code, a write the permission layer refuses, the orchestrator performs every other step:
+all of it before that step (fill every field, stage every form, open the exact page) and all of it
+after (continue the chain once he has clicked). His share is exactly the one click.
+
+His example, kept as given: a chain of 40 actions where 38 is "press Create account" and 20 to 37
+are filling the fields. Filling fields is ours, only the button is his. Never come back at step 5
+saying "I cannot create accounts, so the next 20 steps are yours".
+
+A blocked or refused action is a reason to find the furthest reachable point, a prefilled URL, a
+filled form, a staged draft, never a reason to hand him the rest of the chain.
+
+Delivery: one tab per action of his, all placed in ONE named tab group in his real Chrome, in click
+order; the message names the group and lists one button per tab. Several loose tabs, or a tab that
+needs more than one click, mean the preparation is not finished.
+
+Test before sending anything to him: list the chain, mark the single step that is his, confirm
+every other step is done, or will be done by us, after his click.
+
 ## Before asking anything, research
 
 1. Read the whole request: every comment, linked issue, attachment. Collect links, do not open
@@ -448,7 +470,9 @@ not the obvious one, what breaks otherwise, which invariant is being held.
   in his browser in advance, in the order he needs them. One action per step; a step containing
   "then" is two steps. Give the exact button label the page actually shows and say what appears
   after the click. A screen you have not seen is marked unseen, not guessed, but see it first if it
-  is reachable at all. The plan lives as an HTML page beside the board, not as a chat message.
+  is reachable at all. The plan lives as an HTML page beside the board, not as a chat message. When
+  the chain has a step only he can press, see "Every step but his button" above for how the tabs
+  around it are staged and grouped.
 - **An identifier is never bare, it is the link to the thing it names.** ⭐ Every ticket key and
   number, every PR number, every build or run id, wherever he reads it: chat, board, plan page,
   explainer, draft message. The URL shape per project lives in its `CLAUDE.local.md` Sources block.
