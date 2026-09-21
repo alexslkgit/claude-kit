@@ -8,7 +8,7 @@ Usage:
 Body: paragraphs separated by blank lines. Inline: [text](url), **bold**.
 A line block of the form "1. ..." / "2. ..." stays in one paragraph joined by <br>.
 A new card is a new VERSION: earlier cards with the same project and recipient are always
-dropped (pass --keep to keep them). Recipient labels drift between sessions, so also pass
+moved to the page archive, never deleted (pass --keep to leave them in the drafts). Recipient labels drift between sessions, so also pass
 --supersedes "<substring of the old card's recipient line>" (repeatable, case-insensitive) for
 every older card this text replaces. The output lists every card left for the project: read it,
 and if one of them is an older version of what you just wrote, run again with --supersedes.
@@ -63,18 +63,27 @@ def main():
     base = html.escape(a.project + '|' + a.to, quote=True)
     key = html.escape(a.project + '|' + a.to + '|' + datetime.datetime.now().strftime('%Y%m%d%H%M%S'), quote=True)
     n = 0
+
+    # An older version is never deleted from the page: it is marked superseded, which takes it out
+    # of the drafts and moves it to the archive. A message that cannot be found again afterwards is
+    # the same as a message that was lost.
+    def supersede(m):
+        return m.group(0).replace('data-status="draft"', 'data-status="superseded"', 1)
+
     if not a.keep:
         page, n = re.subn(
             r'<article class="msg" data-status="draft" data-project="%s" data-key="%s(?:\|[0-9]{14})?"[^>]*>.*?</article>\n\n'
-            % (re.escape(html.escape(a.project, quote=True)), re.escape(base)), '', page, flags=re.S)
+            % (re.escape(html.escape(a.project, quote=True)), re.escape(base)), supersede, page, flags=re.S)
     proj = re.escape(html.escape(a.project, quote=True))
     for sub in a.supersedes:
         def drop(m, sub=sub):
             to = re.search(r'<span class="to">Кому: ([^<]*)', m.group(0))
-            return '' if to and sub.lower() in html.unescape(to.group(1)).lower() else m.group(0)
-        before = page.count('<article')
+            if to and sub.lower() in html.unescape(to.group(1)).lower():
+                return supersede(m)
+            return m.group(0)
+        before = page.count('data-status="superseded"')
         page = re.sub(r'<article class="msg"[^>]*data-project="%s"[^>]*>.*?</article>\n\n?' % proj, drop, page, flags=re.S)
-        n += before - page.count('<article')
+        n += page.count('data-status="superseded"') - before
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     card = (
         '<article class="msg" data-status="draft" data-project="%s" data-key="%s" data-ts="%s">\n'

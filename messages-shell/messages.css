@@ -685,3 +685,18 @@ article.msg:hover {
     font-size: 17px;
   }
 }
+
+/* Archive: sections per project and a filter, so a sent message can be found again. */
+.afilter-row { margin: 10px 0 14px; }
+#afilter {
+  width: 100%; box-sizing: border-box; padding: 9px 12px;
+  border: 1px solid #d6dae0; border-radius: 8px; font: inherit; background: #fff;
+}
+#afilter:focus { outline: none; border-color: #0b5cad; }
+#archive-body section.project { margin-bottom: 18px; }
+#archive-body section.project h2 {
+  font-size: 13px; text-transform: none; letter-spacing: .02em;
+  color: #5c636e; margin: 0 0 8px; font-weight: 600;
+}
+.msg[data-status="deleted"] .status { color: #a3372f; }
+.msg[data-status="superseded"] .status { color: #8a6d1f; }

@@ -22,13 +22,14 @@
 
   function setStatus(card, status, persist) {
     card.setAttribute('data-status', status);
-    var word = status === 'sent' ? 'отправлено' : 'черновик';
+    var words = { sent: 'отправлено', deleted: 'удалено', superseded: 'переписано', draft: 'черновик' };
+    var word = words[status] || 'черновик';
     var statusEl = card.querySelector('.status');
     if (statusEl) {
       statusEl.textContent = word;
     } else {
       var meta = card.querySelector('.meta');
-      meta.textContent = meta.textContent.replace(/(черновик|отправлено)\s*$/, word);
+      meta.textContent = meta.textContent.replace(/(черновик|отправлено|удалено|переписано)\s*$/, word);
     }
     if (persist !== false) {
       try { localStorage.setItem(statusKey(card), status); } catch (err) { /* private window */ }
@@ -216,8 +217,7 @@
     var delBtn = e.target.closest('.del');
     if (delBtn) {
       var dc = delBtn.closest('.msg');
-      try { localStorage.setItem(statusKey(dc), 'deleted'); } catch (err) { /* private window */ }
-      dc.setAttribute('data-status', 'deleted');
+      setStatus(dc, 'deleted', true);
       placeCards();
       return;
     }
@@ -230,7 +230,7 @@
     var sentBtn = e.target.closest('.sent');
     if (sentBtn) {
       var c = sentBtn.closest('.msg');
-      setStatus(c, c.getAttribute('data-status') === 'sent' ? 'draft' : 'sent', true);
+      setStatus(c, c.getAttribute('data-status') === 'draft' ? 'sent' : 'draft', true);
       placeCards();
     }
   });
@@ -262,7 +262,7 @@
     if (!archive) {
       archive = document.createElement('details');
       archive.id = 'archive';
-      archive.innerHTML = '<summary></summary>';
+      archive.innerHTML = '<summary></summary><div class="afilter-row"><input id="afilter" type="search" placeholder="Поиск по архиву: имя, проект, слово из текста"></div><div id="archive-body"></div>';
       main.parentNode.insertBefore(archive, main.nextSibling);
     }
     var cards = Array.prototype.slice.call(document.querySelectorAll('.msg'));
@@ -273,12 +273,16 @@
       return a.getAttribute('data-ord') - b.getAttribute('data-ord');
     });
     main.querySelectorAll('section.project').forEach(function (s) { s.parentNode.removeChild(s); });
+    var body = document.getElementById('archive-body') || archive;
+    body.querySelectorAll('section.project').forEach(function (s) { s.parentNode.removeChild(s); });
     var sections = {};
+    var archived = [];
     cards.forEach(function (card) {
       var st = card.getAttribute('data-status');
-      card.hidden = st === 'deleted';
-      if (st === 'deleted') { return; }
-      if (st === 'sent') { archive.appendChild(card); return; }
+      card.hidden = false;
+      // Nothing is ever hidden away: sent, discarded and rewritten all land in the archive,
+      // because a message he cannot find again is the same as a message that was lost.
+      if (st === 'sent' || st === 'deleted' || st === 'superseded') { archived.push(card); return; }
       if (mode === 'time') { main.appendChild(card); return; }
       var name = card.getAttribute('data-project') || 'без проекта';
       if (!sections[name]) {
@@ -292,10 +296,56 @@
       }
       sections[name].appendChild(card);
     });
-    var n = archive.querySelectorAll('.msg:not([hidden])').length;
-    archive.querySelector('summary').textContent = 'Архив · ' + n;
-    archive.hidden = n === 0;
+    var abuckets = {};
+    archived.forEach(function (card) {
+      var name = card.getAttribute('data-project') || 'без проекта';
+      if (!abuckets[name]) {
+        var asec = document.createElement('section');
+        asec.className = 'project';
+        var ah = document.createElement('h2');
+        ah.textContent = name;
+        asec.appendChild(ah);
+        body.appendChild(asec);
+        abuckets[name] = asec;
+      }
+      abuckets[name].appendChild(card);
+    });
+    Object.keys(abuckets).forEach(function (name) {
+      var count = abuckets[name].querySelectorAll('.msg').length;
+      abuckets[name].querySelector('h2').textContent = name + ' · ' + count;
+    });
+    document.querySelectorAll('.msg .sent').forEach(function (b) {
+      var st = b.closest('.msg').getAttribute('data-status');
+      b.textContent = (st === 'draft' || !st) ? 'Отправил' : 'Вернуть в черновики';
+    });
+    archive.querySelector('summary').textContent = 'Архив · ' + archived.length;
+    archive.hidden = archived.length === 0;
+    applyArchiveFilter();
   }
+
+  // The archive is only useful if one message can be found in it. Filters on everything the
+  // card shows: recipient, project, date and the text itself.
+  function applyArchiveFilter() {
+    var input = document.getElementById('afilter');
+    if (!input) { return; }
+    var q = input.value.trim().toLowerCase();
+    var body = document.getElementById('archive-body');
+    if (!body) { return; }
+    body.querySelectorAll('section.project').forEach(function (sec) {
+      var shown = 0;
+      sec.querySelectorAll('.msg').forEach(function (card) {
+        var hay = (card.getAttribute('data-project') || '') + ' ' + card.textContent;
+        var hit = !q || hay.toLowerCase().indexOf(q) !== -1;
+        card.hidden = !hit;
+        if (hit) { shown += 1; }
+      });
+      sec.hidden = shown === 0;
+    });
+  }
+
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'afilter') { applyArchiveFilter(); }
+  });
 
   document.querySelectorAll('.msg header').forEach(function (h) {
     // Three explicit rows, built from the elements the HTML already has, before any
