@@ -13,7 +13,7 @@ the Chrome profile, the flow files, the downloads — lives in `~/.claude/browse
     mkdir -p ~/.claude/browser-flows/flows
     cd ~/.claude/browser-flows && npm init -y && npm i playwright-core
 
-`playwright-core` drives the Chrome already installed on the Mac. No browser is downloaded.
+`playwright-core` drives the Chrome already installed on the Mac. No browser is downloaded. That is for headed flows only: headless runs use `chromium-headless-shell`, because every headless launch of Chrome.app still puts an icon in the Dock (DECISIONS 2026-09-23).
 
 ## Sign in once per site
 

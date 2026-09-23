@@ -109,6 +109,7 @@ Installed to `~/.claude/` by `install.sh`, applies to **every project on this ma
 | `hooks/page-guard.sh` | refuses a page that can raise the browser window: a meta refresh, a reload, a focus, a modal, a desktop notification, a new tab |
 | `hooks/page-sweep.sh` | the same check over every page already on disk, at session start. Reports only what fires by itself; a call reached from a click or a file picker is his own and is left alone |
 | `hooks/handoff-auto.sh` | a `Stop` hook: past 250k it blocks the idle once and makes the session write the whole handoff by itself. Fires at most once per session and never chains |
+| `hooks/headless-chrome-guard.sh` | blocks a `Write`/`Edit`/`MultiEdit`/`Bash` that launches the real installed Chrome (`channel: 'chrome'`, `executablePath` into `Google Chrome.app`, or `--browser=chrome`) for a headless run — every headless launch of the real bundle puts a transient Dock icon on his machine; headed flows that keep `headless: false` are exempt |
 
 Lives in each repository, not here:
 

@@ -1046,3 +1046,15 @@ upkeep measured for "rewritten only when he asks" (2026-08-31) recurs even when 
 read at all. This supersedes "the board link still opens every message" (2026-08-16) and "create it
 at the start of a task and close it at the end" (2026-08-31). The `board` skill itself — format,
 storage location, `_shell/board.css`/`board.js` — is unchanged; it fires only on explicit request.
+
+## 2026-09-23: headless test runs never launch Google Chrome.app
+
+Dock showed three Chrome icons cycling several times a second while agents worked. Cause: Playwright
+suites (`Rodovid_business/tools/tests`, 6 workers, and a `/tmp` visual-audit script) launched with
+`channel: 'chrome'`, i.e. the real `/Applications/Google Chrome.app` in headless mode. macOS registers
+every launch of that bundle as a GUI app, so each test's browser got its own transient Dock icon; the
+icons did nothing on click. Not a leak: every instance closed with its test. Rule: any headless
+automation (test runners, audit scripts) uses Playwright's `chromium-headless-shell`
+(`npx playwright install chromium-headless-shell`, shared cache `~/Library/Caches/ms-playwright`,
+~210 MB) by omitting `channel`. The real Chrome is only for headed flows that need his sessions
+(`browser-flows`, `signin.mjs`). Both offending configs were switched the same day.
