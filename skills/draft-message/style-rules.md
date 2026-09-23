@@ -53,6 +53,8 @@ is a rule that gets ignored. If a rewrite shows nothing general, leave the file 
   on the fourth message of a live conversation reads as a form letter.
 - **He sends it, always.** The draft is a card on the page; nothing is ever sent from here.
 
+- **In a chat with more than one person, name each addressee the way the chat tool resolves a mention**, which in a corporate directory is the display name exactly as shown (`LAST, FIRST`), not a first name. A plain first name notifies nobody and reads as if the message were aimed at the room. And a reply to a status question carries the status and the answer, not a request back to the asker, even when they offered help. (2026-09-23, his rewrite of a group-chat reply.)
+
 ## Per person
 
 The blocks below are one job's people. A project that keeps a colleague database of its own, a
