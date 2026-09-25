@@ -3,7 +3,6 @@ name: sense-check-opus
 description: Hunts self-defeating logic in anything a stranger has to get through — a site, a form, an onboarding flow, a store listing, a plan a person must follow. Not style and not grammar: steps that invite the visitor to disqualify themselves, honest numbers printed so they argue against the thing, dead ends, and questions the reader is asked that they cannot possibly answer. Use alongside marketer-opus before publishing anything customer-facing, and whenever the user says something makes no sense or that a page loses people.
 model: opus
 effort: high
-maxTurns: 60
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 

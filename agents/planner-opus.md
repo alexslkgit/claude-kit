@@ -3,7 +3,6 @@ name: planner-opus
 description: Turns research findings into an implementation plan — ordered steps, the exact files each step touches, the objective verification criteria, and the open decisions that must be closed before coding starts. Use after research, before any implementer. Planning is where a cheap model costs the most, so this role has one tier only.
 model: opus
 effort: high
-maxTurns: 40
 tools: Read, Grep, Glob, Bash, WebFetch, Agent(researcher-sonnet, researcher-haiku)
 ---
 

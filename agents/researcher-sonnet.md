@@ -3,7 +3,6 @@ name: researcher-sonnet
 description: Mechanical research only. Locate, list, count, read a value, enumerate matches of a known pattern, extract the relevant lines from a bulk file: anything a grep or a second read would verify. Not the default research tier. A "how does this work", "does this project do X" or "why" question goes to researcher-opus whatever its size, because its answer is acted on as a fact. The brief carries a CHECK: line naming what catches a wrong answer.
 model: sonnet
 effort: medium
-maxTurns: 40
 tools: Read, Grep, Glob, Bash, WebFetch
 ---
 

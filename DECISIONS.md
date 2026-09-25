@@ -1058,3 +1058,13 @@ automation (test runners, audit scripts) uses Playwright's `chromium-headless-sh
 (`npx playwright install chromium-headless-shell`, shared cache `~/Library/Caches/ms-playwright`,
 ~210 MB) by omitting `channel`. The real Chrome is only for headed flows that need his sessions
 (`browser-flows`, `signin.mjs`). Both offending configs were switched the same day.
+
+## 2026-09-25 — maxTurns removed from every agent, at the owner's request
+
+A researcher-opus run on three mortgage questions stopped at its 60-turn cap with nothing but
+"Let me pull the official BdP brochure" as its result, after 89 tool calls and 9 minutes; the
+work had to be resumed by SendMessage. The owner's words: «отключи лимит на действия субагента
+и сохрани в кит». All 15 `maxTurns:` lines deleted from agents/*.md, so every type now runs to
+completion under Claude Code's default. This supersedes the 2026-09-06 caps entry above, which
+kept the cap only as a runaway stop. Runaways are now caught by reading the task list, not by a
+cap that also kills healthy long runs.

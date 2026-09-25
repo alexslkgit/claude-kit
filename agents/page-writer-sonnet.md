@@ -3,7 +3,6 @@ name: page-writer-sonnet
 description: Writes a long file from a short brief — the board, a chewed plan page, a status document, an explainer, a draft message, any HTML or Markdown over roughly a hundred lines. Use instead of composing it in the main conversation: a `Write` call carries the whole file body into the context and it is re-sent on every later request, which measured out at 4% of all spend. Give it the facts and the shape; it produces the file.
 model: sonnet
 effort: medium
-maxTurns: 30
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 

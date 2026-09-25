@@ -3,7 +3,6 @@ name: researcher-haiku
 description: Cheapest research tier. Mechanical lookups with a single unambiguous answer — locate a file, list call sites of a known symbol, read a config value, enumerate matches of a known pattern. Do NOT use for anything requiring judgement, cross-file reasoning, or "does this project do X?" questions.
 model: haiku
 effort: low
-maxTurns: 15
 tools: Read, Grep, Glob
 ---
 

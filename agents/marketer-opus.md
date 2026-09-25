@@ -3,7 +3,6 @@ name: marketer-opus
 description: Reviews anything a stranger has to be persuaded by — a landing page, an offer, a price table, a store listing, an ad, a cold email, a pitch — and returns the defects ranked by the money each one costs, with a concrete replacement written for every one. Use before publishing any customer-facing text, and whenever the user says the copy is weak, the conversion is bad, or asks whether this would sell. Never used on internal documents or code comments.
 model: opus
 effort: high
-maxTurns: 60
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 

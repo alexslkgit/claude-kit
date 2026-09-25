@@ -3,7 +3,6 @@ name: researcher-fable
 description: Top research tier. Use only when you judge Opus insufficient — a subtle correctness question spanning several subsystems, a race or state-machine bug that resisted an Opus pass, reconciling a specification against an implementation where the answer decides architecture. Expensive; predict it deliberately rather than reaching for it by reflex.
 model: fable
 effort: high
-maxTurns: 60
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 

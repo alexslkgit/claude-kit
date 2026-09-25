@@ -3,7 +3,6 @@ name: verifier-opus
 description: Independent verification of a completed change — does the diff actually do what the plan said, do build/tests/lint really pass, are the tests non-vacuous, were conventions and invariants respected. Also the tier for re-checking any subagent result that smells wrong. Never used to make the change it is checking.
 model: opus
 effort: high
-maxTurns: 50
 tools: Read, Grep, Glob, Bash
 ---
 

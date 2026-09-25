@@ -3,7 +3,6 @@ name: medium-placer-sonnet
 description: Places a finished article draft into the Medium editor in the user's real Chrome and stops at the Publish button. Use only from the medium-article skill, after the draft passed review in the main conversation. The user's own eyes on the draft are the check, so the brief carries a CHECK: line naming it. Never publishes, never signs in, never edits the editor DOM with scripts.
 model: sonnet
 effort: medium
-maxTurns: 120
 tools: mcp__claude-in-chrome__*, mcp__Claude_Browser__*, Read, Bash
 ---
 
